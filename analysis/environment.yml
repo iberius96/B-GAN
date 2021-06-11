@@ -1,0 +1,13 @@
+name: swipegan
+channels:
+  - conda-forge
+dependencies:
+  - python>=3.6
+  - notebook
+  - numpy
+  - matplotlib
+  - seaborn
+  - plotly
+  - pandas
+  - pip
+
