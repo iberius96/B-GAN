@@ -1,0 +1,83 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    compileSdkVersion 30
+    buildToolsVersion "30.0.3"
+
+    defaultConfig {
+        applicationId "com.scratchapp.swipegan"
+        minSdkVersion 27
+        targetSdkVersion 30
+        versionCode 1
+        versionName "1.0"
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    /*packagingOptions {
+        exclude 'META-INF/native-image/ * /jnijavacpp/reflect-config.json'
+        exclude 'META-INF/native-image/ * /jnijavacpp/jni-config.json'
+
+    }*/
+
+    packagingOptions {
+        exclude 'META-INF/DEPENDENCIES'
+        exclude 'META-INF/DEPENDENCIES.txt'
+        exclude 'META-INF/LICENSE'
+        exclude 'META-INF/LICENSE.txt'
+        exclude 'META-INF/license.txt'
+        exclude 'META-INF/NOTICE'
+        exclude 'META-INF/NOTICE.txt'
+        exclude 'META-INF/notice.txt'
+        exclude 'META-INF/INDEX.LIST'
+    }
+}
+
+dependencies {
+
+    implementation 'androidx.appcompat:appcompat:1.2.0'
+    implementation 'com.google.android.material:material:1.2.1'
+    implementation 'androidx.constraintlayout:constraintlayout:2.0.1'
+    implementation files('libs/weka-android-release.aar')
+    implementation files('libs/oneClassClassifier.jar')
+    testImplementation 'junit:junit:4.+'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.2'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
+
+    implementation (group: 'org.deeplearning4j', name: 'deeplearning4j-core', version: '1.0.0-beta3') {
+        exclude group: 'org.bytedeco.javacpp-presets', module: 'opencv-platform'
+        exclude group: 'org.bytedeco.javacpp-presets', module: 'leptonica-platform'
+        exclude group: 'org.bytedeco.javacpp-presets', module: 'hdf5-platform'
+        exclude group: 'org.nd4j', module: 'nd4j-base64'
+    }
+    implementation group: 'org.nd4j', name: 'nd4j-native', version: '1.0.0-beta3'
+    implementation group: 'org.nd4j', name: 'nd4j-native', version: '1.0.0-beta3', classifier: "android-arm"
+    implementation group: 'org.nd4j', name: 'nd4j-native', version: '1.0.0-beta3', classifier: "android-arm64"
+    implementation group: 'org.nd4j', name: 'nd4j-native', version: '1.0.0-beta3', classifier: "android-x86"
+    implementation group: 'org.nd4j', name: 'nd4j-native', version: '1.0.0-beta3', classifier: "android-x86_64"
+    implementation group: 'org.bytedeco.javacpp-presets', name: 'openblas', version: '0.3.5-1.4.4'
+    implementation group: 'org.bytedeco.javacpp-presets', name: 'openblas', version: '0.3.5-1.4.4', classifier: "android-arm"
+    implementation group: 'org.bytedeco.javacpp-presets', name: 'openblas', version: '0.3.5-1.4.4', classifier: "android-arm64"
+    implementation group: 'org.bytedeco.javacpp-presets', name: 'openblas', version: '0.3.5-1.4.4', classifier: "android-x86"
+    implementation group: 'org.bytedeco.javacpp-presets', name: 'openblas', version: '0.3.5-1.4.4', classifier: "android-x86_64"
+    implementation group: 'org.bytedeco.javacpp-presets', name: 'leptonica', version: '1.77.0-1.4.4'
+    implementation group: 'org.bytedeco.javacpp-presets', name: 'leptonica', version: '1.77.0-1.4.4', classifier: "android-arm"
+    implementation group: 'org.bytedeco.javacpp-presets', name: 'leptonica', version: '1.77.0-1.4.4', classifier: "android-arm64"
+    implementation group: 'org.bytedeco.javacpp-presets', name: 'leptonica', version: '1.77.0-1.4.4', classifier: "android-x86"
+    implementation group: 'org.bytedeco.javacpp-presets', name: 'leptonica', version: '1.77.0-1.4.4', classifier: "android-x86_64"
+
+    testImplementation 'junit:junit:4.12'
+}
