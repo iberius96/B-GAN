@@ -183,8 +183,8 @@ public class GAN {
                 INDArray fakeIn = Nd4j.rand(batchSize, LATENT_DIM);
                 INDArray fake = gan.activateSelectedLayers(0, this.generator.getLayers().length - 1, fakeIn);
 
-                DataSet realSet = new DataSet(real, Nd4j.zeros(batchSize, 1));
-                DataSet fakeSet = new DataSet(fake, Nd4j.ones(batchSize, 1));
+                DataSet realSet = new DataSet(real, Nd4j.ones(batchSize, 1));
+                DataSet fakeSet = new DataSet(fake, Nd4j.zeros(batchSize, 1));
 
                 List<DataSet> mergeDataset = new ArrayList<DataSet>();
                 mergeDataset.add(realSet);
@@ -198,7 +198,7 @@ public class GAN {
                 // Update the discriminator in the GAN network
                 this.updateGan();
 
-                gan.fit(new DataSet(Nd4j.rand(batchSize, LATENT_DIM), Nd4j.zeros(batchSize, 1)));
+                gan.fit(new DataSet(Nd4j.rand(batchSize, LATENT_DIM), Nd4j.ones(batchSize, 1)));
 
                 // after 5_000 epochs we start to extract 5 samples after each successive 500 epochs
 //                if ((i >= 5_000) && (i % 500 == 0)) {
