@@ -417,60 +417,26 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     public void train(View view) throws Exception {
 
-        if (this.dbHelper.getRecordsCount("REAL_SWIPES") < 5) {
-            this.showAlertDialog("ATTENTION", "You need to enter at least 5 swipes as input before training.");
-            return;
-        }
-
-        this.progressTextView.setVisibility(View.VISIBLE);
-        this.progressTextView.setText("GAN epoch: 0 (out of 10_000)");
-        this.progressBar.setVisibility(View.VISIBLE);
-        this.swipeImageView.setVisibility(View.INVISIBLE);
-        this.saveButton.setVisibility(View.INVISIBLE);
-
-        this.isTrainingMode = false;
-
-        Handler uiHandler = new Handler(Looper.getMainLooper());
-        Runnable uiRunnable = new Runnable() {
-            @Override
-            public void run() {
-                inputTextView.setText("Swipe to authenticate");
-                ganButton.setVisibility(View.INVISIBLE);
-                trainButton.setVisibility(View.INVISIBLE);
-                saveButton.setVisibility(View.INVISIBLE);
-                resetButton.setText("Done");
-
-                progressTextView.setVisibility(View.INVISIBLE);
-                progressBar.setVisibility(View.INVISIBLE);
-                swipeImageView.setVisibility(View.VISIBLE);
-            }
-        };
-
-        Runnable runnable = new Runnable() {
-            @Override
-            public void run() {
-                dbHelper.deleteRealResults();
-                dbHelper.deleteGANData();
-                dbHelper.deleteTestingData();
-                ArrayList<Swipe> swipes = dbHelper.getAllSwipes("REAL_SWIPES");
-                train(swipes, 0.0);
-                uiHandler.post(uiRunnable);
-            }
-        };
-
-        new Thread(runnable).start();
+        this.progressTextView.setText("Training classifier");
+        this.train(false);
 
     }
 
     public void trainWithGAN(View view) throws Exception {
 
+        this.progressTextView.setText("GAN epoch: 0 (out of 10_000)");
+        this.train(true);
+
+    }
+
+    public void train(boolean isGanMode) {
+
         if (this.dbHelper.getRecordsCount("REAL_SWIPES") < 5) {
             this.showAlertDialog("ATTENTION", "You need to enter at least 5 swipes as input before training.");
             return;
         }
 
         this.progressTextView.setVisibility(View.VISIBLE);
-        this.progressTextView.setText("GAN epoch: 0 (out of 10_000)");
         this.progressBar.setVisibility(View.VISIBLE);
         this.swipeImageView.setVisibility(View.INVISIBLE);
         this.saveButton.setVisibility(View.INVISIBLE);
@@ -502,12 +468,17 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
                 ArrayList<Swipe> swipes = dbHelper.getAllSwipes("REAL_SWIPES");
                 try {
-                    long ganStartTime = System.nanoTime();
-                    swipes.addAll(gan.getFakeSwipeSamples(swipes, GAN_SAMPLES, progressTextView));
-                    long ganEndTime = System.nanoTime();
-                    double ganTime = (double) (ganEndTime - ganStartTime) / 1_000_000_000;
+                    if (isGanMode) {
+                        long ganStartTime = System.nanoTime();
+                        swipes.addAll(gan.getFakeSwipeSamples(swipes, GAN_SAMPLES, progressTextView));
+                        long ganEndTime = System.nanoTime();
+                        double ganTime = (double) (ganEndTime - ganStartTime) / 1_000_000_000;
 
-                    train(swipes, ganTime);
+                        trainClassifierWith(swipes, ganTime);
+                    } else {
+                        trainClassifierWith(swipes, 0.0);
+                    }
+
                     uiHandler.post(uiRunnable);
 
                 } catch (Exception e) {
@@ -520,7 +491,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     }
 
-    public void train(ArrayList<Swipe> trainSwipes, double ganTime) {
+    public void trainClassifierWith(ArrayList<Swipe> trainSwipes, double ganTime) {
 
         Instances dataSet = this.getWekaDataset();
 
