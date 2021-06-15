@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.DoubleSummaryStatistics;
+import java.util.Random;
 
 import weka.classifiers.evaluation.Evaluation;
 import weka.core.Instance;
@@ -518,11 +519,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             double rfTrainingTime = (double) (rfEndTime - rfStartTime) / 1_000_000_000;
 
             Evaluation eTest = new Evaluation(dataSet);
-            eTest.evaluateModel(oneClassClassifier, dataSet);
+            eTest.crossValidateModel(this.oneClassClassifier, dataSet, 5, new Random(1));
 
             double instances = eTest.numInstances();
-            double TAR = eTest.correct() / instances * 100;
-            double FRR = eTest.unclassified() / instances * 100;
+            double TAR = eTest.pctCorrect();
+            double FRR = eTest.pctUnclassified();
             double averageSwipeDuration = trainSwipes.stream().mapToDouble(x -> x.getDuration()).average().getAsDouble() / 1_000;
 
             String strSummary = "Total number of Instances provided: " + instances + "\n";
