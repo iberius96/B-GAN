@@ -79,32 +79,32 @@ public class Swipe {
         swipe.setMinXVelocity(values[8] * (MAX_X_VELOCITY - MIN_X_VELOCITY) + MIN_X_VELOCITY);
         swipe.setMaxXVelocity(values[9] * (MAX_X_VELOCITY - MIN_X_VELOCITY) + MIN_X_VELOCITY);
         swipe.setAvgXVelocity(values[10] * (MAX_X_VELOCITY - MIN_X_VELOCITY) + MIN_X_VELOCITY);
-        swipe.setVarXVelocity(values[11] * Math.pow(MAX_X_VELOCITY - MIN_X_VELOCITY, 2) + MIN_X_VELOCITY);
-        swipe.setStdXVelocity(values[12] * (MAX_X_VELOCITY - MIN_X_VELOCITY) + MIN_X_VELOCITY);
+        swipe.setStdXVelocity(values[11] * (MAX_X_VELOCITY - MIN_X_VELOCITY) + MIN_X_VELOCITY);
+        swipe.setVarXVelocity(values[12] * Math.pow(MAX_X_VELOCITY - MIN_X_VELOCITY, 2) + MIN_X_VELOCITY);
 
         swipe.setMinYVelocity(values[13] * (MAX_Y_VELOCITY - MIN_Y_VELOCITY) + MIN_Y_VELOCITY);
         swipe.setMaxYVelocity(values[14] * (MAX_Y_VELOCITY - MIN_Y_VELOCITY) + MIN_Y_VELOCITY);
         swipe.setAvgYVelocity(values[15] * (MAX_Y_VELOCITY - MIN_Y_VELOCITY) + MIN_Y_VELOCITY);
-        swipe.setVarYVelocity(values[16] * Math.pow(MAX_Y_VELOCITY - MIN_Y_VELOCITY, 2) + MIN_Y_VELOCITY);
-        swipe.setStdYVelocity(values[17] * (MAX_Y_VELOCITY - MIN_Y_VELOCITY) + MIN_Y_VELOCITY);
+        swipe.setStdYVelocity(values[16] * (MAX_Y_VELOCITY - MIN_Y_VELOCITY) + MIN_Y_VELOCITY);
+        swipe.setVarYVelocity(values[17] * Math.pow(MAX_Y_VELOCITY - MIN_Y_VELOCITY, 2) + MIN_Y_VELOCITY);
 
-        swipe.setMinPressure(values[18]);
-        swipe.setMaxPressure(values[19]);
-        swipe.setAvgPressure(values[20]);
-        swipe.setVarPressure(values[21]);
-        swipe.setStdPressure(values[22]);
+        swipe.setMinXAcceleration(values[18] * (MAX_X_ACCELERATION - MIN_X_ACCELERATION) + MIN_X_ACCELERATION);
+        swipe.setMaxXAcceleration(values[19] * (MAX_X_ACCELERATION - MIN_X_ACCELERATION) + MIN_X_ACCELERATION);
+        swipe.setAvgXAcceleration(values[20] * (MAX_X_ACCELERATION - MIN_X_ACCELERATION) + MIN_X_ACCELERATION);
+        swipe.setStdXAcceleration(values[21] * (MAX_X_ACCELERATION - MIN_X_ACCELERATION) + MIN_X_ACCELERATION);
+        swipe.setVarXAcceleration(values[22] * Math.pow(MAX_X_ACCELERATION - MIN_X_ACCELERATION, 2) + MIN_X_ACCELERATION);
 
-        swipe.setMinXAcceleration(values[23] * (MAX_X_ACCELERATION - MIN_X_ACCELERATION) + MIN_X_ACCELERATION);
-        swipe.setMaxXAcceleration(values[24] * (MAX_X_ACCELERATION - MIN_X_ACCELERATION) + MIN_X_ACCELERATION);
-        swipe.setAvgXAcceleration(values[25] * (MAX_X_ACCELERATION - MIN_X_ACCELERATION) + MIN_X_ACCELERATION);
-        swipe.setVarXAcceleration(values[26] * Math.pow(MAX_X_ACCELERATION - MIN_X_ACCELERATION, 2) + MIN_X_ACCELERATION);
-        swipe.setStdXAcceleration(values[27] * (MAX_X_ACCELERATION - MIN_X_ACCELERATION) + MIN_X_ACCELERATION);
+        swipe.setMinYAcceleration(values[23] * (MAX_Y_ACCELERATION - MIN_Y_ACCELERATION) + MIN_Y_ACCELERATION);
+        swipe.setMaxYAcceleration(values[24] * (MAX_Y_ACCELERATION - MIN_Y_ACCELERATION) + MIN_Y_ACCELERATION);
+        swipe.setAvgYAcceleration(values[25] * (MAX_Y_ACCELERATION - MIN_Y_ACCELERATION) + MIN_Y_ACCELERATION);
+        swipe.setStdYAcceleration(values[26] * (MAX_Y_ACCELERATION - MIN_Y_ACCELERATION) + MIN_Y_ACCELERATION);
+        swipe.setVarYAcceleration(values[27] * Math.pow(MAX_Y_ACCELERATION - MIN_Y_ACCELERATION, 2) + MIN_Y_ACCELERATION);
 
-        swipe.setMinYAcceleration(values[28] * (MAX_Y_ACCELERATION - MIN_Y_ACCELERATION) + MIN_Y_ACCELERATION);
-        swipe.setMaxYAcceleration(values[29] * (MAX_Y_ACCELERATION - MIN_Y_ACCELERATION) + MIN_Y_ACCELERATION);
-        swipe.setAvgYAcceleration(values[30] * (MAX_Y_ACCELERATION - MIN_Y_ACCELERATION) + MIN_Y_ACCELERATION);
-        swipe.setVarYAcceleration(values[31] * Math.pow(MAX_Y_ACCELERATION - MIN_Y_ACCELERATION, 2) + MIN_Y_ACCELERATION);
-        swipe.setStdYAcceleration(values[32] * (MAX_Y_ACCELERATION - MIN_Y_ACCELERATION) + MIN_Y_ACCELERATION);
+        swipe.setMinPressure(values[28]);
+        swipe.setMaxPressure(values[29]);
+        swipe.setAvgPressure(values[30]);
+        swipe.setStdPressure(values[31]);
+        swipe.setVarPressure(values[32]);
 
         return swipe;
     }
@@ -125,28 +125,28 @@ public class Swipe {
         this.minXVelocity = swipeArray[8];
         this.maxXVelocity = swipeArray[9];
         this.avgXVelocity = swipeArray[10];
-        this.varXVelocity = swipeArray[11];
-        this.stdXVelocity = swipeArray[12];
+        this.stdXVelocity = swipeArray[11];
+        this.varXVelocity = swipeArray[12];
         this.minYVelocity = swipeArray[13];
         this.maxYVelocity = swipeArray[14];
         this.avgYVelocity = swipeArray[15];
-        this.varYVelocity = swipeArray[16];
-        this.stdYVelocity = swipeArray[17];
-        this.minPressure = swipeArray[18];
-        this.maxPressure = swipeArray[19];
-        this.avgPressure = swipeArray[20];
-        this.varPressure = swipeArray[21];
-        this.stdPressure = swipeArray[22];
-        this.minXAcceleration = swipeArray[23];
-        this.maxXAcceleration = swipeArray[24];
-        this.avgXAcceleration = swipeArray[25];
-        this.varXAcceleration = swipeArray[26];
-        this.stdXAcceleration = swipeArray[27];
-        this.minYAcceleration = swipeArray[28];
-        this.maxYAcceleration = swipeArray[29];
-        this.avgYAcceleration = swipeArray[30];
-        this.varYAcceleration = swipeArray[31];
-        this.stdYAcceleration = swipeArray[32];
+        this.stdYVelocity = swipeArray[16];
+        this.varYVelocity = swipeArray[17];
+        this.minXAcceleration = swipeArray[18];
+        this.maxXAcceleration = swipeArray[19];
+        this.avgXAcceleration = swipeArray[20];
+        this.stdXAcceleration = swipeArray[21];
+        this.varXAcceleration = swipeArray[22];
+        this.minYAcceleration = swipeArray[23];
+        this.maxYAcceleration = swipeArray[24];
+        this.avgYAcceleration = swipeArray[25];
+        this.stdYAcceleration = swipeArray[26];
+        this.varYAcceleration = swipeArray[27];
+        this.minPressure = swipeArray[28];
+        this.maxPressure = swipeArray[29];
+        this.avgPressure = swipeArray[30];
+        this.stdPressure = swipeArray[31];
+        this.varPressure = swipeArray[32];
     }
 
     public double getDuration() {
@@ -237,20 +237,20 @@ public class Swipe {
         this.avgXVelocity = avgXVelocity;
     }
 
-    public double getVarXVelocity() {
-        return varXVelocity;
-    }
-
-    public void setVarXVelocity(double varXVelocity) {
-        this.varXVelocity = varXVelocity;
-    }
-
     public double getStdXVelocity() {
         return stdXVelocity;
     }
 
     public void setStdXVelocity(double stdXVelocity) {
         this.stdXVelocity = stdXVelocity;
+    }
+
+    public double getVarXVelocity() {
+        return varXVelocity;
+    }
+
+    public void setVarXVelocity(double varXVelocity) {
+        this.varXVelocity = varXVelocity;
     }
 
     public double getMinYVelocity() {
@@ -277,14 +277,6 @@ public class Swipe {
         this.avgYVelocity = avgYVelocity;
     }
 
-    public double getVarYVelocity() {
-        return varYVelocity;
-    }
-
-    public void setVarYVelocity(double varYVelocity) {
-        this.varYVelocity = varYVelocity;
-    }
-
     public double getStdYVelocity() {
         return stdYVelocity;
     }
@@ -293,44 +285,12 @@ public class Swipe {
         this.stdYVelocity = stdYVelocity;
     }
 
-    public double getMinPressure() {
-        return minPressure;
+    public double getVarYVelocity() {
+        return varYVelocity;
     }
 
-    public void setMinPressure(double minPressure) {
-        this.minPressure = minPressure;
-    }
-
-    public double getMaxPressure() {
-        return maxPressure;
-    }
-
-    public void setMaxPressure(double maxPressure) {
-        this.maxPressure = maxPressure;
-    }
-
-    public double getAvgPressure() {
-        return avgPressure;
-    }
-
-    public void setAvgPressure(double avgPressure) {
-        this.avgPressure = avgPressure;
-    }
-
-    public double getVarPressure() {
-        return varPressure;
-    }
-
-    public void setVarPressure(double varPressure) {
-        this.varPressure = varPressure;
-    }
-
-    public double getStdPressure() {
-        return stdPressure;
-    }
-
-    public void setStdPressure(double stdPressure) {
-        this.stdPressure = stdPressure;
+    public void setVarYVelocity(double varYVelocity) {
+        this.varYVelocity = varYVelocity;
     }
 
     public double getMinXAcceleration() {
@@ -357,20 +317,20 @@ public class Swipe {
         this.avgXAcceleration = avgXAcceleration;
     }
 
-    public double getVarXAcceleration() {
-        return varXAcceleration;
-    }
-
-    public void setVarXAcceleration(double varXAcceleration) {
-        this.varXAcceleration = varXAcceleration;
-    }
-
     public double getStdXAcceleration() {
         return stdXAcceleration;
     }
 
     public void setStdXAcceleration(double stdXAcceleration) {
         this.stdXAcceleration = stdXAcceleration;
+    }
+
+    public double getVarXAcceleration() {
+        return varXAcceleration;
+    }
+
+    public void setVarXAcceleration(double varXAcceleration) {
+        this.varXAcceleration = varXAcceleration;
     }
 
     public double getMinYAcceleration() {
@@ -397,6 +357,14 @@ public class Swipe {
         this.avgYAcceleration = avgYAcceleration;
     }
 
+    public double getStdYAcceleration() {
+        return stdYAcceleration;
+    }
+
+    public void setStdYAcceleration(double stdYAcceleration) {
+        this.stdYAcceleration = stdYAcceleration;
+    }
+
     public double getVarYAcceleration() {
         return varYAcceleration;
     }
@@ -405,13 +373,46 @@ public class Swipe {
         this.varYAcceleration = varYAcceleration;
     }
 
-    public double getStdYAcceleration() {
-        return stdYAcceleration;
+    public double getMinPressure() {
+        return minPressure;
     }
 
-    public void setStdYAcceleration(double stdYAcceleration) {
-        this.stdYAcceleration = stdYAcceleration;
+    public void setMinPressure(double minPressure) {
+        this.minPressure = minPressure;
     }
+
+    public double getMaxPressure() {
+        return maxPressure;
+    }
+
+    public void setMaxPressure(double maxPressure) {
+        this.maxPressure = maxPressure;
+    }
+
+    public double getAvgPressure() {
+        return avgPressure;
+    }
+
+    public void setAvgPressure(double avgPressure) {
+        this.avgPressure = avgPressure;
+    }
+
+    public double getStdPressure() {
+        return stdPressure;
+    }
+
+    public void setStdPressure(double stdPressure) {
+        this.stdPressure = stdPressure;
+    }
+
+    public double getVarPressure() {
+        return varPressure;
+    }
+
+    public void setVarPressure(double varPressure) {
+        this.varPressure = varPressure;
+    }
+
 
     public double[] getNormalizedValues() {
 
@@ -426,28 +427,29 @@ public class Swipe {
                 (this.minXVelocity - MIN_X_VELOCITY) / (MAX_X_VELOCITY - MIN_X_VELOCITY),
                 (this.maxXVelocity - MIN_X_VELOCITY) / (MAX_X_VELOCITY - MIN_X_VELOCITY),
                 (this.avgXVelocity - MIN_X_VELOCITY) / (MAX_X_VELOCITY - MIN_X_VELOCITY),
-                (this.varXVelocity - MIN_X_VELOCITY) / Math.pow(MAX_X_VELOCITY - MIN_X_VELOCITY, 2),
                 (this.stdXVelocity - MIN_X_VELOCITY) / (MAX_X_VELOCITY - MIN_X_VELOCITY),
+                (this.varXVelocity - MIN_X_VELOCITY) / Math.pow(MAX_X_VELOCITY - MIN_X_VELOCITY, 2),
                 (this.minYVelocity - MIN_Y_VELOCITY) / (MAX_Y_VELOCITY - MIN_Y_VELOCITY),
                 (this.maxYVelocity - MIN_Y_VELOCITY) / (MAX_Y_VELOCITY - MIN_Y_VELOCITY),
                 (this.avgYVelocity - MIN_Y_VELOCITY) / (MAX_Y_VELOCITY - MIN_Y_VELOCITY),
-                (this.varYVelocity - MIN_Y_VELOCITY) / Math.pow(MAX_Y_VELOCITY - MIN_Y_VELOCITY, 2),
                 (this.stdYVelocity - MIN_Y_VELOCITY) / (MAX_Y_VELOCITY - MIN_Y_VELOCITY),
-                this.minPressure,
-                this.maxPressure,
-                this.avgPressure,
-                this.varPressure,
-                this.stdPressure,
+                (this.varYVelocity - MIN_Y_VELOCITY) / Math.pow(MAX_Y_VELOCITY - MIN_Y_VELOCITY, 2),
                 (this.minXAcceleration - MIN_X_ACCELERATION) / (MAX_X_ACCELERATION - MIN_X_ACCELERATION),
                 (this.maxXAcceleration - MIN_X_ACCELERATION) / (MAX_X_ACCELERATION - MIN_X_ACCELERATION),
                 (this.avgXAcceleration - MIN_X_ACCELERATION) / (MAX_X_ACCELERATION - MIN_X_ACCELERATION),
-                (this.varXAcceleration - MIN_X_ACCELERATION) / Math.pow(MAX_X_ACCELERATION - MIN_X_ACCELERATION, 2),
                 (this.stdXAcceleration - MIN_X_ACCELERATION) / (MAX_X_ACCELERATION - MIN_X_ACCELERATION),
+                (this.varXAcceleration - MIN_X_ACCELERATION) / Math.pow(MAX_X_ACCELERATION - MIN_X_ACCELERATION, 2),
                 (this.minYAcceleration - MIN_Y_ACCELERATION) / (MAX_Y_ACCELERATION - MIN_Y_ACCELERATION),
                 (this.maxYAcceleration - MIN_Y_ACCELERATION) / (MAX_Y_ACCELERATION - MIN_Y_ACCELERATION),
                 (this.avgYAcceleration - MIN_Y_ACCELERATION) / (MAX_Y_ACCELERATION - MIN_Y_ACCELERATION),
+                (this.stdYAcceleration - MIN_Y_ACCELERATION) / (MAX_Y_ACCELERATION - MIN_Y_ACCELERATION),
                 (this.varYAcceleration - MIN_Y_ACCELERATION) / Math.pow(MAX_Y_ACCELERATION - MIN_Y_ACCELERATION, 2),
-                (this.stdYAcceleration - MIN_Y_ACCELERATION) / (MAX_Y_ACCELERATION - MIN_Y_ACCELERATION)};
+                this.minPressure,
+                this.maxPressure,
+                this.avgPressure,
+                this.stdPressure,
+                this.varPressure};
+
     }
 
     public double[] toArray() {
@@ -462,28 +464,28 @@ public class Swipe {
                 this.minXVelocity,
                 this.maxXVelocity,
                 this.avgXVelocity,
-                this.varXVelocity,
                 this.stdXVelocity,
+                this.varXVelocity,
                 this.minYVelocity,
                 this.maxYVelocity,
                 this.avgYVelocity,
-                this.varYVelocity,
                 this.stdYVelocity,
-                this.minPressure,
-                this.maxPressure,
-                this.avgPressure,
-                this.varPressure,
-                this.stdPressure,
+                this.varYVelocity,
                 this.minXAcceleration,
                 this.maxXAcceleration,
                 this.avgXAcceleration,
-                this.varXAcceleration,
                 this.stdXAcceleration,
+                this.varXAcceleration,
                 this.minYAcceleration,
                 this.maxYAcceleration,
                 this.avgYAcceleration,
+                this.stdYAcceleration,
                 this.varYAcceleration,
-                this.stdYAcceleration};
+                this.minPressure,
+                this.maxPressure,
+                this.avgPressure,
+                this.stdPressure,
+                this.varPressure};
     }
 
     @Override
@@ -500,28 +502,28 @@ public class Swipe {
                 "\n minXVelocity=" + minXVelocity +
                 "\n maxXVelocity=" + maxXVelocity +
                 "\n avgXVelocity=" + avgXVelocity +
-                "\n varXVelocity=" + varXVelocity +
                 "\n stdXVelocity=" + stdXVelocity +
+                "\n varXVelocity=" + varXVelocity +
                 "\n minYVelocity=" + minYVelocity +
                 "\n maxYVelocity=" + maxYVelocity +
                 "\n avgYVelocity=" + avgYVelocity +
-                "\n varYVelocity=" + varYVelocity +
                 "\n stdYVelocity=" + stdYVelocity +
-                "\n minPressure=" + minPressure +
-                "\n maxPressure=" + maxPressure +
-                "\n avgPressure=" + avgPressure +
-                "\n varPressure=" + varPressure +
-                "\n stdPressure=" + stdPressure +
+                "\n varYVelocity=" + varYVelocity +
                 "\n minXAcceleration=" + minXAcceleration +
                 "\n maxXAcceleration=" + maxXAcceleration +
                 "\n avgXAcceleration=" + avgXAcceleration +
-                "\n varXAcceleration=" + varXAcceleration +
                 "\n stdXAcceleration=" + stdXAcceleration +
+                "\n varXAcceleration=" + varXAcceleration +
                 "\n minYAcceleration=" + minYAcceleration +
                 "\n maxYAcceleration=" + maxYAcceleration +
                 "\n avgYAcceleration=" + avgYAcceleration +
-                "\n varYAcceleration=" + varYAcceleration +
                 "\n stdYAcceleration=" + stdYAcceleration +
+                "\n varYAcceleration=" + varYAcceleration +
+                "\n minPressure=" + minPressure +
+                "\n maxPressure=" + maxPressure +
+                "\n avgPressure=" + avgPressure +
+                "\n stdPressure=" + stdPressure +
+                "\n varPressure=" + varPressure +
                 '}';
     }
 
@@ -539,28 +541,28 @@ public class Swipe {
         instance.setValue(8, this.getMinXVelocity());
         instance.setValue(9, this.getMaxXVelocity());
         instance.setValue(10, this.getAvgXVelocity());
-        instance.setValue(11, this.getVarXVelocity());
-        instance.setValue(12, this.getStdXVelocity());
+        instance.setValue(11, this.getStdXVelocity());
+        instance.setValue(12, this.getVarXVelocity());
         instance.setValue(13, this.getMinYVelocity());
         instance.setValue(14, this.getMaxYVelocity());
         instance.setValue(15, this.getAvgYVelocity());
-        instance.setValue(16, this.getVarYVelocity());
-        instance.setValue(17, this.getStdYVelocity());
-        instance.setValue(18, this.getMinPressure());
-        instance.setValue(19, this.getMaxPressure());
-        instance.setValue(20, this.getAvgPressure());
-        instance.setValue(21, this.getVarPressure());
-        instance.setValue(22, this.getStdPressure());
-        instance.setValue(23, this.getMinXAcceleration());
-        instance.setValue(24, this.getMaxXAcceleration());
-        instance.setValue(25, this.getAvgXAcceleration());
-        instance.setValue(26, this.getVarXAcceleration());
-        instance.setValue(27, this.getStdXAcceleration());
-        instance.setValue(28, this.getMinYAcceleration());
-        instance.setValue(29, this.getMaxYAcceleration());
-        instance.setValue(30, this.getAvgYAcceleration());
-        instance.setValue(31, this.getVarYAcceleration());
-        instance.setValue(32, this.getStdYAcceleration());
+        instance.setValue(16, this.getStdYVelocity());
+        instance.setValue(17, this.getVarYVelocity());
+        instance.setValue(18, this.getMinXAcceleration());
+        instance.setValue(19, this.getMaxXAcceleration());
+        instance.setValue(20, this.getAvgXAcceleration());
+        instance.setValue(21, this.getStdXAcceleration());
+        instance.setValue(22, this.getVarXAcceleration());
+        instance.setValue(23, this.getMinYAcceleration());
+        instance.setValue(24, this.getMaxYAcceleration());
+        instance.setValue(25, this.getAvgYAcceleration());
+        instance.setValue(26, this.getStdYAcceleration());
+        instance.setValue(27, this.getVarYAcceleration());
+        instance.setValue(28, this.getMinPressure());
+        instance.setValue(29, this.getMaxPressure());
+        instance.setValue(30, this.getAvgPressure());
+        instance.setValue(31, this.getStdPressure());
+        instance.setValue(32, this.getVarPressure());
         if(isTrainInstance){
             instance.setClassValue("User");
         }

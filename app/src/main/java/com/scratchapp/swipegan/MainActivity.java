@@ -45,7 +45,7 @@ import static android.Manifest.permission.READ_EXTERNAL_STORAGE;
 import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
-    private static final int GAN_SAMPLES = 50;
+    private static final int NUMBER_GAN_SAMPLES = 50;
 
     private VelocityTracker mVelocityTracker = null;
     private long startTime = 0;
@@ -188,7 +188,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     Swipe swipe = this.getSwipe();
                     if(this.isTrainingMode) {
                         this.saveButton.setVisibility(View.INVISIBLE);
-                        this.dbHelper.addTrainRecord(swipe, "REAL_SWIPES");
+                        this.dbHelper.addTrainRecord(swipe);
                         int recordsCount = this.dbHelper.getRecordsCount("REAL_SWIPES");
                         inputTextView.setText("Inputs " + recordsCount + " (min 5)");
                     } else {
@@ -296,13 +296,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         double varYVelocity = this.yVelocities.stream().map(i -> i - avgYVelocity).map(i -> i*i).mapToDouble(i -> i).average().getAsDouble();
         double stdYVelocity = Math.sqrt(varYVelocity);
 
-        DoubleSummaryStatistics pressureStats = this.pressures.stream().mapToDouble(x -> (double) x).summaryStatistics();
-        double minPressure = pressureStats.getMin();
-        double maxPressure = pressureStats.getMax();
-        double avgPressure = pressureStats.getAverage();
-        double varPressure = this.pressures.stream().map(i -> i - avgPressure).map(i -> i*i).mapToDouble(i -> i).average().getAsDouble();
-        double stdPressure = Math.sqrt(varPressure);
-
         DoubleSummaryStatistics xAccelerationStats = this.xAccelerations.stream().mapToDouble(x -> (double) x).summaryStatistics();
         double minXAcceleration = xAccelerationStats.getMin();
         double maxXAcceleration = xAccelerationStats.getMax();
@@ -317,6 +310,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         double varYAcceleration = this.yAccelerations.stream().map(i -> i - avgYAcceleration).map(i -> i*i).mapToDouble(i -> i).average().getAsDouble();
         double stdYAcceleration = Math.sqrt(varYAcceleration);
 
+        DoubleSummaryStatistics pressureStats = this.pressures.stream().mapToDouble(x -> (double) x).summaryStatistics();
+        double minPressure = pressureStats.getMin();
+        double maxPressure = pressureStats.getMax();
+        double avgPressure = pressureStats.getAverage();
+        double varPressure = this.pressures.stream().map(i -> i - avgPressure).map(i -> i*i).mapToDouble(i -> i).average().getAsDouble();
+        double stdPressure = Math.sqrt(varPressure);
+
         Swipe newSwipe = new Swipe();
         newSwipe.setDuration(duration);
         newSwipe.setAvgSize(avgSize);
@@ -330,32 +330,32 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         newSwipe.setMinXVelocity(minXVelocity);
         newSwipe.setMaxXVelocity(maxXVelocity);
         newSwipe.setAvgXVelocity(avgXVelocity);
-        newSwipe.setVarXVelocity(varXVelocity);
         newSwipe.setStdXVelocity(stdXVelocity);
+        newSwipe.setVarXVelocity(varXVelocity);
 
         newSwipe.setMinYVelocity(minYVelocity);
         newSwipe.setMaxYVelocity(maxYVelocity);
         newSwipe.setAvgYVelocity(avgYVelocity);
-        newSwipe.setVarYVelocity(varYVelocity);
         newSwipe.setStdYVelocity(stdYVelocity);
-
-        newSwipe.setMinPressure(minPressure);
-        newSwipe.setMaxPressure(maxPressure);
-        newSwipe.setAvgPressure(avgPressure);
-        newSwipe.setVarPressure(varPressure);
-        newSwipe.setStdPressure(stdPressure);
+        newSwipe.setVarYVelocity(varYVelocity);
 
         newSwipe.setMinXAcceleration(minXAcceleration);
         newSwipe.setMaxXAcceleration(maxXAcceleration);
         newSwipe.setAvgXAcceleration(avgXAcceleration);
-        newSwipe.setVarXAcceleration(varXAcceleration);
         newSwipe.setStdXAcceleration(stdXAcceleration);
+        newSwipe.setVarXAcceleration(varXAcceleration);
 
         newSwipe.setMinYAcceleration(minYAcceleration);
         newSwipe.setMaxYAcceleration(maxYAcceleration);
         newSwipe.setAvgYAcceleration(avgYAcceleration);
-        newSwipe.setVarYAcceleration(varYAcceleration);
         newSwipe.setStdYAcceleration(stdYAcceleration);
+        newSwipe.setVarYAcceleration(varYAcceleration);
+
+        newSwipe.setMinPressure(minPressure);
+        newSwipe.setMaxPressure(maxPressure);
+        newSwipe.setAvgPressure(avgPressure);
+        newSwipe.setStdPressure(stdPressure);
+        newSwipe.setVarPressure(varPressure);
 
         double[] normalizedSwipeValues = newSwipe.getNormalizedValues();
 
@@ -396,8 +396,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             double averageSwipeDuration = testSwipes.stream().mapToDouble(x -> x.getDuration()).average().getAsDouble() / 1_000.0;
             double avgTestTime = testingData.stream().mapToDouble(x -> x[1]).average().getAsDouble();
 
-            strSummary += "True acceptance rate: " + TAR + "%\n";
-            strSummary += "False reject rate: " + FRR + "%\n";
+            strSummary += "True acceptance rate: " + String.format("%.3f", TAR) + "%\n";
+            strSummary += "False reject rate: " + String.format("%.3f", FRR) + "%\n";
             strSummary += "\n";
             strSummary += "Average sample acquisition time: " + String.format("%.3f", averageSwipeDuration) + "s\n";
             strSummary += "\n";
@@ -471,7 +471,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 try {
                     if (isGanMode) {
                         long ganStartTime = System.nanoTime();
-                        swipes.addAll(gan.getFakeSwipeSamples(swipes, GAN_SAMPLES, progressTextView));
+                        ArrayList<Swipe> fakeSwipes = gan.getFakeSwipeSamples(swipes, NUMBER_GAN_SAMPLES, progressTextView);
+                        dbHelper.addGANRecords(fakeSwipes);
+                        swipes.addAll(fakeSwipes);
                         long ganEndTime = System.nanoTime();
                         double ganTime = (double) (ganEndTime - ganStartTime) / 1_000_000_000;
 
@@ -533,7 +535,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             strSummary += "Average sample acquisition time: " + String.format("%.3f", averageSwipeDuration) + "s\n";
             strSummary += "\n";
             if (ganTime != 0.0) {
-                strSummary += "Generating " + GAN_SAMPLES + " GAN samples in: " + String.format("%.3f", ganTime) + "s\n";
+                strSummary += "Generating " + NUMBER_GAN_SAMPLES + " GAN samples in: " + String.format("%.3f", ganTime) + "s\n";
                 strSummary += "\n";
             }
             strSummary += "Training time of classifier: " + String.format("%.3f", rfTrainingTime) + "s\n";
@@ -573,7 +575,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             dbHelper.saveAsCSV("TEST_SWIPES", Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getPath() + File.separator + currentDateTime + "_" + "testSwipes.csv");
             dbHelper.saveAsCSV("REAL_RESULTS", Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getPath() + File.separator + currentDateTime + "_" + "realResults.csv");
             dbHelper.saveAsCSV("GAN_RESULTS", Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getPath() + File.separator + currentDateTime + "_" + "ganResults.csv");
-            dbHelper.saveAsCSV("TEST_RESULTS", Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getPath() + File.separator + currentDateTime + "_" + "testResultsPath.csv");
+            dbHelper.saveAsCSV("TEST_RESULTS", Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getPath() + File.separator + currentDateTime + "_" + "testResults.csv");
 
             this.showAlertDialog("SUCCESS", "CSV files have been saved into the file manager");
 
@@ -609,28 +611,28 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         Attribute minXVelocity = new Attribute("minXVelocity");
         Attribute maxXVelocity = new Attribute("maxXVelocity");
         Attribute avgXVelocity = new Attribute("avgXVelocity");
-        Attribute varXVelocity = new Attribute("varXVelocity");
         Attribute stdXVelocity = new Attribute("stdXVelocity");
+        Attribute varXVelocity = new Attribute("varXVelocity");
         Attribute minYVelocity = new Attribute("minYVelocity");
         Attribute maxYVelocity = new Attribute("maxYVelocity");
         Attribute avgYVelocity = new Attribute("avgYVelocity");
-        Attribute varYVelocity = new Attribute("varYVelocity");
         Attribute stdYVelocity = new Attribute("stdYVelocity");
+        Attribute varYVelocity = new Attribute("varYVelocity");
         Attribute minPressure = new Attribute("minPressure");
         Attribute maxPressure = new Attribute("maxPressure");
         Attribute avgPressure = new Attribute("avgPressure");
-        Attribute varPressure = new Attribute("varPressure");
         Attribute stdPressure = new Attribute("stdPressure");
+        Attribute varPressure = new Attribute("varPressure");
         Attribute minXAcceleration = new Attribute("minXAcceleration");
         Attribute maxXAcceleration = new Attribute("maxXAcceleration");
         Attribute avgXAcceleration = new Attribute("avgXAcceleration");
-        Attribute varXAcceleration = new Attribute("varXAcceleration");
         Attribute stdXAcceleration = new Attribute("stdXAcceleration");
+        Attribute varXAcceleration = new Attribute("varXAcceleration");
         Attribute minYAcceleration = new Attribute("minYAcceleration");
         Attribute maxYAcceleration = new Attribute("maxYAcceleration");
         Attribute avgYAcceleration = new Attribute("avgYAcceleration");
-        Attribute varYAcceleration = new Attribute("varYAcceleration");
         Attribute stdYAcceleration = new Attribute("stdYAcceleration");
+        Attribute varYAcceleration = new Attribute("varYAcceleration");
         ArrayList<String> myNominalValues = new ArrayList<String>(1);
         myNominalValues.add("User");
         Attribute owner = new Attribute("owner", myNominalValues);
@@ -647,28 +649,28 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         attributes.add(minXVelocity);
         attributes.add(maxXVelocity);
         attributes.add(avgXVelocity);
-        attributes.add(varXVelocity);
         attributes.add(stdXVelocity);
+        attributes.add(varXVelocity);
         attributes.add(minYVelocity);
         attributes.add(maxYVelocity);
         attributes.add(avgYVelocity);
-        attributes.add(varYVelocity);
         attributes.add(stdYVelocity);
-        attributes.add(minPressure);
-        attributes.add(maxPressure);
-        attributes.add(avgPressure);
-        attributes.add(varPressure);
-        attributes.add(stdPressure);
+        attributes.add(varYVelocity);
         attributes.add(minXAcceleration);
         attributes.add(maxXAcceleration);
         attributes.add(avgXAcceleration);
-        attributes.add(varXAcceleration);
         attributes.add(stdXAcceleration);
+        attributes.add(varXAcceleration);
         attributes.add(minYAcceleration);
         attributes.add(maxYAcceleration);
         attributes.add(avgYAcceleration);
-        attributes.add(varYAcceleration);
         attributes.add(stdYAcceleration);
+        attributes.add(varYAcceleration);
+        attributes.add(minPressure);
+        attributes.add(maxPressure);
+        attributes.add(stdPressure);
+        attributes.add(avgPressure);
+        attributes.add(varPressure);
         attributes.add(owner);
 
         Instances dataSet = new Instances("swipes", attributes, 0);
