@@ -567,16 +567,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     public synchronized void saveData(View view) throws InterruptedException {
 
         try {
-            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd_HH-mm");
-            String currentDateTime = dateFormat.format(new Date());
-
-            dbHelper.saveAsCSV("REAL_SWIPES", Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getPath() + File.separator + currentDateTime + "_" + "realSwipes.csv");
-            dbHelper.saveAsCSV("GAN_SWIPES", Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getPath() + File.separator + currentDateTime + "_" + "ganSwipes.csv");
-            dbHelper.saveAsCSV("TEST_SWIPES", Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getPath() + File.separator + currentDateTime + "_" + "testSwipes.csv");
-            dbHelper.saveAsCSV("REAL_RESULTS", Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getPath() + File.separator + currentDateTime + "_" + "realResults.csv");
-            dbHelper.saveAsCSV("GAN_RESULTS", Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getPath() + File.separator + currentDateTime + "_" + "ganResults.csv");
-            dbHelper.saveAsCSV("TEST_RESULTS", Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getPath() + File.separator + currentDateTime + "_" + "testResults.csv");
-
+            dbHelper.saveAllTablesAsCSV(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getPath() + File.separator);
             this.showAlertDialog("SUCCESS", "CSV files have been saved into the file manager");
 
         } catch (Exception e) {

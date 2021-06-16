@@ -5,11 +5,14 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.os.Environment;
 import android.util.Log;
 
 import java.io.File;
 import java.io.FileWriter;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 
 import au.com.bytecode.opencsv.CSVWriter;
 
@@ -18,7 +21,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "GAN.db";
 
     private static final String REAL_SWIPES = "REAL_SWIPES";
+    private static final String REAL_SWIPES_NORMALIZED = "REAL_SWIPES_NORMALIZED";
     private static final String GAN_SWIPES = "GAN_SWIPES";
+    private static final String GAN_SWIPES_NORMALIZED = "GAN_SWIPES_NORMALIZED";
 
     private static final String COL_ID = "id";
     private static final String COL_DURATION = "duration";
@@ -56,6 +61,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String COL_VAR_PRESSURE = "var_pressure";
 
     private static final String TEST_SWIPES = "TEST_SWIPES";
+    private static final String TEST_SWIPES_NORMALIZED = "TEST_SWIPES_NORMALIZED";
     private static final String COL_AUTHENTICATION = "AUTHENTICATION";
     private static final String COL_AUTHENTICATION_TIME = "AUTHENTICATION_TIME";
 
@@ -187,6 +193,116 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 + COL_AUTHENTICATION + " float(53), "
                 + COL_AUTHENTICATION_TIME + " float(53))";
 
+        String createRealSwipesNormalizedTable = "CREATE TABLE " + REAL_SWIPES_NORMALIZED
+                + " (id INTEGER PRIMARY KEY AUTOINCREMENT, "
+                + COL_DURATION + " float(53), "
+                + COL_AVG_SIZE + " float(53), "
+                + COL_DOWN_SIZE + " float(53), "
+                + COL_DOWN_PRESSURE + " float(53), "
+                + COL_START_X + " float(53), "
+                + COL_START_Y + " float(53), "
+                + COL_END_X + " float(53), "
+                + COL_END_Y + " float(53), "
+                + COL_MIN_X_VELOCITY + " float(53), "
+                + COL_MAX_X_VELOCITY + " float(53), "
+                + COL_AVG_X_VELOCITY + " float(53), "
+                + COL_STD_X_VELOCITY + " float(53), "
+                + COL_VAR_X_VELOCITY + " float(53), "
+                + COL_MIN_Y_VELOCITY + " float(53), "
+                + COL_MAX_Y_VELOCITY + " float(53), "
+                + COL_AVG_Y_VELOCITY + " float(53), "
+                + COL_STD_Y_VELOCITY + " float(53), "
+                + COL_VAR_Y_VELOCITY + " float(53), "
+                + COL_MIN_X_ACCELERATION + " float(53), "
+                + COL_MAX_X_ACCELERATION + " float(53), "
+                + COL_AVG_X_ACCELERATION + " float(53), "
+                + COL_STD_X_ACCELERATION + " float(53), "
+                + COL_VAR_X_ACCELERATION + " float(53), "
+                + COL_MIN_Y_ACCELERATION + " float(53), "
+                + COL_MAX_Y_ACCELERATION + " float(53), "
+                + COL_AVG_Y_ACCELERATION + " float(53), "
+                + COL_STD_Y_ACCELERATION + " float(53), "
+                + COL_VAR_Y_ACCELERATION + " float(53), "
+                + COL_MIN_PRESSURE + " float(53), "
+                + COL_MAX_PRESSURE + " float(53), "
+                + COL_AVG_PRESSURE + " float(53), "
+                + COL_STD_PRESSURE + " float(53), "
+                + COL_VAR_PRESSURE + " float(53))";
+
+        String createGanSwipesNormalizedTable = "CREATE TABLE " + GAN_SWIPES_NORMALIZED
+                + " (id INTEGER PRIMARY KEY AUTOINCREMENT, "
+                + COL_DURATION + " float(53), "
+                + COL_AVG_SIZE + " float(53), "
+                + COL_DOWN_SIZE + " float(53), "
+                + COL_DOWN_PRESSURE + " float(53), "
+                + COL_START_X + " float(53), "
+                + COL_START_Y + " float(53), "
+                + COL_END_X + " float(53), "
+                + COL_END_Y + " float(53), "
+                + COL_MIN_X_VELOCITY + " float(53), "
+                + COL_MAX_X_VELOCITY + " float(53), "
+                + COL_AVG_X_VELOCITY + " float(53), "
+                + COL_STD_X_VELOCITY + " float(53), "
+                + COL_VAR_X_VELOCITY + " float(53), "
+                + COL_MIN_Y_VELOCITY + " float(53), "
+                + COL_MAX_Y_VELOCITY + " float(53), "
+                + COL_AVG_Y_VELOCITY + " float(53), "
+                + COL_STD_Y_VELOCITY + " float(53), "
+                + COL_VAR_Y_VELOCITY + " float(53), "
+                + COL_MIN_X_ACCELERATION + " float(53), "
+                + COL_MAX_X_ACCELERATION + " float(53), "
+                + COL_AVG_X_ACCELERATION + " float(53), "
+                + COL_STD_X_ACCELERATION + " float(53), "
+                + COL_VAR_X_ACCELERATION + " float(53), "
+                + COL_MIN_Y_ACCELERATION + " float(53), "
+                + COL_MAX_Y_ACCELERATION + " float(53), "
+                + COL_AVG_Y_ACCELERATION + " float(53), "
+                + COL_STD_Y_ACCELERATION + " float(53), "
+                + COL_VAR_Y_ACCELERATION + " float(53), "
+                + COL_MIN_PRESSURE + " float(53), "
+                + COL_MAX_PRESSURE + " float(53), "
+                + COL_AVG_PRESSURE + " float(53), "
+                + COL_STD_PRESSURE + " float(53), "
+                + COL_VAR_PRESSURE + " float(53))";
+
+        String createTestSwipesNormalizedTable = "CREATE TABLE " + TEST_SWIPES_NORMALIZED
+                + " (id INTEGER PRIMARY KEY AUTOINCREMENT, "
+                + COL_DURATION + " float(53), "
+                + COL_AVG_SIZE + " float(53), "
+                + COL_DOWN_SIZE + " float(53), "
+                + COL_DOWN_PRESSURE + " float(53), "
+                + COL_START_X + " float(53), "
+                + COL_START_Y + " float(53), "
+                + COL_END_X + " float(53), "
+                + COL_END_Y + " float(53), "
+                + COL_MIN_X_VELOCITY + " float(53), "
+                + COL_MAX_X_VELOCITY + " float(53), "
+                + COL_AVG_X_VELOCITY + " float(53), "
+                + COL_STD_X_VELOCITY + " float(53), "
+                + COL_VAR_X_VELOCITY + " float(53), "
+                + COL_MIN_Y_VELOCITY + " float(53), "
+                + COL_MAX_Y_VELOCITY + " float(53), "
+                + COL_AVG_Y_VELOCITY + " float(53), "
+                + COL_STD_Y_VELOCITY + " float(53), "
+                + COL_VAR_Y_VELOCITY + " float(53), "
+                + COL_MIN_X_ACCELERATION + " float(53), "
+                + COL_MAX_X_ACCELERATION + " float(53), "
+                + COL_AVG_X_ACCELERATION + " float(53), "
+                + COL_STD_X_ACCELERATION + " float(53), "
+                + COL_VAR_X_ACCELERATION + " float(53), "
+                + COL_MIN_Y_ACCELERATION + " float(53), "
+                + COL_MAX_Y_ACCELERATION + " float(53), "
+                + COL_AVG_Y_ACCELERATION + " float(53), "
+                + COL_STD_Y_ACCELERATION + " float(53), "
+                + COL_VAR_Y_ACCELERATION + " float(53), "
+                + COL_MIN_PRESSURE + " float(53), "
+                + COL_MAX_PRESSURE + " float(53), "
+                + COL_AVG_PRESSURE + " float(53), "
+                + COL_STD_PRESSURE + " float(53), "
+                + COL_VAR_PRESSURE + " float(53), "
+                + COL_AUTHENTICATION + " float(53), "
+                + COL_AUTHENTICATION_TIME + " float(53))";
+
         String createRealResultsTable = "CREATE TABLE " + REAL_RESULTS
                 + " (id INTEGER PRIMARY KEY AUTOINCREMENT, "
                 + COL_INSTANCES + " float(53), "
@@ -216,6 +332,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL(createGanSwipesTable);
         db.execSQL(createTestSwipesTable);
 
+        db.execSQL(createRealSwipesNormalizedTable);
+        db.execSQL(createGanSwipesNormalizedTable);
+        db.execSQL(createTestSwipesNormalizedTable);
+
         db.execSQL(createRealResultsTable);
         db.execSQL(createGanResultsTable);
         db.execSQL(createTestResultsTable);
@@ -226,6 +346,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL("DROP TABLE IF EXISTS " + REAL_SWIPES);
         db.execSQL("DROP TABLE IF EXISTS " + GAN_SWIPES);
         db.execSQL("DROP TABLE IF EXISTS " + TEST_SWIPES);
+        db.execSQL("DROP TABLE IF EXISTS " + REAL_SWIPES_NORMALIZED);
+        db.execSQL("DROP TABLE IF EXISTS " + GAN_SWIPES_NORMALIZED);
+        db.execSQL("DROP TABLE IF EXISTS " + TEST_SWIPES_NORMALIZED);
         db.execSQL("DROP TABLE IF EXISTS " + REAL_RESULTS);
         db.execSQL("DROP TABLE IF EXISTS " + GAN_RESULTS);
         db.execSQL("DROP TABLE IF EXISTS " + TEST_RESULTS);
@@ -276,11 +399,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     public boolean addTrainRecord(Swipe swipe) {
-        return this.addSwipe(swipe, REAL_SWIPES);
+        return this.addSwipe(swipe, REAL_SWIPES) && this.addSwipeNormalized(swipe.getNormalizedValues(), REAL_SWIPES_NORMALIZED);
     }
 
     public boolean addGANRecord(Swipe swipe) {
-        return this.addSwipe(swipe, GAN_SWIPES);
+        return this.addSwipe(swipe, GAN_SWIPES) && this.addSwipeNormalized(swipe.getNormalizedValues(), GAN_SWIPES_NORMALIZED);
     }
 
     public boolean[] addGANRecords(ArrayList<Swipe> swipes) {
@@ -291,7 +414,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return result;
     }
 
-    public boolean addTestRecord(Swipe swipe, double authentication, double authenticationTime) {
+    public boolean addTestSwipe(Swipe swipe, double authentication, double authenticationTime, String tableName) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
 
@@ -331,7 +454,114 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         contentValues.put(COL_AUTHENTICATION, authentication);
         contentValues.put(COL_AUTHENTICATION_TIME, authenticationTime);
 
-        long result = db.insert(TEST_SWIPES, null, contentValues);
+        long result = db.insert(tableName, null, contentValues);
+        //if inserted incorrectly it will return -1
+        return result != -1;
+    }
+
+    public boolean addTestRecord(Swipe swipe, double authentication, double authenticationTime) {
+        return this.addTestSwipe(swipe, authentication, authenticationTime, TEST_SWIPES)  && this.addTestSwipeNormalized(swipe.getNormalizedValues(), authentication, authenticationTime, TEST_SWIPES_NORMALIZED);
+    }
+
+    private boolean addSwipeNormalized(double[] swipe, String tableName) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues contentValues = new ContentValues();
+
+        contentValues.put(COL_DURATION, swipe[0]);
+        contentValues.put(COL_AVG_SIZE, swipe[1]);
+        contentValues.put(COL_DOWN_SIZE, swipe[2]);
+        contentValues.put(COL_DOWN_PRESSURE, swipe[3]);
+        contentValues.put(COL_START_X, swipe[4]);
+        contentValues.put(COL_START_Y, swipe[5]);
+        contentValues.put(COL_END_X, swipe[6]);
+        contentValues.put(COL_END_Y, swipe[7]);
+        contentValues.put(COL_MIN_X_VELOCITY, swipe[8]);
+        contentValues.put(COL_MAX_X_VELOCITY, swipe[9]);
+        contentValues.put(COL_AVG_X_VELOCITY, swipe[10]);
+        contentValues.put(COL_STD_X_VELOCITY, swipe[11]);
+        contentValues.put(COL_VAR_X_VELOCITY, swipe[12]);
+        contentValues.put(COL_MIN_Y_VELOCITY, swipe[13]);
+        contentValues.put(COL_MAX_Y_VELOCITY, swipe[14]);
+        contentValues.put(COL_AVG_Y_VELOCITY, swipe[15]);
+        contentValues.put(COL_STD_Y_VELOCITY, swipe[16]);
+        contentValues.put(COL_VAR_Y_VELOCITY, swipe[17]);
+        contentValues.put(COL_MIN_X_ACCELERATION, swipe[18]);
+        contentValues.put(COL_MAX_X_ACCELERATION, swipe[19]);
+        contentValues.put(COL_AVG_X_ACCELERATION, swipe[20]);
+        contentValues.put(COL_STD_X_ACCELERATION, swipe[21]);
+        contentValues.put(COL_VAR_X_ACCELERATION, swipe[22]);
+        contentValues.put(COL_MIN_Y_ACCELERATION, swipe[23]);
+        contentValues.put(COL_MAX_Y_ACCELERATION, swipe[24]);
+        contentValues.put(COL_AVG_Y_ACCELERATION, swipe[25]);
+        contentValues.put(COL_STD_Y_ACCELERATION, swipe[26]);
+        contentValues.put(COL_VAR_Y_ACCELERATION, swipe[27]);
+        contentValues.put(COL_MIN_PRESSURE, swipe[28]);
+        contentValues.put(COL_MAX_PRESSURE, swipe[29]);
+        contentValues.put(COL_AVG_PRESSURE, swipe[30]);
+        contentValues.put(COL_STD_PRESSURE, swipe[31]);
+        contentValues.put(COL_VAR_PRESSURE, swipe[32]);
+
+        long result = db.insert(tableName, null, contentValues);
+        //if inserted incorrectly it will return -1
+        return result != -1;
+    }
+
+    public boolean addTrainRecordNormalized(double[] swipe) {
+        return this.addSwipeNormalized(swipe, REAL_SWIPES_NORMALIZED);
+    }
+
+    public boolean addGANRecordNormalized(double[] swipe) {
+        return this.addSwipeNormalized(swipe, GAN_SWIPES_NORMALIZED);
+    }
+
+    public boolean[] addGANRecordsNormalized(ArrayList<double[]> swipes) {
+        boolean [] result = new boolean[swipes.size()];
+        for (int i=0; i < swipes.size(); i++) {
+            result[i] = this.addGANRecordNormalized(swipes.get(i));
+        }
+        return result;
+    }
+    public boolean addTestSwipeNormalized(double[] swipe, double authentication, double authenticationTime, String tableName) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues contentValues = new ContentValues();
+
+        contentValues.put(COL_DURATION, swipe[0]);
+        contentValues.put(COL_AVG_SIZE, swipe[1]);
+        contentValues.put(COL_DOWN_SIZE, swipe[2]);
+        contentValues.put(COL_DOWN_PRESSURE, swipe[3]);
+        contentValues.put(COL_START_X, swipe[4]);
+        contentValues.put(COL_START_Y, swipe[5]);
+        contentValues.put(COL_END_X, swipe[6]);
+        contentValues.put(COL_END_Y, swipe[7]);
+        contentValues.put(COL_MIN_X_VELOCITY, swipe[8]);
+        contentValues.put(COL_MAX_X_VELOCITY, swipe[9]);
+        contentValues.put(COL_AVG_X_VELOCITY, swipe[10]);
+        contentValues.put(COL_STD_X_VELOCITY, swipe[11]);
+        contentValues.put(COL_VAR_X_VELOCITY, swipe[12]);
+        contentValues.put(COL_MIN_Y_VELOCITY, swipe[13]);
+        contentValues.put(COL_MAX_Y_VELOCITY, swipe[14]);
+        contentValues.put(COL_AVG_Y_VELOCITY, swipe[15]);
+        contentValues.put(COL_STD_Y_VELOCITY, swipe[16]);
+        contentValues.put(COL_VAR_Y_VELOCITY, swipe[17]);
+        contentValues.put(COL_MIN_X_ACCELERATION, swipe[18]);
+        contentValues.put(COL_MAX_X_ACCELERATION, swipe[19]);
+        contentValues.put(COL_AVG_X_ACCELERATION, swipe[20]);
+        contentValues.put(COL_STD_X_ACCELERATION, swipe[21]);
+        contentValues.put(COL_VAR_X_ACCELERATION, swipe[22]);
+        contentValues.put(COL_MIN_Y_ACCELERATION, swipe[23]);
+        contentValues.put(COL_MAX_Y_ACCELERATION, swipe[24]);
+        contentValues.put(COL_AVG_Y_ACCELERATION, swipe[25]);
+        contentValues.put(COL_STD_Y_ACCELERATION, swipe[26]);
+        contentValues.put(COL_VAR_Y_ACCELERATION, swipe[27]);
+        contentValues.put(COL_MIN_PRESSURE, swipe[28]);
+        contentValues.put(COL_MAX_PRESSURE, swipe[29]);
+        contentValues.put(COL_AVG_PRESSURE, swipe[30]);
+        contentValues.put(COL_STD_PRESSURE, swipe[31]);
+        contentValues.put(COL_VAR_PRESSURE, swipe[32]);
+        contentValues.put(COL_AUTHENTICATION, authentication);
+        contentValues.put(COL_AUTHENTICATION_TIME, authenticationTime);
+
+        long result = db.insert(tableName, null, contentValues);
         //if inserted incorrectly it will return -1
         return result != -1;
     }
@@ -424,12 +654,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public void deleteTestingData() {
         SQLiteDatabase db = this.getWritableDatabase();
         db.execSQL("DELETE FROM " + TEST_SWIPES);
+        db.execSQL("DELETE FROM " + TEST_SWIPES_NORMALIZED);
         db.execSQL("DELETE FROM " + TEST_RESULTS);
     }
 
     public void deleteGANData() {
         SQLiteDatabase db = this.getWritableDatabase();
         db.execSQL("DELETE FROM " + GAN_SWIPES);
+        db.execSQL("DELETE FROM " + GAN_SWIPES_NORMALIZED);
         db.execSQL("DELETE FROM " + GAN_RESULTS);
     }
 
@@ -512,20 +744,33 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
     }
 
+    public void saveAllTablesAsCSV(String filePath){
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd_HH-mm");
+        String currentDateTime = dateFormat.format(new Date());
+
+        this.saveAsCSV(REAL_SWIPES, filePath + currentDateTime + "_" + "realSwipes.csv");
+        this.saveAsCSV(GAN_SWIPES, filePath + currentDateTime + "_" + "ganSwipes.csv");
+        this.saveAsCSV(TEST_SWIPES, filePath + currentDateTime + "_" + "testSwipes.csv");
+        this.saveAsCSV(REAL_SWIPES_NORMALIZED, filePath + currentDateTime + "_" + "realSwipesNormalized.csv");
+        this.saveAsCSV(GAN_SWIPES_NORMALIZED, filePath + currentDateTime + "_" + "ganSwipesNormalized.csv");
+        this.saveAsCSV(TEST_SWIPES_NORMALIZED, filePath + currentDateTime + "_" + "testSwipesNormalized.csv");
+        this.saveAsCSV(REAL_RESULTS, filePath + currentDateTime + "_" + "realResults.csv");
+        this.saveAsCSV(GAN_RESULTS, filePath + currentDateTime + "_" + "ganResults.csv");
+        this.saveAsCSV(TEST_RESULTS, filePath + currentDateTime + "_" + "testResults.csv");
+
+    }
+
     public void resetDB() {
         SQLiteDatabase db = this.getWritableDatabase();
-        String realSwipesQuery = "DELETE FROM " + REAL_SWIPES;
-        String ganSwipesQuery = "DELETE FROM " + GAN_SWIPES;
-        String testSwipesQuery = "DELETE FROM " + TEST_SWIPES;
-        String realResultsQuery = "DELETE FROM " + REAL_RESULTS;
-        String ganResultsQuery = "DELETE FROM " + GAN_RESULTS;
-        String testResultsQuery = "DELETE FROM " + TEST_RESULTS;
-        db.execSQL(realSwipesQuery);
-        db.execSQL(ganSwipesQuery);
-        db.execSQL(testSwipesQuery);
-        db.execSQL(realResultsQuery);
-        db.execSQL(ganResultsQuery);
-        db.execSQL(testResultsQuery);
+        db.execSQL("DELETE FROM " + REAL_SWIPES);
+        db.execSQL("DELETE FROM " + GAN_SWIPES);
+        db.execSQL("DELETE FROM " + TEST_SWIPES);
+        db.execSQL("DELETE FROM " + REAL_SWIPES_NORMALIZED);
+        db.execSQL("DELETE FROM " + GAN_SWIPES_NORMALIZED);
+        db.execSQL("DELETE FROM " + TEST_SWIPES_NORMALIZED);
+        db.execSQL("DELETE FROM " + REAL_RESULTS);
+        db.execSQL("DELETE FROM " + GAN_RESULTS);
+        db.execSQL("DELETE FROM " + TEST_RESULTS);
     }
 
 }
