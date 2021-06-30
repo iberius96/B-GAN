@@ -7,13 +7,17 @@ android {
     buildToolsVersion "30.0.3"
 
     defaultConfig {
-        applicationId "com.scratchapp.swipegan"
-        minSdkVersion 27
+        applicationId "it.unibz.swipegan"
+        minSdkVersion 28
         targetSdkVersion 30
         versionCode 1
         versionName "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    tasks.withType(JavaCompile) {
+        options.compilerArgs << "-Xlint:all"
     }
 
     buildTypes {
@@ -22,16 +26,11 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
+
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
-
-    /*packagingOptions {
-        exclude 'META-INF/native-image/ * /jnijavacpp/reflect-config.json'
-        exclude 'META-INF/native-image/ * /jnijavacpp/jni-config.json'
-
-    }*/
 
     packagingOptions {
         exclude 'META-INF/DEPENDENCIES'

@@ -1,4 +1,4 @@
-package com.scratchapp.swipegan;
+package it.unibz.swipegan;
 
 import org.junit.Test;
 
