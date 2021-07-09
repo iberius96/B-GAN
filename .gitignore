@@ -13,3 +13,5 @@
 .externalNativeBuild
 .cxx
 local.properties
+analysis/data
+*checkpoint.ipynb
