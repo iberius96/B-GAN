@@ -817,7 +817,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return result != -1;
     }
 
-    public synchronized void saveAsCSV(String tableName, String filePath, ContentResolver resolver) {
+    public synchronized void saveAsCSV(String tableName, String filePath, ContentResolver resolver, String downloadPath) {
 
         FileOutputStream fos;
         try
@@ -854,7 +854,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 Objects.requireNonNull(fos);
             } else {
 
-                File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getPath() + File.separator + filePath);
+                File file = new File(downloadPath + File.separator + filePath);
 
                 try
                 {
@@ -890,19 +890,19 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
     }
 
-    public void saveAllTablesAsCSV(ContentResolver resolver){
+    public void saveAllTablesAsCSV(ContentResolver resolver, String downloadPath){
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd_HH-mm");
         String currentDateTime = dateFormat.format(new Date());
 
-        this.saveAsCSV(REAL_SWIPES, currentDateTime + "_" + "realSwipes.csv", resolver);
-        this.saveAsCSV(GAN_SWIPES, currentDateTime + "_" + "ganSwipes.csv", resolver);
-        this.saveAsCSV(TEST_SWIPES, currentDateTime + "_" + "testSwipes.csv", resolver);
-        this.saveAsCSV(REAL_SWIPES_NORMALIZED, currentDateTime + "_" + "realSwipesNormalized.csv", resolver);
-        this.saveAsCSV(GAN_SWIPES_NORMALIZED, currentDateTime + "_" + "ganSwipesNormalized.csv", resolver);
-        this.saveAsCSV(TEST_SWIPES_NORMALIZED, currentDateTime + "_" + "testSwipesNormalized.csv", resolver);
-        this.saveAsCSV(REAL_RESULTS, currentDateTime + "_" + "realResults.csv", resolver);
-        this.saveAsCSV(GAN_RESULTS, currentDateTime + "_" + "ganResults.csv", resolver);
-        this.saveAsCSV(TEST_RESULTS, currentDateTime + "_" + "testResults.csv", resolver);
+        this.saveAsCSV(REAL_SWIPES, currentDateTime + "_" + "realSwipes.csv", resolver, downloadPath);
+        this.saveAsCSV(GAN_SWIPES, currentDateTime + "_" + "ganSwipes.csv", resolver, downloadPath);
+        this.saveAsCSV(TEST_SWIPES, currentDateTime + "_" + "testSwipes.csv", resolver, downloadPath);
+        this.saveAsCSV(REAL_SWIPES_NORMALIZED, currentDateTime + "_" + "realSwipesNormalized.csv", resolver, downloadPath);
+        this.saveAsCSV(GAN_SWIPES_NORMALIZED, currentDateTime + "_" + "ganSwipesNormalized.csv", resolver, downloadPath);
+        this.saveAsCSV(TEST_SWIPES_NORMALIZED, currentDateTime + "_" + "testSwipesNormalized.csv", resolver, downloadPath);
+        this.saveAsCSV(REAL_RESULTS, currentDateTime + "_" + "realResults.csv", resolver, downloadPath);
+        this.saveAsCSV(GAN_RESULTS, currentDateTime + "_" + "ganResults.csv", resolver, downloadPath);
+        this.saveAsCSV(TEST_RESULTS, currentDateTime + "_" + "testResults.csv", resolver, downloadPath);
 
     }
 

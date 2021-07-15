@@ -28,9 +28,9 @@ import java.util.Arrays;
 import java.util.List;
 
 public class GAN {
-//    private static final int BATCH_SIZE = 5;
+
     private static final int LATENT_DIM = 100;
-    private static final int NUM_EPOCHS = 800;
+    public static final int NUM_EPOCHS = 10_000;
 
     private MultiLayerNetwork generator;
     private MultiLayerNetwork discriminator;
@@ -348,7 +348,7 @@ public class GAN {
                 Handler uiHandler = new Handler(Looper.getMainLooper());
                 uiHandler.post(new Runnable() {
                     public void run() {
-                        progressTextView.setText("GAN epoch: " + epoch + " (out of 10_000)");
+                        progressTextView.setText("GAN epoch: " + epoch + " (out of " + NUM_EPOCHS + ")");
                     }
                 });
             }

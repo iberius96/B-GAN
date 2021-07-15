@@ -10,6 +10,7 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.StrictMode;
@@ -41,6 +42,8 @@ import weka.classifiers.meta.OneClassClassifier;
 
 import android.content.pm.PackageManager;
 import androidx.core.app.ActivityCompat;
+
+import static it.unibz.swipegan.GAN.NUM_EPOCHS;
 
 import static android.Manifest.permission.READ_EXTERNAL_STORAGE;
 import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
@@ -459,9 +462,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     public void trainWithGAN(View view) {
 
-        this.progressTextView.setText("GAN epoch: 0 (out of 10_000)");
+        this.progressTextView.setText("GAN epoch: 0 (out of " + NUM_EPOCHS + ")");
         this.train(true);
-
     }
 
     public void train(boolean isGanMode) {
@@ -493,6 +495,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             attackSwitch.setChecked(false);
         };
 
+        Runnable uiRFTrainingRunnable = () -> {
+            progressTextView.setText("Training classifier");
+        };
+
         Runnable runnable = () -> {
             dbHelper.deleteRealResults();
             dbHelper.deleteGANData();
@@ -507,6 +513,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     swipes.addAll(fakeSwipes);
                     long ganEndTime = System.nanoTime();
                     double ganTime = (double) (ganEndTime - ganStartTime) / 1_000_000_000;
+
+                    uiHandler.post(uiRFTrainingRunnable);
 
                     trainClassifierWith(swipes, ganTime);
                 } else {
@@ -533,7 +541,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         }
 
         String finalSummary = "";
-        finalSummary += String.format("%1$-9s %2$-9s %3$-9s %4$-9s %5$-9s", "Input", "TAR", "FRR", "Swipe", "Train");
+        finalSummary += String.format("%1$-9s %2$-9s %3$-9s %4$-9s %5$-9s", "Input", "TAR", "FRR", "GAN", "Train");
         finalSummary += "\n";
 
         System.out.println("ARFF representation of Dataset");
@@ -566,7 +574,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             finalSummary += String.format("%1$-12s", String.format("%02.0f", instances));
             finalSummary += String.format("%1$-10s", String.format("%.1f", TAR));
             finalSummary += String.format("%1$-11s", String.format("%.1f", FRR));
-            finalSummary += String.format("%1$-11s", String.format("%.3f", averageSwipeDuration));
+            finalSummary += String.format("%1$-11s", String.format("%.3f", ganTime));
             finalSummary += String.format("%1$-10s", String.format("%.3f", rfTrainingTime));
             finalSummary += "\n";
 
@@ -587,7 +595,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     public void trainClassifierWith(ArrayList<Swipe> trainSwipes) {
 
-        int classifierCount = (int) (trainSwipes.size() / 5);
+        int classifierCount = (trainSwipes.size() / 5);
 
         ArrayList<Instances> datasets = new ArrayList<>();
         for(int i=0; i < classifierCount; i++) {
@@ -672,7 +680,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     public synchronized void saveData(View view) {
 
         try {
-            dbHelper.saveAllTablesAsCSV(getContentResolver());
+            dbHelper.saveAllTablesAsCSV(getContentResolver(), getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS).getPath());
             this.showAlertDialog("SUCCESS", "CSV files have been saved into the file manager");
 
         } catch (Exception e) {
