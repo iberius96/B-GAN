@@ -1,4 +1,4 @@
-package com.scratchapp.swipegan;
+package it.unibz.swipegan;
 
 import android.content.res.Resources;
 
@@ -63,8 +63,9 @@ public class Swipe {
     private double avgYAcceleration;
     private double varYAcceleration;
     private double stdYAcceleration;
+    private String userId;
 
-    public static Swipe fromNormalizedValues(double[] values) {
+    public static Swipe fromNormalizedValues(double[] values, String userId) {
 
         Swipe swipe = new Swipe();
         swipe.setDuration(values[0] * (MAX_DURATION - MIN_DURATION) + MIN_DURATION);
@@ -106,6 +107,8 @@ public class Swipe {
         swipe.setStdPressure(values[31]);
         swipe.setVarPressure(values[32]);
 
+        swipe.setUserId(userId);
+
         return swipe;
     }
 
@@ -113,7 +116,7 @@ public class Swipe {
 
     }
 
-    public Swipe(double[] swipeArray) {
+    public Swipe(double[] swipeArray, String userId) {
         this.duration = swipeArray[0];
         this.avgSize = swipeArray[1];
         this.downSize = swipeArray[2];
@@ -147,6 +150,7 @@ public class Swipe {
         this.avgPressure = swipeArray[30];
         this.stdPressure = swipeArray[31];
         this.varPressure = swipeArray[32];
+        this.userId = userId;
     }
 
     public double getDuration() {
@@ -413,6 +417,14 @@ public class Swipe {
         this.varPressure = varPressure;
     }
 
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
+    }
+
 
     public double[] getNormalizedValues() {
 
@@ -524,6 +536,7 @@ public class Swipe {
                 "\n avgPressure=" + avgPressure +
                 "\n stdPressure=" + stdPressure +
                 "\n varPressure=" + varPressure +
+                "\n userId=" + userId +
                 '}';
     }
 
@@ -564,7 +577,7 @@ public class Swipe {
         instance.setValue(31, this.getStdPressure());
         instance.setValue(32, this.getVarPressure());
         if(isTrainInstance){
-            instance.setClassValue("User");
+            instance.setClassValue(this.userId);
         }
         return instance;
     }
