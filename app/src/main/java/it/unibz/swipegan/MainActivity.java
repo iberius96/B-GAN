@@ -510,7 +510,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
                     trainClassifierWith(swipes, ganTime);
                 } else {
-                    trainClassifierWith(swipes, 0.0);
+                    trainClassifierWith(swipes);
                 }
 
                 uiHandler.post(uiRunnable);
@@ -523,8 +523,69 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         new Thread(runnable).start();
 
     }
-
     public void trainClassifierWith(ArrayList<Swipe> trainSwipes, double ganTime) {
+        Instances dataSet = this.getWekaDataset();
+
+        for(int i=0 ; i < trainSwipes.size(); i++)
+        {
+            Instance newInstance = trainSwipes.get(i).getAsWekaInstance(dataSet,true);
+            dataSet.add(newInstance);
+        }
+
+        String finalSummary = "";
+        finalSummary += String.format("%1$-9s %2$-9s %3$-9s %4$-9s %5$-9s", "Input", "TAR", "FRR", "Swipe", "Train");
+        finalSummary += "\n";
+
+        System.out.println("ARFF representation of Dataset");
+        System.out.println(dataSet.toString());
+
+        OneClassClassifier oneClassClassifier = new OneClassClassifier();
+        try {
+//            Options from Weka GUI when testing One-class RandomForest classifier:
+//            String[] options = {"-num", "weka.classifiers.meta.generators.GaussianGenerator -S 1 -M 0.0 -SD 1.0", "-nom", "weka.classifiers.meta.generators.NominalGenerator -S 1", "-trr", "0.1", "-tcl", "1", "-cvr", "10", "-cvf", "10.0", "-P", "0.5", "-S", "1", "-W", "weka.classifiers.meta.Bagging", "--", "-P", "100", "-S", "1", "-num-slots", "1", "-I", "10", "-W", "weka.classifiers.trees.RandomForest", "--", "-P", "100", "-I", "100", "-num-slots", "1", "-K", "0", "-M", "1.0", "-V", "0.001", "-S", "1", "", ""};
+            String[] options = {"-num", "weka.classifiers.meta.generators.GaussianGenerator -S 1 -M 0.0 -SD 1.0", "-nom", "weka.classifiers.meta.generators.NominalGenerator -S 1", "-trr", "0.001", "-tcl", "1", "-cvr", "10", "-cvf", "10.0", "-P", "0.5", "-S", "1", "-W", "weka.classifiers.trees.RandomForest", "--", "-I", "100", "-num-slots", "1", "-K", "0", "-S", "1", "", "", "", "", "", "", "", ""};
+            oneClassClassifier.setOptions(options);
+            oneClassClassifier.setTargetClassLabel("User");
+
+            long rfStartTime = System.nanoTime();
+            oneClassClassifier.buildClassifier(dataSet);
+            long rfEndTime = System.nanoTime();
+            double rfTrainingTime = (double) (rfEndTime - rfStartTime) / 1_000_000_000;
+
+            Evaluation eTest = new Evaluation(dataSet);
+            eTest.crossValidateModel(oneClassClassifier, dataSet, 5, new Random(1));
+
+            this.oneClassClassifiers.add(oneClassClassifier);
+
+            double instances = eTest.numInstances();
+            double TAR = eTest.pctCorrect();
+            double FRR = eTest.pctUnclassified();
+
+            double averageSwipeDuration = trainSwipes.subList(0, dataSet.size()).stream().mapToDouble(Swipe::getDuration).average().getAsDouble() / 1_000;
+
+            finalSummary += String.format("%1$-12s", String.format("%02.0f", instances));
+            finalSummary += String.format("%1$-10s", String.format("%.1f", TAR));
+            finalSummary += String.format("%1$-11s", String.format("%.1f", FRR));
+            finalSummary += String.format("%1$-11s", String.format("%.3f", averageSwipeDuration));
+            finalSummary += String.format("%1$-10s", String.format("%.3f", rfTrainingTime));
+            finalSummary += "\n";
+
+            this.dbHelper.saveGANResults(instances, TAR, FRR, averageSwipeDuration, rfTrainingTime, ganTime, trainSwipes.size());
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        System.out.println(finalSummary);
+
+        final String strSummary = finalSummary;
+        MainActivity context = this;
+
+        runOnUiThread(() -> context.showAlertDialog("TRAINING RESULTS", strSummary));
+
+    }
+
+    public void trainClassifierWith(ArrayList<Swipe> trainSwipes) {
 
         int classifierCount = (int) (trainSwipes.size() / 5);
 
@@ -593,69 +654,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 finalSummary += String.format("%1$-10s", String.format("%.3f", rfTrainingTime));
                 finalSummary += "\n";
 
-//                summaryInstances[k] = instances;
-//                summaryTARs[k] = TAR;
-//                summaryFRRs[k] = FRR;
-//                summarySwipeTimes[k] = averageSwipeDuration;
-//                summaryTrainingTimes[k] = rfTrainingTime;
-
-//                String strSummary = "Total number of Instances provided: " + instances + "\n";
-//                strSummary += "True acceptance rate: " + String.format("%.1f", TAR) + "%\n";
-//                strSummary += "False reject rate: " + String.format("%.1f", FRR) + "%\n";
-//                strSummary += "\n";
-//                strSummary += "Average sample acquisition time: " + String.format("%.3f", averageSwipeDuration) + "s\n";
-//                strSummary += "\n";
-//                if (ganTime != 0.0) {
-//                    strSummary += "Generating " + NUMBER_GAN_SAMPLES + " GAN samples in: " + String.format("%.3f", ganTime) + "s\n";
-//                    strSummary += "\n";
-//                }
-//                strSummary += "Training time of classifier: " + String.format("%.3f", rfTrainingTime) + "s\n";
-//
-//                System.out.println("Evaluation of classifier:");
-//                System.out.println(strSummary);
-
-                if (ganTime != 0.0) {
-                    this.dbHelper.saveGANResults(instances, TAR, FRR, averageSwipeDuration, rfTrainingTime, ganTime, (k + 1) * 5);
-                } else {
-                    this.dbHelper.saveRealResults(instances, TAR, FRR, averageSwipeDuration, rfTrainingTime, (k + 1) * 5);
-                }
-
-
-
-//                final String summary = strSummary;
-//                MainActivity context = this;
-//
-//                runOnUiThread(() -> context.showAlertDialog("TRAINING RESULTS", summary));
+                this.dbHelper.saveRealResults(instances, TAR, FRR, averageSwipeDuration, rfTrainingTime, (k + 1) * 5);
 
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
-
-//        finalSummary += String.format("%1$-16s", "Instances");
-//        for (int i=0; i < batch_number; i++) {
-//            finalSummary += String.format("%1$-12s", String.format("%.3f", summaryInstances[i]));
-//        }
-//        finalSummary += "\n";
-//        finalSummary += String.format("%1$-16s", "TAR");
-//        for (int i=0; i < batch_number; i++) {
-//            finalSummary += String.format("%1$-12s", String.format("%.3f", summaryTARs[i]));
-//        }
-//        finalSummary += "\n";
-//        finalSummary += String.format("%1$-16s", "FRR");
-//        for (int i=0; i < batch_number; i++) {
-//            finalSummary += String.format("%1$-12s", String.format("%.3f", summaryFRRs[i]));
-//        }
-//        finalSummary += "\n";
-//        finalSummary += String.format("%1$-16s", "Swipe time");
-//        for (int i=0; i < batch_number; i++) {
-//            finalSummary += String.format("%1$-12s", String.format("%.3f", summarySwipeTimes[i]));
-//        }
-//        finalSummary += "\n";
-//        finalSummary += String.format("%1$-16s", "Train time");
-//        for (int i=0; i < batch_number; i++) {
-//            finalSummary += String.format("%1$-12s", String.format("%.3f", summaryInstances[i]));
-//        }
 
         System.out.println(finalSummary);
 
@@ -663,69 +667,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         MainActivity context = this;
 
         runOnUiThread(() -> context.showAlertDialog("TRAINING RESULTS", strSummary));
-
-        // OLD VERSION
-        // Instances dataSet = this.getWekaDataset();
-        //
-        //        for(int i = 0 ; i < trainSwipes.size(); i++)
-        //        {
-        //            Instance newInstance = trainSwipes.get(i).getAsWekaInstance(dataSet,true);
-        //            dataSet.add(newInstance);
-        //        }
-
-//        System.out.println("ARFF representation of Dataset");
-//        System.out.println(dataSet.toString());
-//
-//        this.oneClassClassifier = new OneClassClassifier();
-//        try {
-////            Options from Weka GUI when testing One-class RandomForest classifier:
-////            String[] options = {"-num", "weka.classifiers.meta.generators.GaussianGenerator -S 1 -M 0.0 -SD 1.0", "-nom", "weka.classifiers.meta.generators.NominalGenerator -S 1", "-trr", "0.1", "-tcl", "1", "-cvr", "10", "-cvf", "10.0", "-P", "0.5", "-S", "1", "-W", "weka.classifiers.meta.Bagging", "--", "-P", "100", "-S", "1", "-num-slots", "1", "-I", "10", "-W", "weka.classifiers.trees.RandomForest", "--", "-P", "100", "-I", "100", "-num-slots", "1", "-K", "0", "-M", "1.0", "-V", "0.001", "-S", "1", "", ""};
-//            String[] options = {"-num", "weka.classifiers.meta.generators.GaussianGenerator -S 1 -M 0.0 -SD 1.0", "-nom", "weka.classifiers.meta.generators.NominalGenerator -S 1", "-trr", "0.001", "-tcl", "1", "-cvr", "10", "-cvf", "10.0", "-P", "0.5", "-S", "1", "-W", "weka.classifiers.trees.RandomForest", "--", "-I", "100", "-num-slots", "1", "-K", "0", "-S", "1", "", "", "", "", "", "", "", ""};
-//            this.oneClassClassifier.setOptions(options);
-//            this.oneClassClassifier.setTargetClassLabel("User");
-//
-//            long rfStartTime = System.nanoTime();
-//            this.oneClassClassifier.buildClassifier(dataSet);
-//            long rfEndTime = System.nanoTime();
-//            double rfTrainingTime = (double) (rfEndTime - rfStartTime) / 1_000_000_000;
-//
-//            Evaluation eTest = new Evaluation(dataSet);
-//            eTest.crossValidateModel(this.oneClassClassifier, dataSet, 5, new Random(1));
-//
-//            double instances = eTest.numInstances();
-//            double TAR = eTest.pctCorrect();
-//            double FRR = eTest.pctUnclassified();
-//            double averageSwipeDuration = trainSwipes.stream().mapToDouble(Swipe::getDuration).average().getAsDouble() / 1_000;
-//
-//            String strSummary = "Total number of Instances provided: " + instances + "\n";
-//            strSummary += "True acceptance rate: " + String.format("%.1f", TAR) + "%\n";
-//            strSummary += "False reject rate: " + String.format("%.1f", FRR) + "%\n";
-//            strSummary += "\n";
-//            strSummary += "Average sample acquisition time: " + String.format("%.3f", averageSwipeDuration) + "s\n";
-//            strSummary += "\n";
-//            if (ganTime != 0.0) {
-//                strSummary += "Generating " + NUMBER_GAN_SAMPLES + " GAN samples in: " + String.format("%.3f", ganTime) + "s\n";
-//                strSummary += "\n";
-//            }
-//            strSummary += "Training time of classifier: " + String.format("%.3f", rfTrainingTime) + "s\n";
-//
-//            System.out.println("Evaluation of classifier:");
-//            System.out.println(strSummary);
-//
-//            if (ganTime != 0.0) {
-//                this.dbHelper.saveGANResults(instances, TAR, FRR, averageSwipeDuration, rfTrainingTime, ganTime);
-//            } else {
-//                this.dbHelper.saveRealResults(instances, TAR, FRR, averageSwipeDuration, rfTrainingTime);
-//            }
-//
-//            final String summary = strSummary;
-//            MainActivity context = this;
-//
-//            runOnUiThread(() -> context.showAlertDialog("TRAINING RESULTS", summary));
-//
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
     }
 
     public synchronized void saveData(View view) {
