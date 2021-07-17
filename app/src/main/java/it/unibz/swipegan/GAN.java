@@ -67,29 +67,8 @@ public class GAN {
 
     private void makeGenerator() {
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
-//                .seed(42)
-//                .updater(Sgd.builder().build())
                 .updater(Adam.builder().epsilon(0.0000001).build())
-                .list(getGeneratorLayers())
-//                .list()
-//                .layer(new DenseLayer.Builder()
-//                		.nIn(100)
-//                		.nOut(128)
-//                		.weightInit(WeightInit.RELU_UNIFORM)
-//                		.activation(Activation.RELU)
-//                		.build())
-//                .layer(new DenseLayer.Builder()
-//                		.nIn(128)
-//                		.nOut(64)
-//                		.weightInit(WeightInit.XAVIER_UNIFORM)
-//                		.activation(Activation.RELU)
-//                		.build())
-//                .layer(new DenseLayer.Builder()
-//                		.nIn(64)
-//                		.nOut(33)
-//                		.weightInit(WeightInit.XAVIER_UNIFORM)
-//                		.activation(Activation.SIGMOID)
-//                		.build())
+                .list(this.getGeneratorLayers())
                 .build();
 
         MultiLayerNetwork network = new MultiLayerNetwork(conf);
@@ -112,12 +91,6 @@ public class GAN {
                         .weightInit(WeightInit.XAVIER_UNIFORM)
                         .activation(Activation.RELU)
                         .build(),
-//                new OutputLayer.Builder(LossFunctions.LossFunction.XENT)
-//                		.nIn(64)
-//                		.nOut(1)
-//                		.weightInit(WeightInit.XAVIER_UNIFORM)
-//                		.activation(Activation.SIGMOID)
-//                		.build()
                 new DenseLayer.Builder()
                         .nIn(64)
                         .nOut(1)
@@ -133,38 +106,8 @@ public class GAN {
 
     private void makeDiscriminator() {
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
-//                .seed(42)
                 .updater(Adam.builder().epsilon(0.0000001).build())
-                .list(getDiscriminatorLayers())
-//                .list()
-//                .layer(new DenseLayer.Builder()
-//                		.nIn(33)
-//                		.nOut(128)
-//                		.weightInit(WeightInit.RELU_UNIFORM)
-//                		.activation(Activation.RELU)
-//                		.build())
-//                .layer(new DenseLayer.Builder()
-//                		.nIn(128)
-//                		.nOut(64)
-//                		.weightInit(WeightInit.XAVIER_UNIFORM)
-//                		.activation(Activation.RELU)
-//                		.build())
-////                .layer(new OutputLayer.Builder(LossFunctions.LossFunction.XENT)
-////                		.nIn(64)
-////                		.nOut(1)
-////                		.weightInit(WeightInit.XAVIER_UNIFORM)
-////                		.activation(Activation.SIGMOID)
-////                		.build())
-//                .layer(new DenseLayer.Builder()
-//		        		.nIn(64)
-//		        		.nOut(1)
-//		        		.weightInit(WeightInit.XAVIER_UNIFORM)
-//		        		.activation(Activation.SIGMOID)
-//		        		.build())
-//                .layer(new LossLayer.Builder(LossFunctions.LossFunction.XENT)
-//                		.weightInit(WeightInit.XAVIER)
-//                		.activation(Activation.IDENTITY)
-//                		.build())
+                .list(this.getDiscriminatorLayers())
                 .build();
 
         MultiLayerNetwork network = new MultiLayerNetwork(conf);
@@ -177,17 +120,12 @@ public class GAN {
         Layer[] genLayers = this.getGeneratorLayers();
         Layer[] disLayers = Arrays.stream(this.getDiscriminatorLayers())
                 .map((layer) -> {
-//                    if (layer instanceof DenseLayer || layer instanceof OutputLayer) {
                     return new FrozenLayerWithBackprop(layer);
-//                    } else {
-//                        return layer;
-//                    }
                 }).toArray(Layer[]::new);
         Layer[] layers = ArrayUtils.addAll(genLayers, disLayers);
 
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
-//                .seed(42)
-                .updater(Adam.builder().learningRate(0.00001).epsilon(0.0000001).build())
+                .updater(Adam.builder().epsilon(0.0000001).build())
                 .list(layers)
                 .build();
 
@@ -339,7 +277,8 @@ public class GAN {
 //        realSwipesPairs.add(new Pair<double[], double[]>(new double[]{0.010550996483001167,0.9742857142857143,0.2975206611570249,0.5765933287766227,0.9320987654320985,0.0,0.0,0.48849863321015585,0.4774109880863969,0.9532164976625184,0.703344243340547,0.49736272891492167,0.9727067639945234,0.3778274405516141,0.10942362041112459,0.1710971757233686,0.015625602719459696,0.6031027472294845,0.2826370270569637,0.45127478689370737,0.34273030805120924,0.13743519925481604,0.8090646649439244,0.5408067741368274,0.9414552453926616,0.39029328965023646,0.174019071233564,0.9117647116176469,0.4000002396999216,0.48381252249941387,0.15009549369235156,0.04200142773703679,0.5000001593749612}, new double[]{1}));
 //        realSwipesPairs.add(new Pair<double[], double[]>(new double[]{0.05920281359906213,0.7885714285714286,0.34435261707988984,0.8418347593218556,0.7839506172839505,0.0,0.0,0.4485348581948892,0.22723798658001673,0.8749606768848913,0.559122195698984,0.2781671633924181,0.8669785732658141,0.08829907015248661,0.11400131041111074,0.01755437266380129,0.016781598231976485,0.3695529010273471,0.33838753105007907,0.13641087986385247,0.3223387764402784,0.12326792540971548,0.9363553760493838,0.160714863323226,0.9079622853197931,0.1469773970198404,0.03303016424085047,0.3823529738235296,0.3000002626499141,0.23523347290688346,0.5362744709007314,0.32536829125835554,0.5000001593749612}, new double[]{1}));
 
-        DoublesDataSetIterator trainData = new DoublesDataSetIterator(realSwipesPairs, realSwipesPairs.size());
+        int batchSize = realSwipesPairs.size();
+        DoublesDataSetIterator trainData = new DoublesDataSetIterator(realSwipesPairs, batchSize);
         trainData.reset();
 
         for (int i = 0; i <= NUM_EPOCHS; i++) {
@@ -355,7 +294,6 @@ public class GAN {
             while (trainData.hasNext()) {
                 // generate data
                 INDArray real = trainData.next().getFeatures();
-                int batchSize = (int) real.shape()[0];
 
                 INDArray fakeIn = Nd4j.rand(batchSize, LATENT_DIM);
                 INDArray fake = this.gan.activateSelectedLayers(0, this.generator.getLayers().length - 1, fakeIn);
@@ -375,7 +313,6 @@ public class GAN {
                 this.updateGan();
                 this.gan.fit(new DataSet(Nd4j.rand(batchSize, LATENT_DIM), Nd4j.ones(batchSize, 1)));
 
-
                 // after 5_000 epochs we start to extract 5 samples after each successive 500 epochs
 //                if ((i >= 5_000) && (i % 500 == 0)) {
 //                    // Copy the GANs generator to gen.
@@ -385,7 +322,6 @@ public class GAN {
 //                        fakeSwipes.add(new Swipe(gen.output(Nd4j.rand(1, LATENT_DIM)).toDoubleVector()));
 //                    }
 //                }
-
             }
             trainData.reset();
         }

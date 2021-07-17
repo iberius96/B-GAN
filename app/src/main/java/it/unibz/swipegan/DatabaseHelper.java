@@ -31,6 +31,15 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String REAL_SWIPES_NORMALIZED = "REAL_SWIPES_NORMALIZED";
     private static final String GAN_SWIPES = "GAN_SWIPES";
     private static final String GAN_SWIPES_NORMALIZED = "GAN_SWIPES_NORMALIZED";
+    private static final String TEST_SWIPES = "TEST_SWIPES";
+    private static final String TEST_SWIPES_NORMALIZED = "TEST_SWIPES_NORMALIZED";
+
+    private static final String REAL_RESULTS = "REAL_RESULTS";
+    private static final String GAN_RESULTS = "GAN_RESULTS";
+    private static final String TEST_RESULTS = "TEST_RESULTS";
+
+    private static final String COL_AUTHENTICATION = "AUTHENTICATION";
+    private static final String COL_AUTHENTICATION_TIME = "AUTHENTICATION_TIME";
 
     private static final String COL_ID = "id";
     private static final String COL_DURATION = "duration";
@@ -66,15 +75,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String COL_AVG_PRESSURE = "avg_pressure";
     private static final String COL_STD_PRESSURE = "std_pressure";
     private static final String COL_VAR_PRESSURE = "var_pressure";
-
-    private static final String TEST_SWIPES = "TEST_SWIPES";
-    private static final String TEST_SWIPES_NORMALIZED = "TEST_SWIPES_NORMALIZED";
-    private static final String COL_AUTHENTICATION = "AUTHENTICATION";
-    private static final String COL_AUTHENTICATION_TIME = "AUTHENTICATION_TIME";
-
-    private static final String REAL_RESULTS = "REAL_RESULTS";
-    private static final String GAN_RESULTS = "GAN_RESULTS";
-    private static final String TEST_RESULTS = "TEST_RESULTS";
 
     private static final String COL_INSTANCES = "INSTANCES";
     private static final String COL_TAR = "TAR";
@@ -536,22 +536,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return result != -1;
     }
 
-    public boolean addTrainRecordNormalized(Swipe swipe) {
-        return this.addSwipeNormalized(swipe, REAL_SWIPES_NORMALIZED);
-    }
-
-    public boolean addGANRecordNormalized(Swipe swipe) {
-        return this.addSwipeNormalized(swipe, GAN_SWIPES_NORMALIZED);
-    }
-
-    public boolean[] addGANRecordsNormalized(ArrayList<Swipe> swipes) {
-        boolean [] result = new boolean[swipes.size()];
-        for (int i=0; i < swipes.size(); i++) {
-            result[i] = this.addGANRecordNormalized(swipes.get(i));
-        }
-        return result;
-    }
-
     public boolean addTestSwipeNormalized(Swipe swipe, double authentication, double authenticationTime, String tableName, int classifierSamples) {
         SQLiteDatabase db = this.getWritableDatabase();
 
@@ -660,9 +644,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return swipes;
     }
 
-    public ArrayList<Swipe> getTestSwipesFromClassifier(int classifierIndex) {
+    // REFACTOR
+    public ArrayList<Swipe> getTestSwipes() {
         SQLiteDatabase db = this.getReadableDatabase();
-        String query = "SELECT * FROM " + TEST_SWIPES + " WHERE " + COL_CLASSIFIER_SAMPLES + " == " + (classifierIndex + 1) * 5;
+        String query = "SELECT * FROM " + TEST_SWIPES;
         ArrayList<Swipe> swipes = new ArrayList<>();
         Cursor cursor = db.rawQuery(query, null);
         cursor.moveToFirst();
@@ -728,9 +713,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return count;
     }
 
-    public ArrayList<double[]> getTestingData(int classifierSamples, String userId) {
+    // REFACTOR
+    public ArrayList<double[]> getTestingData(String userId) {
         SQLiteDatabase db = this.getReadableDatabase();
-        String query = "SELECT * FROM " + TEST_SWIPES + " WHERE " + COL_CLASSIFIER_SAMPLES + " == " + classifierSamples + " AND " + COL_USER_ID + " == \'" + userId + "\'";
+        String query = "SELECT * FROM " + TEST_SWIPES + " WHERE " + COL_USER_ID + " == '" + userId + "'";
         ArrayList<double[]> testingData = new ArrayList<>();
         Cursor cursor = db.rawQuery(query, null);
         cursor.moveToFirst();
