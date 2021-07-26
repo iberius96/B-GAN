@@ -504,7 +504,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             try {
                 if (isGanMode) {
                     long ganStartTime = System.nanoTime();
-                    ArrayList<Swipe> fakeSwipes = gan.getFakeSwipeSamples(swipes, NUMBER_GAN_SAMPLES, progressTextView);
+                    ArrayList<Swipe> fakeSwipes = gan.getFakeSwipeSamples(swipes, swipes.size(), progressTextView);
                     dbHelper.addGANRecords(fakeSwipes);
 
                     swipes.addAll(fakeSwipes);

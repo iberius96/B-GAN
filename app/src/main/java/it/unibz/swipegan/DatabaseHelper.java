@@ -18,6 +18,7 @@ import java.io.FileWriter;
 import java.io.OutputStreamWriter;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Objects;
 
@@ -806,6 +807,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public synchronized void saveAsCSV(String tableName, String filePath, ContentResolver resolver, String downloadPath) {
 
         FileOutputStream fos;
+   
         try
         {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
@@ -840,7 +842,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 Objects.requireNonNull(fos);
             } else {
 
-                File file = new File(downloadPath + File.separator + filePath);
+                File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + File.separator + filePath);
 
                 try
                 {
