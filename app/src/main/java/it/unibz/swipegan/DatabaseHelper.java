@@ -807,6 +807,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public synchronized void saveAsCSV(String tableName, String filePath, ContentResolver resolver, String downloadPath) {
 
         FileOutputStream fos;
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor curCSV = db.rawQuery("SELECT * FROM " + tableName,null);
+        if (curCSV.getCount() == 0) {
+            return;
+        }
    
         try
         {
@@ -819,8 +824,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
                 fos = (FileOutputStream) resolver.openOutputStream(Objects.requireNonNull(fileUri));
                 CSVWriter csvWrite = new CSVWriter(new OutputStreamWriter(fos));
-                SQLiteDatabase db = this.getReadableDatabase();
-                Cursor curCSV = db.rawQuery("SELECT * FROM " + tableName,null);
 
                 String[] colNames = curCSV.getColumnNames();
                 csvWrite.writeNext(colNames);
@@ -848,17 +851,19 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 {
                     file.createNewFile();
                     CSVWriter csvWrite = new CSVWriter(new FileWriter(file));
-                    SQLiteDatabase db = this.getReadableDatabase();
-                    Cursor curCSV = db.rawQuery("SELECT * FROM " + tableName,null);
-                    csvWrite.writeNext(curCSV.getColumnNames());
+                    String[] colNames = curCSV.getColumnNames();
+                    csvWrite.writeNext(colNames);
                     while(curCSV.moveToNext())
                     {
                         int colCounts = curCSV.getColumnCount();
                         String[] arrStr = new String[colCounts];
-                        for (int i = 0; i < colCounts - 1; i++) {
-                            arrStr[i] = Double.toString(curCSV.getDouble(i));
+                        for (int i = 0; i < colCounts; i++) {
+                            if (colNames[i].equals("USER_ID")) {
+                                arrStr[i] = curCSV.getString(i);
+                            } else {
+                                arrStr[i] = Double.toString(curCSV.getDouble(i));
+                            }
                         }
-                        arrStr[colCounts - 1] = curCSV.getString(colCounts - 1);
                         csvWrite.writeNext(arrStr);
                     }
                     csvWrite.close();

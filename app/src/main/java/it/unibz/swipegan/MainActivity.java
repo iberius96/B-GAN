@@ -4,6 +4,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -43,6 +44,8 @@ import weka.classifiers.meta.OneClassClassifier;
 import android.content.pm.PackageManager;
 import androidx.core.app.ActivityCompat;
 
+import com.google.android.material.snackbar.Snackbar;
+
 import static it.unibz.swipegan.GAN.NUM_EPOCHS;
 
 import static android.Manifest.permission.READ_EXTERNAL_STORAGE;
@@ -54,6 +57,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private VelocityTracker mVelocityTracker = null;
     private long startTime = 0;
     private boolean isTrainingMode = true;
+    private boolean isTrainingClassifier = false;
 
     private ArrayList<Float> xCoordinates = null;
     private ArrayList<Float> yCoordinates = null;
@@ -157,6 +161,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
+        if (this.isTrainingClassifier) {
+            return super.onTouchEvent(event);
+        }
+
         int index = event.getActionIndex();
         int action = event.getActionMasked();
         int pointerId = event.getPointerId(index);
@@ -211,7 +219,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
                         double authenticationValue;
                         if (this.attackSwitch.isChecked()) {
-                            authenticationValue = prediction == 1.0 ? 1.0 : 0.0;
+                            authenticationValue = prediction != 0.0 ? 1.0 : 0.0;
                         } else {
                             authenticationValue = prediction == 0.0 ? 1.0 : 0.0;
                         }
@@ -224,7 +232,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                         outputMessage += String.format("%1$-18s", String.format("%.4f", testingTime));
                         outputMessage += "\n";
 
-                        this.showAlertDialog("AUTHENTICATION", outputMessage);
+                        //this.showAlertDialog("AUTHENTICATION", outputMessage);
+                        if (prediction == 0.0) {
+                            this.showSnackBar("Authentication: ACCEPTED", "#238823");
+                        } else {
+                            this.showSnackBar("Authentication: REJECTED", "#D2222D");
+                        }
+
                     }
 
                 }
@@ -410,12 +424,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
             ArrayList<double[]> userTestingData = this.dbHelper.getTestingData("User");
             ArrayList<double[]> attackerTestingData = this.dbHelper.getTestingData("Attacker");
+            System.out.println(Arrays.toString(attackerTestingData.stream().mapToDouble(x -> x[0]).toArray()));
 
             double instances = userTestingData.size() + attackerTestingData.size();
-            double TAR = userTestingData.stream().mapToDouble(x -> x[0]).sum() / userTestingData.size() * 100;
-            double FRR = (userTestingData.size() - (userTestingData.stream().mapToDouble(x -> x[0]).sum())) / userTestingData.size() * 100;
-            double TRR = (attackerTestingData.size() - (userTestingData.stream().mapToDouble(x -> x[0]).sum())) / attackerTestingData.size() * 100;
-            double FAR = attackerTestingData.stream().mapToDouble(x -> x[0]).sum() / attackerTestingData.size() * 100;
+            double TAR = userTestingData.isEmpty() ? 0.0 : userTestingData.stream().mapToDouble(x -> x[0]).sum() / userTestingData.size() * 100;
+            double FRR = userTestingData.isEmpty() ? 0.0 : (userTestingData.size() - (userTestingData.stream().mapToDouble(x -> x[0]).sum())) / userTestingData.size() * 100;
+            double TRR = attackerTestingData.isEmpty() ? 0.0 : (attackerTestingData.stream().mapToDouble(x -> x[0]).sum()) / attackerTestingData.size() * 100;
+            double FAR = attackerTestingData.isEmpty() ? 0.0 : (attackerTestingData.size() - (attackerTestingData.stream().mapToDouble(x -> x[0]).sum())) / attackerTestingData.size() * 100;
             double averageSwipeDuration = testSwipes.stream().mapToDouble(Swipe::getDuration).average().getAsDouble() / 1_000.0;
 
             userTestingData.addAll(attackerTestingData);
@@ -450,6 +465,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     public void train(View view) {
+        this.isTrainingClassifier = true;
 
         this.progressTextView.setText("Training classifier");
         this.train(false);
@@ -457,6 +473,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     public void trainWithGAN(View view) {
+        this.isTrainingClassifier = true;
 
         this.progressTextView.setText("GAN epoch: 0 (out of " + NUM_EPOCHS + ")");
         this.train(true);
@@ -466,6 +483,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         if (this.dbHelper.getRecordsCount("REAL_SWIPES") < 5) {
             this.showAlertDialog("ATTENTION", "You need to enter at least 5 swipes as input before training.");
+            this.isTrainingClassifier = false;
             return;
         }
 
@@ -582,6 +600,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         }
 
         System.out.println(finalSummary);
+        this.isTrainingClassifier = false;
 
         final String strSummary = finalSummary;
         MainActivity context = this;
@@ -591,8 +610,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     public void trainClassifierWith(ArrayList<Swipe> trainSwipes) {
-
-
 
         Instances dataSet = this.getWekaDataset();
 
@@ -647,6 +664,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         }
 
         System.out.println(finalSummary);
+        this.isTrainingClassifier = false;
 
         final String strSummary = finalSummary;
         MainActivity context = this;
@@ -658,7 +676,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         try {
             dbHelper.saveAllTablesAsCSV(getContentResolver(), getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS).getPath());
-            this.showAlertDialog("SUCCESS", "CSV files have been saved into the file manager");
+            //this.showAlertDialog("SUCCESS", "CSV files have been saved into the file manager");
+            this.showSnackBar("CSV files saved to /Downloads", "#238823");
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -673,6 +692,16 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         builder.setTitle(title);
         builder.setMessage(message);
         builder.show();
+    }
+
+    public void showSnackBar(String message, String hexColor) {
+        View parentLayout = findViewById(android.R.id.content);
+        Snackbar snackbar = Snackbar.make(parentLayout, message, Snackbar.LENGTH_LONG);
+
+        View snackbarView = snackbar.getView();
+        snackbarView.setBackgroundColor(Color.parseColor(hexColor));
+
+        snackbar.show();
     }
 
     public Instances getWekaDataset() {
