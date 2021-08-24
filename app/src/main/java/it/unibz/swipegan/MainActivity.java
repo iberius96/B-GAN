@@ -63,7 +63,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private ArrayList<Float> yCoordinates = null;
     private ArrayList<Float> xVelocities = null;
     private ArrayList<Float> yVelocities = null;
-    private ArrayList<Float> pressures = null;
     private ArrayList<Float> sizes = null;
     private int duration = 0;
 
@@ -83,6 +82,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private Button trainButton;
     private Button saveButton;
     private Button resetButton;
+    private Button profileButton;
     private TextView inputTextView;
     private TextView progressTextView;
     private ProgressBar progressBar;
@@ -105,6 +105,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         this.saveButton.setVisibility(View.INVISIBLE);
         this.trainButton = findViewById(R.id.trainButton);
         this.resetButton = findViewById(R.id.resetButton);
+        this.profileButton = findViewById(R.id.profileButton);
         this.swipeImageView = findViewById(R.id.swipeImageView);
         this.attackSwitch = findViewById(R.id.attackSwitch);
         this.attackSwitch.setVisibility(View.INVISIBLE);
@@ -126,7 +127,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         this.yCoordinates = new ArrayList<>();
         this.xVelocities = new ArrayList<>();
         this.yVelocities = new ArrayList<>();
-        this.pressures = new ArrayList<>();
         this.sizes = new ArrayList<>();
 
         this.xAccelerations = new ArrayList<>();
@@ -177,7 +177,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
                 this.xCoordinates.add(event.getX(pointerId));
                 this.yCoordinates.add(event.getY(pointerId));
-                this.pressures.add(event.getPressure(pointerId));
                 this.sizes.add(event.getSize(pointerId));
 
                 this.mVelocityTracker = VelocityTracker.obtain();
@@ -190,7 +189,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
                 this.xVelocities.add(this.mVelocityTracker.getXVelocity(pointerId));
                 this.yVelocities.add(this.mVelocityTracker.getYVelocity(pointerId));
-                this.pressures.add(event.getPressure(pointerId));
                 this.sizes.add(event.getSize(pointerId));
 
                 break;
@@ -286,7 +284,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         this.yCoordinates.clear();
         this.xVelocities.clear();
         this.yVelocities.clear();
-        this.pressures.clear();
         this.sizes.clear();
 
         this.xAccelerations.clear();
@@ -303,7 +300,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         double avgSize = sizesStats.getAverage();
         double downSize = this.sizes.get(0);
 
-        double downPressure = this.pressures.get(0);
         double startX = this.xCoordinates.get(0);
         double startY = this.yCoordinates.get(0);
         double endX = this.xCoordinates.get(this.xCoordinates.size() - 1);
@@ -337,18 +333,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         double varYAcceleration = this.yAccelerations.stream().map(i -> i - avgYAcceleration).map(i -> i*i).mapToDouble(i -> i).average().getAsDouble();
         double stdYAcceleration = Math.sqrt(varYAcceleration);
 
-        DoubleSummaryStatistics pressureStats = this.pressures.stream().mapToDouble(x -> (double) x).summaryStatistics();
-        double minPressure = pressureStats.getMin();
-        double maxPressure = pressureStats.getMax();
-        double avgPressure = pressureStats.getAverage();
-        double varPressure = this.pressures.stream().map(i -> i - avgPressure).map(i -> i*i).mapToDouble(i -> i).average().getAsDouble();
-        double stdPressure = Math.sqrt(varPressure);
-
         Swipe newSwipe = new Swipe();
         newSwipe.setDuration(duration);
         newSwipe.setAvgSize(avgSize);
         newSwipe.setDownSize(downSize);
-        newSwipe.setDownPressure(downPressure);
         newSwipe.setStartX(startX);
         newSwipe.setStartY(startY);
         newSwipe.setEndX(endX);
@@ -377,12 +365,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         newSwipe.setAvgYAcceleration(avgYAcceleration);
         newSwipe.setStdYAcceleration(stdYAcceleration);
         newSwipe.setVarYAcceleration(varYAcceleration);
-
-        newSwipe.setMinPressure(minPressure);
-        newSwipe.setMaxPressure(maxPressure);
-        newSwipe.setAvgPressure(avgPressure);
-        newSwipe.setStdPressure(stdPressure);
-        newSwipe.setVarPressure(varPressure);
 
         newSwipe.setUserId(this.attackSwitch.isChecked() ? "Attacker" : "User");
 
@@ -708,7 +690,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         Attribute duration = new Attribute("duration");
         Attribute avgSize = new Attribute("avgSize");
         Attribute downSize = new Attribute("downSize");
-        Attribute downPressure = new Attribute("downPressure");
         Attribute startX = new Attribute("startX");
         Attribute startY = new Attribute("startY");
         Attribute endX = new Attribute("endX");
@@ -723,11 +704,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         Attribute avgYVelocity = new Attribute("avgYVelocity");
         Attribute stdYVelocity = new Attribute("stdYVelocity");
         Attribute varYVelocity = new Attribute("varYVelocity");
-        Attribute minPressure = new Attribute("minPressure");
-        Attribute maxPressure = new Attribute("maxPressure");
-        Attribute avgPressure = new Attribute("avgPressure");
-        Attribute stdPressure = new Attribute("stdPressure");
-        Attribute varPressure = new Attribute("varPressure");
         Attribute minXAcceleration = new Attribute("minXAcceleration");
         Attribute maxXAcceleration = new Attribute("maxXAcceleration");
         Attribute avgXAcceleration = new Attribute("avgXAcceleration");
@@ -747,7 +723,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         attributes.add(duration);
         attributes.add(avgSize);
         attributes.add(downSize);
-        attributes.add(downPressure);
         attributes.add(startX);
         attributes.add(startY);
         attributes.add(endX);
@@ -772,11 +747,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         attributes.add(avgYAcceleration);
         attributes.add(stdYAcceleration);
         attributes.add(varYAcceleration);
-        attributes.add(minPressure);
-        attributes.add(maxPressure);
-        attributes.add(stdPressure);
-        attributes.add(avgPressure);
-        attributes.add(varPressure);
         attributes.add(owner);
 
         Instances dataSet = new Instances("swipes", attributes, 0);
