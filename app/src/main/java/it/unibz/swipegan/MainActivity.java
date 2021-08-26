@@ -21,6 +21,8 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.Switch;
 import android.widget.TextView;
 
@@ -58,6 +60,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private long startTime = 0;
     private boolean isTrainingMode = true;
     private boolean isTrainingClassifier = false;
+    private int holdingPosition = 0;
 
     private ArrayList<Float> xCoordinates = null;
     private ArrayList<Float> yCoordinates = null;
@@ -88,6 +91,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private ProgressBar progressBar;
     private ImageView swipeImageView;
     private Switch attackSwitch;
+    private RadioButton sittingRadioButton;
+    private RadioButton standingRadioButton;
+    private RadioButton walkingRadioButton;
+    private RadioGroup holdingPositionRadioGroup;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -108,6 +115,30 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         this.profileButton = findViewById(R.id.profileButton);
         this.swipeImageView = findViewById(R.id.swipeImageView);
         this.attackSwitch = findViewById(R.id.attackSwitch);
+        this.holdingPositionRadioGroup = findViewById(R.id.holdingPositionRadioGroup);
+        this.sittingRadioButton = findViewById(R.id.sittingRadioButton);
+        this.standingRadioButton = findViewById(R.id.standingRadioButton);
+        this.walkingRadioButton = findViewById(R.id.walkingRadioButton);
+        this.sittingRadioButton.setChecked(true);
+
+        this.sittingRadioButton.setOnCheckedChangeListener((radioButtonView, isChecked) -> {
+            if (isChecked) {
+                this.holdingPosition = 1;
+            }
+        });
+
+        this.standingRadioButton.setOnCheckedChangeListener((radioButtonView, isChecked) -> {
+            if (isChecked) {
+                this.holdingPosition = 2;
+            }
+        });
+
+        this.walkingRadioButton.setOnCheckedChangeListener((radioButtonView, isChecked) -> {
+            if (isChecked) {
+                this.holdingPosition = 3;
+            }
+        });
+
         this.attackSwitch.setVisibility(View.INVISIBLE);
         this.attackSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
             if (isChecked) {
@@ -366,6 +397,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         newSwipe.setStdYAcceleration(stdYAcceleration);
         newSwipe.setVarYAcceleration(varYAcceleration);
 
+        if (this.isTrainingMode) {
+            newSwipe.setHoldingPosition(this.holdingPosition);
+        } else {
+            newSwipe.setHoldingPosition(0);
+        }
+
         newSwipe.setUserId(this.attackSwitch.isChecked() ? "Attacker" : "User");
 
         double[] normalizedSwipeValues = newSwipe.getNormalizedValues();
@@ -441,6 +478,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             this.trainButton.setVisibility(View.VISIBLE);
             this.saveButton.setVisibility(View.VISIBLE);
             this.attackSwitch.setVisibility(View.INVISIBLE);
+            this.holdingPositionRadioGroup.setVisibility(View.VISIBLE);
             this.isTrainingMode = true;
             this.resetButton.setText("Reset DB");
         }
@@ -489,6 +527,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             swipeImageView.setVisibility(View.VISIBLE);
             attackSwitch.setVisibility(View.VISIBLE);
             attackSwitch.setChecked(false);
+            this.holdingPositionRadioGroup.setVisibility(View.INVISIBLE);
         };
 
         Runnable uiRFTrainingRunnable = () -> {

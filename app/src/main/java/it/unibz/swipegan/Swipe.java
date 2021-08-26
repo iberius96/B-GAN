@@ -57,9 +57,10 @@ public class Swipe {
     private double avgYAcceleration;
     private double varYAcceleration;
     private double stdYAcceleration;
+    private double holdingPosition;
     private String userId;
 
-    public static Swipe fromNormalizedValues(double[] values, String userId) {
+    public static Swipe fromNormalizedValues(double[] values, double holdingPosition, String userId) {
 
         Swipe swipe = new Swipe();
         swipe.setDuration(values[0] * (MAX_DURATION - MIN_DURATION) + MIN_DURATION);
@@ -94,6 +95,8 @@ public class Swipe {
         swipe.setStdYAcceleration(values[25] * (MAX_Y_ACCELERATION - MIN_Y_ACCELERATION) + MIN_Y_ACCELERATION);
         swipe.setVarYAcceleration(values[26] * Math.pow(MAX_Y_ACCELERATION - MIN_Y_ACCELERATION, 2) + MIN_Y_ACCELERATION);
 
+        swipe.setHoldingPosition(holdingPosition);
+
         swipe.setUserId(userId);
 
         return swipe;
@@ -103,7 +106,7 @@ public class Swipe {
 
     }
 
-    public Swipe(double[] swipeArray, String userId) {
+    public Swipe(double[] swipeArray, double holdingPosition, String userId) {
         this.duration = swipeArray[0];
         this.avgSize = swipeArray[1];
         this.downSize = swipeArray[2];
@@ -131,6 +134,7 @@ public class Swipe {
         this.avgYAcceleration = swipeArray[24];
         this.stdYAcceleration = swipeArray[25];
         this.varYAcceleration = swipeArray[26];
+        this.holdingPosition = holdingPosition;
         this.userId = userId;
     }
 
@@ -350,6 +354,14 @@ public class Swipe {
         this.varYAcceleration = varYAcceleration;
     }
 
+    public double getHoldingPosition() {
+        return holdingPosition;
+    }
+
+    public void setHoldingPosition(double holdingPosition) {
+        this.holdingPosition = holdingPosition;
+    }
+
     public String getUserId() {
         return userId;
     }
@@ -451,6 +463,7 @@ public class Swipe {
                 "\n avgYAcceleration=" + avgYAcceleration +
                 "\n stdYAcceleration=" + stdYAcceleration +
                 "\n varYAcceleration=" + varYAcceleration +
+                "\n holdingPosition=" + holdingPosition +
                 "\n userId=" + userId +
                 '}';
     }

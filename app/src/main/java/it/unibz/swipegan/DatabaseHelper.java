@@ -70,6 +70,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String COL_AVG_Y_ACCELERATION = "avg_y_acceleration";
     private static final String COL_STD_Y_ACCELERATION = "std_y_acceleration";
     private static final String COL_VAR_Y_ACCELERATION = "var_y_acceleration";
+    private static final String COL_HOLDING_POSITION = "holding_position";
 
     private static final String COL_INSTANCES = "INSTANCES";
     private static final String COL_TAR = "TAR";
@@ -118,6 +119,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 + COL_AVG_Y_ACCELERATION + " float(53), "
                 + COL_STD_Y_ACCELERATION + " float(53), "
                 + COL_VAR_Y_ACCELERATION + " float(53), "
+                + COL_HOLDING_POSITION + " float(53), "
                 + COL_USER_ID + " varchar(20))";
 
         String createGanSwipesTable = "CREATE TABLE " + GAN_SWIPES
@@ -149,6 +151,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 + COL_AVG_Y_ACCELERATION + " float(53), "
                 + COL_STD_Y_ACCELERATION + " float(53), "
                 + COL_VAR_Y_ACCELERATION + " float(53), "
+                + COL_HOLDING_POSITION + " float(53), "
                 + COL_USER_ID + " varchar(20))";
 
         String createTestSwipesTable = "CREATE TABLE " + TEST_SWIPES
@@ -180,6 +183,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 + COL_AVG_Y_ACCELERATION + " float(53), "
                 + COL_STD_Y_ACCELERATION + " float(53), "
                 + COL_VAR_Y_ACCELERATION + " float(53), "
+                + COL_HOLDING_POSITION + " float(53), "
                 + COL_AUTHENTICATION + " float(53), "
                 + COL_AUTHENTICATION_TIME + " float(53), "
                 + COL_USER_ID + " varchar(20), "
@@ -214,6 +218,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 + COL_AVG_Y_ACCELERATION + " float(53), "
                 + COL_STD_Y_ACCELERATION + " float(53), "
                 + COL_VAR_Y_ACCELERATION + " float(53), "
+                + COL_HOLDING_POSITION + " float(53), "
                 + COL_USER_ID + " varchar(20))";
 
         String createGanSwipesNormalizedTable = "CREATE TABLE " + GAN_SWIPES_NORMALIZED
@@ -245,6 +250,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 + COL_AVG_Y_ACCELERATION + " float(53), "
                 + COL_STD_Y_ACCELERATION + " float(53), "
                 + COL_VAR_Y_ACCELERATION + " float(53), "
+                + COL_HOLDING_POSITION + " float(53), "
                 + COL_USER_ID + " varchar(20))";
 
         String createTestSwipesNormalizedTable = "CREATE TABLE " + TEST_SWIPES_NORMALIZED
@@ -276,6 +282,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 + COL_AVG_Y_ACCELERATION + " float(53), "
                 + COL_STD_Y_ACCELERATION + " float(53), "
                 + COL_VAR_Y_ACCELERATION + " float(53), "
+                + COL_HOLDING_POSITION + " float(53), "
                 + COL_AUTHENTICATION + " float(53), "
                 + COL_AUTHENTICATION_TIME + " float(53), "
                 + COL_USER_ID + " varchar(20), "
@@ -369,6 +376,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         contentValues.put(COL_AVG_Y_ACCELERATION, swipe.getAvgYAcceleration());
         contentValues.put(COL_STD_Y_ACCELERATION, swipe.getStdYAcceleration());
         contentValues.put(COL_VAR_Y_ACCELERATION, swipe.getVarYAcceleration());
+        contentValues.put(COL_HOLDING_POSITION, swipe.getHoldingPosition());
         contentValues.put(COL_USER_ID, swipe.getUserId());
 
         long result = db.insert(tableName, null, contentValues);
@@ -423,6 +431,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         contentValues.put(COL_AVG_Y_ACCELERATION, swipe.getAvgYAcceleration());
         contentValues.put(COL_STD_Y_ACCELERATION, swipe.getStdYAcceleration());
         contentValues.put(COL_VAR_Y_ACCELERATION, swipe.getVarYAcceleration());
+        contentValues.put(COL_HOLDING_POSITION, swipe.getHoldingPosition());
         contentValues.put(COL_AUTHENTICATION, authentication);
         contentValues.put(COL_AUTHENTICATION_TIME, authenticationTime);
         contentValues.put(COL_USER_ID, swipe.getUserId());
@@ -470,6 +479,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         contentValues.put(COL_AVG_Y_ACCELERATION, swipeValues[24]);
         contentValues.put(COL_STD_Y_ACCELERATION, swipeValues[25]);
         contentValues.put(COL_VAR_Y_ACCELERATION, swipeValues[26]);
+        contentValues.put(COL_HOLDING_POSITION, swipe.getHoldingPosition());
         contentValues.put(COL_USER_ID, swipe.getUserId());
 
         long result = db.insert(tableName, null, contentValues);
@@ -510,6 +520,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         contentValues.put(COL_AVG_Y_ACCELERATION, swipeValues[24]);
         contentValues.put(COL_STD_Y_ACCELERATION, swipeValues[25]);
         contentValues.put(COL_VAR_Y_ACCELERATION, swipeValues[26]);
+        contentValues.put(COL_HOLDING_POSITION, swipe.getHoldingPosition());
         contentValues.put(COL_AUTHENTICATION, authentication);
         contentValues.put(COL_AUTHENTICATION_TIME, authenticationTime);
         contentValues.put(COL_USER_ID, swipe.getUserId());
@@ -560,6 +571,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             swipe.setAvgYAcceleration(cursor.getDouble(cursor.getColumnIndex(COL_AVG_Y_ACCELERATION)));
             swipe.setStdYAcceleration(cursor.getDouble(cursor.getColumnIndex(COL_STD_Y_ACCELERATION)));
             swipe.setVarYAcceleration(cursor.getDouble(cursor.getColumnIndex(COL_VAR_Y_ACCELERATION)));
+
+            swipe.setHoldingPosition(cursor.getDouble(cursor.getColumnIndex(COL_HOLDING_POSITION)));
 
             swipe.setUserId(cursor.getString(cursor.getColumnIndex(COL_USER_ID)));
 
@@ -613,6 +626,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             swipe.setAvgYAcceleration(cursor.getDouble(cursor.getColumnIndex(COL_AVG_Y_ACCELERATION)));
             swipe.setStdYAcceleration(cursor.getDouble(cursor.getColumnIndex(COL_STD_Y_ACCELERATION)));
             swipe.setVarYAcceleration(cursor.getDouble(cursor.getColumnIndex(COL_VAR_Y_ACCELERATION)));
+
+            swipe.setHoldingPosition(cursor.getDouble(cursor.getColumnIndex(COL_HOLDING_POSITION)));
 
             swipe.setUserId(cursor.getString(cursor.getColumnIndex(COL_USER_ID)));
 
