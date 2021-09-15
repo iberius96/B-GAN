@@ -20,15 +20,24 @@ public class Swipe {
     private static final double MIN_END_Y = 0;
     private static final double MAX_END_Y = Resources.getSystem().getDisplayMetrics().heightPixels;
 
-    private static final double MIN_X_VELOCITY = -50_000;
-    private static final double MAX_X_VELOCITY = 50_000;
-    private static final double MIN_Y_VELOCITY = -50_000;
-    private static final double MAX_Y_VELOCITY = 50_000;
+    private static final double MIN_X_VELOCITY = -2_000;
+    private static final double MAX_X_VELOCITY = 2_000;
+    private static final double MIN_Y_VELOCITY = -2_000;
+    private static final double MAX_Y_VELOCITY = 2_000;
 
-    private static final double MIN_X_ACCELERATION = -10;
-    private static final double MAX_X_ACCELERATION = 10;
-    private static final double MIN_Y_ACCELERATION = -10;
-    private static final double MAX_Y_ACCELERATION = 10;
+    private static final double MIN_X_ACCELEROMETER = -10;
+    private static final double MAX_X_ACCELEROMETER = 10;
+    private static final double MIN_Y_ACCELEROMETER = -10;
+    private static final double MAX_Y_ACCELEROMETER = 10;
+    private static final double MIN_Z_ACCELEROMETER = -10;
+    private static final double MAX_Z_ACCELEROMETER = 10;
+
+    private static final double MIN_X_GYROSCOPE = -10;
+    private static final double MAX_X_GYROSCOPE = 10;
+    private static final double MIN_Y_GYROSCOPE = -10;
+    private static final double MAX_Y_GYROSCOPE = 10;
+    private static final double MIN_Z_GYROSCOPE = -10;
+    private static final double MAX_Z_GYROSCOPE = 10;
 
     private double duration;
     private double avgSize;
@@ -47,16 +56,36 @@ public class Swipe {
     private double avgYVelocity;
     private double varYVelocity;
     private double stdYVelocity;
-    private double minXAcceleration;
-    private double maxXAcceleration;
-    private double avgXAcceleration;
-    private double varXAcceleration;
-    private double stdXAcceleration;
-    private double minYAcceleration;
-    private double maxYAcceleration;
-    private double avgYAcceleration;
-    private double varYAcceleration;
-    private double stdYAcceleration;
+    private double minXAccelerometer;
+    private double maxXAccelerometer;
+    private double avgXAccelerometer;
+    private double varXAccelerometer;
+    private double stdXAccelerometer;
+    private double minYAccelerometer;
+    private double maxYAccelerometer;
+    private double avgYAccelerometer;
+    private double varYAccelerometer;
+    private double stdYAccelerometer;
+    private double minZAccelerometer;
+    private double maxZAccelerometer;
+    private double avgZAccelerometer;
+    private double varZAccelerometer;
+    private double stdZAccelerometer;
+    private double minXGyroscope;
+    private double maxXGyroscope;
+    private double avgXGyroscope;
+    private double varXGyroscope;
+    private double stdXGyroscope;
+    private double minYGyroscope;
+    private double maxYGyroscope;
+    private double avgYGyroscope;
+    private double varYGyroscope;
+    private double stdYGyroscope;
+    private double minZGyroscope;
+    private double maxZGyroscope;
+    private double avgZGyroscope;
+    private double varZGyroscope;
+    private double stdZGyroscope;
     private double holdingPosition;
     private String userId;
 
@@ -83,17 +112,41 @@ public class Swipe {
         swipe.setStdYVelocity(values[15] * (MAX_Y_VELOCITY - MIN_Y_VELOCITY) + MIN_Y_VELOCITY);
         swipe.setVarYVelocity(values[16] * Math.pow(MAX_Y_VELOCITY - MIN_Y_VELOCITY, 2) + MIN_Y_VELOCITY);
 
-        swipe.setMinXAcceleration(values[17] * (MAX_X_ACCELERATION - MIN_X_ACCELERATION) + MIN_X_ACCELERATION);
-        swipe.setMaxXAcceleration(values[18] * (MAX_X_ACCELERATION - MIN_X_ACCELERATION) + MIN_X_ACCELERATION);
-        swipe.setAvgXAcceleration(values[19] * (MAX_X_ACCELERATION - MIN_X_ACCELERATION) + MIN_X_ACCELERATION);
-        swipe.setStdXAcceleration(values[20] * (MAX_X_ACCELERATION - MIN_X_ACCELERATION) + MIN_X_ACCELERATION);
-        swipe.setVarXAcceleration(values[21] * Math.pow(MAX_X_ACCELERATION - MIN_X_ACCELERATION, 2) + MIN_X_ACCELERATION);
+        swipe.setMinXAccelerometer(values[17] * (MAX_X_ACCELEROMETER - MIN_X_ACCELEROMETER) + MIN_X_ACCELEROMETER);
+        swipe.setMaxXAccelerometer(values[18] * (MAX_X_ACCELEROMETER - MIN_X_ACCELEROMETER) + MIN_X_ACCELEROMETER);
+        swipe.setAvgXAccelerometer(values[19] * (MAX_X_ACCELEROMETER - MIN_X_ACCELEROMETER) + MIN_X_ACCELEROMETER);
+        swipe.setStdXAccelerometer(values[20] * (MAX_X_ACCELEROMETER - MIN_X_ACCELEROMETER) + MIN_X_ACCELEROMETER);
+        swipe.setVarXAccelerometer(values[21] * Math.pow(MAX_X_ACCELEROMETER - MIN_X_ACCELEROMETER, 2) + MIN_X_ACCELEROMETER);
 
-        swipe.setMinYAcceleration(values[22] * (MAX_Y_ACCELERATION - MIN_Y_ACCELERATION) + MIN_Y_ACCELERATION);
-        swipe.setMaxYAcceleration(values[23] * (MAX_Y_ACCELERATION - MIN_Y_ACCELERATION) + MIN_Y_ACCELERATION);
-        swipe.setAvgYAcceleration(values[24] * (MAX_Y_ACCELERATION - MIN_Y_ACCELERATION) + MIN_Y_ACCELERATION);
-        swipe.setStdYAcceleration(values[25] * (MAX_Y_ACCELERATION - MIN_Y_ACCELERATION) + MIN_Y_ACCELERATION);
-        swipe.setVarYAcceleration(values[26] * Math.pow(MAX_Y_ACCELERATION - MIN_Y_ACCELERATION, 2) + MIN_Y_ACCELERATION);
+        swipe.setMinYAccelerometer(values[22] * (MAX_Y_ACCELEROMETER - MIN_Y_ACCELEROMETER) + MIN_Y_ACCELEROMETER);
+        swipe.setMaxYAccelerometer(values[23] * (MAX_Y_ACCELEROMETER - MIN_Y_ACCELEROMETER) + MIN_Y_ACCELEROMETER);
+        swipe.setAvgYAccelerometer(values[24] * (MAX_Y_ACCELEROMETER - MIN_Y_ACCELEROMETER) + MIN_Y_ACCELEROMETER);
+        swipe.setStdYAccelerometer(values[25] * (MAX_Y_ACCELEROMETER - MIN_Y_ACCELEROMETER) + MIN_Y_ACCELEROMETER);
+        swipe.setVarYAccelerometer(values[26] * Math.pow(MAX_Y_ACCELEROMETER - MIN_Y_ACCELEROMETER, 2) + MIN_Y_ACCELEROMETER);
+
+        swipe.setMinZAccelerometer(values[27] * (MAX_Z_ACCELEROMETER - MIN_Z_ACCELEROMETER) + MIN_Z_ACCELEROMETER);
+        swipe.setMaxZAccelerometer(values[28] * (MAX_Z_ACCELEROMETER - MIN_Z_ACCELEROMETER) + MIN_Z_ACCELEROMETER);
+        swipe.setAvgZAccelerometer(values[29] * (MAX_Z_ACCELEROMETER - MIN_Z_ACCELEROMETER) + MIN_Z_ACCELEROMETER);
+        swipe.setStdZAccelerometer(values[30] * (MAX_Z_ACCELEROMETER - MIN_Z_ACCELEROMETER) + MIN_Z_ACCELEROMETER);
+        swipe.setVarZAccelerometer(values[31] * Math.pow(MAX_Z_ACCELEROMETER - MIN_Z_ACCELEROMETER, 2) + MIN_Z_ACCELEROMETER);
+
+        swipe.setMinXGyroscope(values[17] * (MAX_X_GYROSCOPE - MIN_X_GYROSCOPE) + MIN_X_GYROSCOPE);
+        swipe.setMaxXGyroscope(values[18] * (MAX_X_GYROSCOPE - MIN_X_GYROSCOPE) + MIN_X_GYROSCOPE);
+        swipe.setAvgXGyroscope(values[19] * (MAX_X_GYROSCOPE - MIN_X_GYROSCOPE) + MIN_X_GYROSCOPE);
+        swipe.setStdXGyroscope(values[20] * (MAX_X_GYROSCOPE - MIN_X_GYROSCOPE) + MIN_X_GYROSCOPE);
+        swipe.setVarXGyroscope(values[21] * Math.pow(MAX_X_GYROSCOPE - MIN_X_GYROSCOPE, 2) + MIN_X_GYROSCOPE);
+
+        swipe.setMinYGyroscope(values[22] * (MAX_Y_GYROSCOPE - MIN_Y_GYROSCOPE) + MIN_Y_GYROSCOPE);
+        swipe.setMaxYGyroscope(values[23] * (MAX_Y_GYROSCOPE - MIN_Y_GYROSCOPE) + MIN_Y_GYROSCOPE);
+        swipe.setAvgYGyroscope(values[24] * (MAX_Y_GYROSCOPE - MIN_Y_GYROSCOPE) + MIN_Y_GYROSCOPE);
+        swipe.setStdYGyroscope(values[25] * (MAX_Y_GYROSCOPE - MIN_Y_GYROSCOPE) + MIN_Y_GYROSCOPE);
+        swipe.setVarYGyroscope(values[26] * Math.pow(MAX_Y_GYROSCOPE - MIN_Y_GYROSCOPE, 2) + MIN_Y_GYROSCOPE);
+
+        swipe.setMinZGyroscope(values[27] * (MAX_Z_GYROSCOPE - MIN_Z_GYROSCOPE) + MIN_Z_GYROSCOPE);
+        swipe.setMaxZGyroscope(values[28] * (MAX_Z_GYROSCOPE - MIN_Z_GYROSCOPE) + MIN_Z_GYROSCOPE);
+        swipe.setAvgZGyroscope(values[29] * (MAX_Z_GYROSCOPE - MIN_Z_GYROSCOPE) + MIN_Z_GYROSCOPE);
+        swipe.setStdZGyroscope(values[30] * (MAX_Z_GYROSCOPE - MIN_Z_GYROSCOPE) + MIN_Z_GYROSCOPE);
+        swipe.setVarZGyroscope(values[31] * Math.pow(MAX_Z_GYROSCOPE - MIN_Z_GYROSCOPE, 2) + MIN_Z_GYROSCOPE);
 
         swipe.setHoldingPosition(holdingPosition);
 
@@ -124,16 +177,36 @@ public class Swipe {
         this.avgYVelocity = swipeArray[14];
         this.stdYVelocity = swipeArray[15];
         this.varYVelocity = swipeArray[16];
-        this.minXAcceleration = swipeArray[17];
-        this.maxXAcceleration = swipeArray[18];
-        this.avgXAcceleration = swipeArray[19];
-        this.stdXAcceleration = swipeArray[20];
-        this.varXAcceleration = swipeArray[21];
-        this.minYAcceleration = swipeArray[22];
-        this.maxYAcceleration = swipeArray[23];
-        this.avgYAcceleration = swipeArray[24];
-        this.stdYAcceleration = swipeArray[25];
-        this.varYAcceleration = swipeArray[26];
+        this.minXAccelerometer = swipeArray[17];
+        this.maxXAccelerometer = swipeArray[18];
+        this.avgXAccelerometer = swipeArray[19];
+        this.stdXAccelerometer = swipeArray[20];
+        this.varXAccelerometer = swipeArray[21];
+        this.minYAccelerometer = swipeArray[22];
+        this.maxYAccelerometer = swipeArray[23];
+        this.avgYAccelerometer = swipeArray[24];
+        this.stdYAccelerometer = swipeArray[25];
+        this.varYAccelerometer = swipeArray[26];
+        this.minZAccelerometer = swipeArray[27];
+        this.maxZAccelerometer = swipeArray[28];
+        this.avgZAccelerometer = swipeArray[29];
+        this.stdZAccelerometer = swipeArray[30];
+        this.varZAccelerometer = swipeArray[31];
+        this.minXGyroscope = swipeArray[32];
+        this.maxXGyroscope = swipeArray[33];
+        this.avgXGyroscope = swipeArray[34];
+        this.stdXGyroscope = swipeArray[35];
+        this.varXGyroscope = swipeArray[36];
+        this.minYGyroscope = swipeArray[37];
+        this.maxYGyroscope = swipeArray[38];
+        this.avgYGyroscope = swipeArray[39];
+        this.stdYGyroscope = swipeArray[40];
+        this.varYGyroscope = swipeArray[41];
+        this.minZGyroscope = swipeArray[42];
+        this.maxZGyroscope = swipeArray[43];
+        this.avgZGyroscope = swipeArray[44];
+        this.stdZGyroscope = swipeArray[45];
+        this.varZGyroscope = swipeArray[46];
         this.holdingPosition = holdingPosition;
         this.userId = userId;
     }
@@ -274,84 +347,244 @@ public class Swipe {
         this.varYVelocity = varYVelocity;
     }
 
-    public double getMinXAcceleration() {
-        return minXAcceleration;
+    public double getMinXAccelerometer() {
+        return minXAccelerometer;
     }
 
-    public void setMinXAcceleration(double minXAcceleration) {
-        this.minXAcceleration = minXAcceleration;
+    public void setMinXAccelerometer(double minXAccelerometer) {
+        this.minXAccelerometer = minXAccelerometer;
     }
 
-    public double getMaxXAcceleration() {
-        return maxXAcceleration;
+    public double getMaxXAccelerometer() {
+        return maxXAccelerometer;
     }
 
-    public void setMaxXAcceleration(double maxXAcceleration) {
-        this.maxXAcceleration = maxXAcceleration;
+    public void setMaxXAccelerometer(double maxXAccelerometer) {
+        this.maxXAccelerometer = maxXAccelerometer;
     }
 
-    public double getAvgXAcceleration() {
-        return avgXAcceleration;
+    public double getAvgXAccelerometer() {
+        return avgXAccelerometer;
     }
 
-    public void setAvgXAcceleration(double avgXAcceleration) {
-        this.avgXAcceleration = avgXAcceleration;
+    public void setAvgXAccelerometer(double avgXAccelerometer) {
+        this.avgXAccelerometer = avgXAccelerometer;
     }
 
-    public double getStdXAcceleration() {
-        return stdXAcceleration;
+    public double getStdXAccelerometer() {
+        return stdXAccelerometer;
     }
 
-    public void setStdXAcceleration(double stdXAcceleration) {
-        this.stdXAcceleration = stdXAcceleration;
+    public void setStdXAccelerometer(double stdXAccelerometer) {
+        this.stdXAccelerometer = stdXAccelerometer;
     }
 
-    public double getVarXAcceleration() {
-        return varXAcceleration;
+    public double getVarXAccelerometer() {
+        return varXAccelerometer;
     }
 
-    public void setVarXAcceleration(double varXAcceleration) {
-        this.varXAcceleration = varXAcceleration;
+    public void setVarXAccelerometer(double varXAccelerometer) {
+        this.varXAccelerometer = varXAccelerometer;
     }
 
-    public double getMinYAcceleration() {
-        return minYAcceleration;
+    public double getMinYAccelerometer() {
+        return minYAccelerometer;
     }
 
-    public void setMinYAcceleration(double minYAcceleration) {
-        this.minYAcceleration = minYAcceleration;
+    public void setMinYAccelerometer(double minYAccelerometer) {
+        this.minYAccelerometer = minYAccelerometer;
     }
 
-    public double getMaxYAcceleration() {
-        return maxYAcceleration;
+    public double getMaxYAccelerometer() {
+        return maxYAccelerometer;
     }
 
-    public void setMaxYAcceleration(double maxYAcceleration) {
-        this.maxYAcceleration = maxYAcceleration;
+    public void setMaxYAccelerometer(double maxYAccelerometer) {
+        this.maxYAccelerometer = maxYAccelerometer;
     }
 
-    public double getAvgYAcceleration() {
-        return avgYAcceleration;
+    public double getAvgYAccelerometer() {
+        return avgYAccelerometer;
     }
 
-    public void setAvgYAcceleration(double avgYAcceleration) {
-        this.avgYAcceleration = avgYAcceleration;
+    public void setAvgYAccelerometer(double avgYAccelerometer) {
+        this.avgYAccelerometer = avgYAccelerometer;
     }
 
-    public double getStdYAcceleration() {
-        return stdYAcceleration;
+    public double getStdYAccelerometer() {
+        return stdYAccelerometer;
     }
 
-    public void setStdYAcceleration(double stdYAcceleration) {
-        this.stdYAcceleration = stdYAcceleration;
+    public void setStdYAccelerometer(double stdYAccelerometer) {
+        this.stdYAccelerometer = stdYAccelerometer;
     }
 
-    public double getVarYAcceleration() {
-        return varYAcceleration;
+    public double getVarYAccelerometer() {
+        return varYAccelerometer;
     }
 
-    public void setVarYAcceleration(double varYAcceleration) {
-        this.varYAcceleration = varYAcceleration;
+    public void setVarYAccelerometer(double varYAccelerometer) {
+        this.varYAccelerometer = varYAccelerometer;
+    }
+
+    public double getMinZAccelerometer() {
+        return minZAccelerometer;
+    }
+
+    public void setMinZAccelerometer(double minZAccelerometer) {
+        this.minZAccelerometer = minZAccelerometer;
+    }
+
+    public double getMaxZAccelerometer() {
+        return maxZAccelerometer;
+    }
+
+    public void setMaxZAccelerometer(double maxZAccelerometer) {
+        this.maxZAccelerometer = maxZAccelerometer;
+    }
+
+    public double getAvgZAccelerometer() {
+        return avgZAccelerometer;
+    }
+
+    public void setAvgZAccelerometer(double avgZAccelerometer) {
+        this.avgZAccelerometer = avgZAccelerometer;
+    }
+
+    public double getStdZAccelerometer() {
+        return stdZAccelerometer;
+    }
+
+    public void setStdZAccelerometer(double stdZAccelerometer) {
+        this.stdZAccelerometer = stdZAccelerometer;
+    }
+
+    public double getVarZAccelerometer() {
+        return varZAccelerometer;
+    }
+
+    public void setVarZAccelerometer(double varZAccelerometer) {
+        this.varZAccelerometer = varZAccelerometer;
+    }
+
+    public double getMinXGyroscope() {
+        return minXGyroscope;
+    }
+
+    public void setMinXGyroscope(double minXGyroscope) {
+        this.minXGyroscope = minXGyroscope;
+    }
+
+    public double getMaxXGyroscope() {
+        return maxXGyroscope;
+    }
+
+    public void setMaxXGyroscope(double maxXGyroscope) {
+        this.maxXGyroscope = maxXGyroscope;
+    }
+
+    public double getAvgXGyroscope() {
+        return avgXGyroscope;
+    }
+
+    public void setAvgXGyroscope(double avgXGyroscope) {
+        this.avgXGyroscope = avgXGyroscope;
+    }
+
+    public double getStdXGyroscope() {
+        return stdXGyroscope;
+    }
+
+    public void setStdXGyroscope(double stdXGyroscope) {
+        this.stdXGyroscope = stdXGyroscope;
+    }
+
+    public double getVarXGyroscope() {
+        return varXGyroscope;
+    }
+
+    public void setVarXGyroscope(double varXGyroscope) {
+        this.varXGyroscope = varXGyroscope;
+    }
+
+    public double getMinYGyroscope() {
+        return minYGyroscope;
+    }
+
+    public void setMinYGyroscope(double minYGyroscope) {
+        this.minYGyroscope = minYGyroscope;
+    }
+
+    public double getMaxYGyroscope() {
+        return maxYGyroscope;
+    }
+
+    public void setMaxYGyroscope(double maxYGyroscope) {
+        this.maxYGyroscope = maxYGyroscope;
+    }
+
+    public double getAvgYGyroscope() {
+        return avgYGyroscope;
+    }
+
+    public void setAvgYGyroscope(double avgYGyroscope) {
+        this.avgYGyroscope = avgYGyroscope;
+    }
+
+    public double getStdYGyroscope() {
+        return stdYGyroscope;
+    }
+
+    public void setStdYGyroscope(double stdYGyroscope) {
+        this.stdYGyroscope = stdYGyroscope;
+    }
+
+    public double getVarYGyroscope() {
+        return varYGyroscope;
+    }
+
+    public void setVarYGyroscope(double varYGyroscope) {
+        this.varYGyroscope = varYGyroscope;
+    }
+
+    public double getMinZGyroscope() {
+        return minZGyroscope;
+    }
+
+    public void setMinZGyroscope(double minZGyroscope) {
+        this.minZGyroscope = minZGyroscope;
+    }
+
+    public double getMaxZGyroscope() {
+        return maxZGyroscope;
+    }
+
+    public void setMaxZGyroscope(double maxZGyroscope) {
+        this.maxZGyroscope = maxZGyroscope;
+    }
+
+    public double getAvgZGyroscope() {
+        return avgZGyroscope;
+    }
+
+    public void setAvgZGyroscope(double avgZGyroscope) {
+        this.avgZGyroscope = avgZGyroscope;
+    }
+
+    public double getStdZGyroscope() {
+        return stdZGyroscope;
+    }
+
+    public void setStdZGyroscope(double stdZGyroscope) {
+        this.stdZGyroscope = stdZGyroscope;
+    }
+
+    public double getVarZGyroscope() {
+        return varZGyroscope;
+    }
+
+    public void setVarZGyroscope(double varZGyroscope) {
+        this.varZGyroscope = varZGyroscope;
     }
 
     public double getHoldingPosition() {
@@ -390,16 +623,36 @@ public class Swipe {
                 (this.avgYVelocity - MIN_Y_VELOCITY) / (MAX_Y_VELOCITY - MIN_Y_VELOCITY),
                 (this.stdYVelocity - MIN_Y_VELOCITY) / (MAX_Y_VELOCITY - MIN_Y_VELOCITY),
                 (this.varYVelocity - MIN_Y_VELOCITY) / Math.pow(MAX_Y_VELOCITY - MIN_Y_VELOCITY, 2),
-                (this.minXAcceleration - MIN_X_ACCELERATION) / (MAX_X_ACCELERATION - MIN_X_ACCELERATION),
-                (this.maxXAcceleration - MIN_X_ACCELERATION) / (MAX_X_ACCELERATION - MIN_X_ACCELERATION),
-                (this.avgXAcceleration - MIN_X_ACCELERATION) / (MAX_X_ACCELERATION - MIN_X_ACCELERATION),
-                (this.stdXAcceleration - MIN_X_ACCELERATION) / (MAX_X_ACCELERATION - MIN_X_ACCELERATION),
-                (this.varXAcceleration - MIN_X_ACCELERATION) / Math.pow(MAX_X_ACCELERATION - MIN_X_ACCELERATION, 2),
-                (this.minYAcceleration - MIN_Y_ACCELERATION) / (MAX_Y_ACCELERATION - MIN_Y_ACCELERATION),
-                (this.maxYAcceleration - MIN_Y_ACCELERATION) / (MAX_Y_ACCELERATION - MIN_Y_ACCELERATION),
-                (this.avgYAcceleration - MIN_Y_ACCELERATION) / (MAX_Y_ACCELERATION - MIN_Y_ACCELERATION),
-                (this.stdYAcceleration - MIN_Y_ACCELERATION) / (MAX_Y_ACCELERATION - MIN_Y_ACCELERATION),
-                (this.varYAcceleration - MIN_Y_ACCELERATION) / Math.pow(MAX_Y_ACCELERATION - MIN_Y_ACCELERATION, 2)};
+                (this.minXAccelerometer - MIN_X_ACCELEROMETER) / (MAX_X_ACCELEROMETER - MIN_X_ACCELEROMETER),
+                (this.maxXAccelerometer - MIN_X_ACCELEROMETER) / (MAX_X_ACCELEROMETER - MIN_X_ACCELEROMETER),
+                (this.avgXAccelerometer - MIN_X_ACCELEROMETER) / (MAX_X_ACCELEROMETER - MIN_X_ACCELEROMETER),
+                (this.stdXAccelerometer - MIN_X_ACCELEROMETER) / (MAX_X_ACCELEROMETER - MIN_X_ACCELEROMETER),
+                (this.varXAccelerometer - MIN_X_ACCELEROMETER) / Math.pow(MAX_X_ACCELEROMETER - MIN_X_ACCELEROMETER, 2),
+                (this.minYAccelerometer - MIN_Y_ACCELEROMETER) / (MAX_Y_ACCELEROMETER - MIN_Y_ACCELEROMETER),
+                (this.maxYAccelerometer - MIN_Y_ACCELEROMETER) / (MAX_Y_ACCELEROMETER - MIN_Y_ACCELEROMETER),
+                (this.avgYAccelerometer - MIN_Y_ACCELEROMETER) / (MAX_Y_ACCELEROMETER - MIN_Y_ACCELEROMETER),
+                (this.stdYAccelerometer - MIN_Y_ACCELEROMETER) / (MAX_Y_ACCELEROMETER - MIN_Y_ACCELEROMETER),
+                (this.varYAccelerometer - MIN_Y_ACCELEROMETER) / Math.pow(MAX_Y_ACCELEROMETER - MIN_Y_ACCELEROMETER, 2),
+                (this.minZAccelerometer - MIN_Z_ACCELEROMETER) / (MAX_Z_ACCELEROMETER - MIN_Z_ACCELEROMETER),
+                (this.maxZAccelerometer - MIN_Z_ACCELEROMETER) / (MAX_Z_ACCELEROMETER - MIN_Z_ACCELEROMETER),
+                (this.avgZAccelerometer - MIN_Z_ACCELEROMETER) / (MAX_Z_ACCELEROMETER - MIN_Z_ACCELEROMETER),
+                (this.stdZAccelerometer - MIN_Z_ACCELEROMETER) / (MAX_Z_ACCELEROMETER - MIN_Z_ACCELEROMETER),
+                (this.varZAccelerometer - MIN_Z_ACCELEROMETER) / Math.pow(MAX_Z_ACCELEROMETER - MIN_Z_ACCELEROMETER, 2),
+                (this.minXGyroscope - MIN_X_GYROSCOPE) / (MAX_X_GYROSCOPE - MIN_X_GYROSCOPE),
+                (this.maxXGyroscope - MIN_X_GYROSCOPE) / (MAX_X_GYROSCOPE - MIN_X_GYROSCOPE),
+                (this.avgXGyroscope - MIN_X_GYROSCOPE) / (MAX_X_GYROSCOPE - MIN_X_GYROSCOPE),
+                (this.stdXGyroscope - MIN_X_GYROSCOPE) / (MAX_X_GYROSCOPE - MIN_X_GYROSCOPE),
+                (this.varXGyroscope - MIN_X_GYROSCOPE) / Math.pow(MAX_X_GYROSCOPE - MIN_X_GYROSCOPE, 2),
+                (this.minYGyroscope - MIN_Y_GYROSCOPE) / (MAX_Y_GYROSCOPE - MIN_Y_GYROSCOPE),
+                (this.maxYGyroscope - MIN_Y_GYROSCOPE) / (MAX_Y_GYROSCOPE - MIN_Y_GYROSCOPE),
+                (this.avgYGyroscope - MIN_Y_GYROSCOPE) / (MAX_Y_GYROSCOPE - MIN_Y_GYROSCOPE),
+                (this.stdYGyroscope - MIN_Y_GYROSCOPE) / (MAX_Y_GYROSCOPE - MIN_Y_GYROSCOPE),
+                (this.varYGyroscope - MIN_Y_GYROSCOPE) / Math.pow(MAX_Y_GYROSCOPE - MIN_Y_GYROSCOPE, 2),
+                (this.minZGyroscope - MIN_Z_GYROSCOPE) / (MAX_Z_GYROSCOPE - MIN_Z_GYROSCOPE),
+                (this.maxZGyroscope - MIN_Z_GYROSCOPE) / (MAX_Z_GYROSCOPE - MIN_Z_GYROSCOPE),
+                (this.avgZGyroscope - MIN_Z_GYROSCOPE) / (MAX_Z_GYROSCOPE - MIN_Z_GYROSCOPE),
+                (this.stdZGyroscope - MIN_Z_GYROSCOPE) / (MAX_Z_GYROSCOPE - MIN_Z_GYROSCOPE),
+                (this.varZGyroscope - MIN_Z_GYROSCOPE) / Math.pow(MAX_Z_GYROSCOPE - MIN_Z_GYROSCOPE, 2)};
 
     }
 
@@ -421,16 +674,36 @@ public class Swipe {
                 this.avgYVelocity,
                 this.stdYVelocity,
                 this.varYVelocity,
-                this.minXAcceleration,
-                this.maxXAcceleration,
-                this.avgXAcceleration,
-                this.stdXAcceleration,
-                this.varXAcceleration,
-                this.minYAcceleration,
-                this.maxYAcceleration,
-                this.avgYAcceleration,
-                this.stdYAcceleration,
-                this.varYAcceleration};
+                this.minXAccelerometer,
+                this.maxXAccelerometer,
+                this.avgXAccelerometer,
+                this.stdXAccelerometer,
+                this.varXAccelerometer,
+                this.minYAccelerometer,
+                this.maxYAccelerometer,
+                this.avgYAccelerometer,
+                this.stdYAccelerometer,
+                this.varYAccelerometer,
+                this.minZAccelerometer,
+                this.maxZAccelerometer,
+                this.avgZAccelerometer,
+                this.stdZAccelerometer,
+                this.varZAccelerometer,
+                this.minXGyroscope,
+                this.maxXGyroscope,
+                this.avgXGyroscope,
+                this.stdXGyroscope,
+                this.varXGyroscope,
+                this.minYGyroscope,
+                this.maxYGyroscope,
+                this.avgYGyroscope,
+                this.stdYGyroscope,
+                this.varYGyroscope,
+                this.minZGyroscope,
+                this.maxZGyroscope,
+                this.avgZGyroscope,
+                this.stdZGyroscope,
+                this.varZGyroscope};
     }
 
     @Override
@@ -453,23 +726,43 @@ public class Swipe {
                 "\n avgYVelocity=" + avgYVelocity +
                 "\n stdYVelocity=" + stdYVelocity +
                 "\n varYVelocity=" + varYVelocity +
-                "\n minXAcceleration=" + minXAcceleration +
-                "\n maxXAcceleration=" + maxXAcceleration +
-                "\n avgXAcceleration=" + avgXAcceleration +
-                "\n stdXAcceleration=" + stdXAcceleration +
-                "\n varXAcceleration=" + varXAcceleration +
-                "\n minYAcceleration=" + minYAcceleration +
-                "\n maxYAcceleration=" + maxYAcceleration +
-                "\n avgYAcceleration=" + avgYAcceleration +
-                "\n stdYAcceleration=" + stdYAcceleration +
-                "\n varYAcceleration=" + varYAcceleration +
+                "\n minXAccelerometer=" + minXAccelerometer +
+                "\n maxXAccelerometer=" + maxXAccelerometer +
+                "\n avgXAccelerometer=" + avgXAccelerometer +
+                "\n stdXAccelerometer=" + stdXAccelerometer +
+                "\n varXAccelerometer=" + varXAccelerometer +
+                "\n minYAccelerometer=" + minYAccelerometer +
+                "\n maxYAccelerometer=" + maxYAccelerometer +
+                "\n avgYAccelerometer=" + avgYAccelerometer +
+                "\n stdYAccelerometer=" + stdYAccelerometer +
+                "\n varYAccelerometer=" + varYAccelerometer +
+                "\n minZAccelerometer=" + minZAccelerometer +
+                "\n maxZAccelerometer=" + maxZAccelerometer +
+                "\n avgZAccelerometer=" + avgZAccelerometer +
+                "\n stdZAccelerometer=" + stdZAccelerometer +
+                "\n varZAccelerometer=" + varZAccelerometer +
+                "\n minXGyroscope=" + minXGyroscope +
+                "\n maxXGyroscope=" + maxXGyroscope +
+                "\n avgXGyroscope=" + avgXGyroscope +
+                "\n stdXGyroscope=" + stdXGyroscope +
+                "\n varXGyroscope=" + varXGyroscope +
+                "\n minYGyroscope=" + minYGyroscope +
+                "\n maxYGyroscope=" + maxYGyroscope +
+                "\n avgYGyroscope=" + avgYGyroscope +
+                "\n stdYGyroscope=" + stdYGyroscope +
+                "\n varYGyroscope=" + varYGyroscope +
+                "\n minZGyroscope=" + minZGyroscope +
+                "\n maxZGyroscope=" + maxZGyroscope +
+                "\n avgZGyroscope=" + avgZGyroscope +
+                "\n stdZGyroscope=" + stdZGyroscope +
+                "\n varZGyroscope=" + varZGyroscope +
                 "\n holdingPosition=" + holdingPosition +
                 "\n userId=" + userId +
                 '}';
     }
 
     public Instance getAsWekaInstance(Instances dataSet, boolean isTrainInstance){
-        Instance instance = new DenseInstance(28);
+        Instance instance = new DenseInstance(48);
         instance.setDataset(dataSet);
         instance.setValue(0, this.getDuration());
         instance.setValue(1, this.getAvgSize());
@@ -488,16 +781,36 @@ public class Swipe {
         instance.setValue(14, this.getAvgYVelocity());
         instance.setValue(15, this.getStdYVelocity());
         instance.setValue(16, this.getVarYVelocity());
-        instance.setValue(17, this.getMinXAcceleration());
-        instance.setValue(18, this.getMaxXAcceleration());
-        instance.setValue(19, this.getAvgXAcceleration());
-        instance.setValue(20, this.getStdXAcceleration());
-        instance.setValue(21, this.getVarXAcceleration());
-        instance.setValue(22, this.getMinYAcceleration());
-        instance.setValue(23, this.getMaxYAcceleration());
-        instance.setValue(24, this.getAvgYAcceleration());
-        instance.setValue(25, this.getStdYAcceleration());
-        instance.setValue(26, this.getVarYAcceleration());
+        instance.setValue(17, this.getMinXAccelerometer());
+        instance.setValue(18, this.getMaxXAccelerometer());
+        instance.setValue(19, this.getAvgXAccelerometer());
+        instance.setValue(20, this.getStdXAccelerometer());
+        instance.setValue(21, this.getVarXAccelerometer());
+        instance.setValue(22, this.getMinYAccelerometer());
+        instance.setValue(23, this.getMaxYAccelerometer());
+        instance.setValue(24, this.getAvgYAccelerometer());
+        instance.setValue(25, this.getStdYAccelerometer());
+        instance.setValue(26, this.getVarYAccelerometer());
+        instance.setValue(27, this.getMinZAccelerometer());
+        instance.setValue(28, this.getMaxZAccelerometer());
+        instance.setValue(29, this.getAvgZAccelerometer());
+        instance.setValue(30, this.getStdZAccelerometer());
+        instance.setValue(31, this.getVarZAccelerometer());
+        instance.setValue(32, this.getMinXGyroscope());
+        instance.setValue(33, this.getMaxXGyroscope());
+        instance.setValue(34, this.getAvgXGyroscope());
+        instance.setValue(35, this.getStdXGyroscope());
+        instance.setValue(36, this.getVarXGyroscope());
+        instance.setValue(37, this.getMinYGyroscope());
+        instance.setValue(38, this.getMaxYGyroscope());
+        instance.setValue(39, this.getAvgYGyroscope());
+        instance.setValue(40, this.getStdYGyroscope());
+        instance.setValue(41, this.getVarYGyroscope());
+        instance.setValue(42, this.getMinZGyroscope());
+        instance.setValue(43, this.getMaxZGyroscope());
+        instance.setValue(44, this.getAvgZGyroscope());
+        instance.setValue(45, this.getStdZGyroscope());
+        instance.setValue(46, this.getVarZGyroscope());
         if(isTrainInstance){
             instance.setClassValue(this.userId);
         }

@@ -15,27 +15,27 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.StrictMode;
+import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.VelocityTracker;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.PopupWindow;
 import android.widget.ProgressBar;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.Switch;
 import android.widget.TextView;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Dictionary;
 import java.util.DoubleSummaryStatistics;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Random;
-import java.util.concurrent.RejectedExecutionException;
-import java.util.stream.Collectors;
 
 import weka.classifiers.evaluation.Evaluation;
 import weka.core.Instance;
@@ -56,25 +56,31 @@ import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
     private static final int NUMBER_GAN_SAMPLES = 100;
 
-    private VelocityTracker mVelocityTracker = null;
     private long startTime = 0;
     private boolean isTrainingMode = true;
     private boolean isTrainingClassifier = false;
     private int holdingPosition = 0;
 
-    private ArrayList<Float> xCoordinates = null;
-    private ArrayList<Float> yCoordinates = null;
-    private ArrayList<Float> xVelocities = null;
-    private ArrayList<Float> yVelocities = null;
+    private ArrayList<Float> xLocations = null;
+    private ArrayList<Float> yLocations = null;
+    private ArrayList<Float> xVelocityTranslation = null;
+    private ArrayList<Float> yVelocityTranslation = null;
     private ArrayList<Float> sizes = null;
     private int duration = 0;
 
     private boolean isTrackingAccelerometer = false;
-    private ArrayList<Float> xAccelerations = null;
-    private ArrayList<Float> yAccelerations = null;
+    private ArrayList<Float> xAccelerometers = null;
+    private ArrayList<Float> yAccelerometers = null;
+    private ArrayList<Float> zAccelerometers = null;
+
+    private boolean isTrackingGyroscope = false;
+    private ArrayList<Float> xGyroscopes = null;
+    private ArrayList<Float> yGyroscopes = null;
+    private ArrayList<Float> zGyroscopes = null;
 
     private SensorManager sensorManager;
     private Sensor accelerometer;
+    private Sensor gyroscope;
 
     private DatabaseHelper dbHelper;
 
@@ -154,18 +160,25 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             runOnUiThread(()-> inputTextView.setText("Inputs " + recordsCount + " (min 5)"));
         }).start();
 
-        this.xCoordinates = new ArrayList<>();
-        this.yCoordinates = new ArrayList<>();
-        this.xVelocities = new ArrayList<>();
-        this.yVelocities = new ArrayList<>();
+        this.xLocations = new ArrayList<>();
+        this.yLocations = new ArrayList<>();
+        this.xVelocityTranslation = new ArrayList<>();
+        this.yVelocityTranslation = new ArrayList<>();
         this.sizes = new ArrayList<>();
 
-        this.xAccelerations = new ArrayList<>();
-        this.yAccelerations = new ArrayList<>();
+        this.xAccelerometers = new ArrayList<>();
+        this.yAccelerometers = new ArrayList<>();
+        this.zAccelerometers = new ArrayList<>();
+
+        this.xGyroscopes = new ArrayList<>();
+        this.yGyroscopes = new ArrayList<>();
+        this.zGyroscopes = new ArrayList<>();
 
         this.sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         this.accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        this.gyroscope = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
         this.sensorManager.registerListener(MainActivity.this, accelerometer, SensorManager.SENSOR_DELAY_NORMAL);
+        this.sensorManager.registerListener(MainActivity.this, gyroscope, SensorManager.SENSOR_DELAY_NORMAL);
 
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
             ActivityCompat.requestPermissions(this, new String[]{READ_EXTERNAL_STORAGE, WRITE_EXTERNAL_STORAGE}, PackageManager.PERMISSION_GRANTED);
@@ -184,9 +197,18 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     @Override
     public void onSensorChanged(SensorEvent event) {
-        if (this.isTrackingAccelerometer) {
-            this.xAccelerations.add(event.values[0]);
-            this.yAccelerations.add(event.values[1]);
+        if (event.sensor.getStringType().equals(Sensor.STRING_TYPE_ACCELEROMETER)) {
+            if (this.isTrackingAccelerometer) {
+                this.xAccelerometers.add(event.values[0]);
+                this.yAccelerometers.add(event.values[1]);
+                this.zAccelerometers.add(event.values[2]);
+            }
+        } else if (event.sensor.getStringType().equals(Sensor.STRING_TYPE_GYROSCOPE)) {
+            if (this.isTrackingGyroscope) {
+                this.xGyroscopes.add(event.values[0]);
+                this.yGyroscopes.add(event.values[1]);
+                this.zGyroscopes.add(event.values[2]);
+            }
         }
     }
 
@@ -205,37 +227,59 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 // initialization step
                 this.startTime = System.currentTimeMillis();
                 this.isTrackingAccelerometer = true;
+                this.isTrackingGyroscope = true;
 
-                this.xCoordinates.add(event.getX(pointerId));
-                this.yCoordinates.add(event.getY(pointerId));
+                this.xLocations.add(event.getX(pointerId));
+                this.yLocations.add(event.getY(pointerId));
                 this.sizes.add(event.getSize(pointerId));
-
-                this.mVelocityTracker = VelocityTracker.obtain();
-                this.mVelocityTracker.addMovement(event);
 
                 break;
             case MotionEvent.ACTION_MOVE:
-                this.mVelocityTracker.addMovement(event);
-                this.mVelocityTracker.computeCurrentVelocity(1000);
 
-                this.xVelocities.add(this.mVelocityTracker.getXVelocity(pointerId));
-                this.yVelocities.add(this.mVelocityTracker.getYVelocity(pointerId));
+                final int historySize = event.getHistorySize();
+                final int pointerCount = event.getPointerCount();
+                for (int h = 0; h < historySize; h++) {
+                    for (int p = 0; p < pointerCount; p++) {
+                        float newX = event.getHistoricalX(p, h);
+                        float newY = event.getHistoricalY(p, h);
+                        this.xVelocityTranslation.add(newX - this.xLocations.get(this.xLocations.size() - 1));
+                        this.yVelocityTranslation.add(newY - this.yLocations.get(this.yLocations.size() - 1));
+                        this.xLocations.add(newX);
+                        this.yLocations.add(newY);
+                    }
+                }
+
+                for (int p = 0; p < pointerCount; p++) {
+                    float newX = event.getX(p);
+                    float newY = event.getY(p);
+                    this.xVelocityTranslation.add(newX - this.xLocations.get(this.xLocations.size() - 1));
+                    this.yVelocityTranslation.add(newY - this.yLocations.get(this.yLocations.size() - 1));
+                    this.xLocations.add(newX);
+                    this.yLocations.add(newY);
+                }
+
                 this.sizes.add(event.getSize(pointerId));
 
                 break;
             case MotionEvent.ACTION_UP:
-                this.xCoordinates.add(event.getX(pointerId));
-                this.yCoordinates.add(event.getY(pointerId));
+
+                float newX = event.getX(pointerId);
+                float newY = event.getY(pointerId);
+                this.xVelocityTranslation.add(newX - this.xLocations.get(this.xLocations.size() - 1));
+                this.yVelocityTranslation.add(newY - this.yLocations.get(this.yLocations.size() - 1));
+                this.xLocations.add(newX);
+                this.yLocations.add(newY);
+
                 this.duration = (int) (System.currentTimeMillis() - this.startTime);
 
-                double distance = Math.sqrt(Math.pow(this.yCoordinates.get(this.yCoordinates.size() - 1) - this.yCoordinates.get(0), 2) + Math.pow(this.xCoordinates.get(this.xCoordinates.size() - 1) - this.xCoordinates.get(0), 2));
+                double distance = Math.sqrt(Math.pow(this.yLocations.get(this.yLocations.size() - 1) - this.yLocations.get(0), 2) + Math.pow(this.xLocations.get(this.xLocations.size() - 1) - this.xLocations.get(0), 2));
                 if(distance > 20) {
                     Swipe swipe = this.getSwipe();
                     if(this.isTrainingMode) {
                         this.saveButton.setVisibility(View.INVISIBLE);
                         this.dbHelper.addTrainRecord(swipe);
                         int recordsCount = this.dbHelper.getRecordsCount("REAL_SWIPES");
-                        inputTextView.setText("Inputs " + recordsCount + " (min 5)");
+                        this.inputTextView.setText("Inputs " + recordsCount + " (min 5)");
                     } else {
                         String outputMessage = "";
                         outputMessage += String.format("%1$-15s %2$-16s %3$-18s", "Inputs", "Prediction", "Test time");
@@ -311,17 +355,22 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     public void resetValues() {
-        this.xCoordinates.clear();
-        this.yCoordinates.clear();
-        this.xVelocities.clear();
-        this.yVelocities.clear();
+        this.xLocations.clear();
+        this.yLocations.clear();
+        this.xVelocityTranslation.clear();
+        this.yVelocityTranslation.clear();
         this.sizes.clear();
 
-        this.xAccelerations.clear();
-        this.yAccelerations.clear();
+        this.xAccelerometers.clear();
+        this.yAccelerometers.clear();
+        this.zAccelerometers.clear();
 
-        this.mVelocityTracker = null;
+        this.xGyroscopes.clear();
+        this.yGyroscopes.clear();
+        this.zGyroscopes.clear();
+
         this.isTrackingAccelerometer = false;
+        this.isTrackingGyroscope = false;
     }
 
     public Swipe getSwipe() {
@@ -331,38 +380,66 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         double avgSize = sizesStats.getAverage();
         double downSize = this.sizes.get(0);
 
-        double startX = this.xCoordinates.get(0);
-        double startY = this.yCoordinates.get(0);
-        double endX = this.xCoordinates.get(this.xCoordinates.size() - 1);
-        double endY = this.yCoordinates.get(this.yCoordinates.size() - 1);
+        double startX = this.xLocations.get(0);
+        double startY = this.yLocations.get(0);
+        double endX = this.xLocations.get(this.xLocations.size() - 1);
+        double endY = this.yLocations.get(this.yLocations.size() - 1);
 
-        DoubleSummaryStatistics xVelocityStats = this.xVelocities.stream().mapToDouble(x -> (double) x).summaryStatistics();
+        DoubleSummaryStatistics xVelocityStats = this.xVelocityTranslation.stream().mapToDouble(x -> (double) x).summaryStatistics();
         double minXVelocity = xVelocityStats.getMin();
         double maxXVelocity = xVelocityStats.getMax();
         double avgXVelocity = xVelocityStats.getAverage();
-        double varXVelocity = this.xVelocities.stream().map(i -> i - avgXVelocity).map(i -> i*i).mapToDouble(i -> i).average().getAsDouble();
+        double varXVelocity = this.xVelocityTranslation.stream().map(i -> i - avgXVelocity).map(i -> i*i).mapToDouble(i -> i).average().getAsDouble();
         double stdXVelocity = Math.sqrt(varXVelocity);
 
-        DoubleSummaryStatistics yVelocityStats = this.xVelocities.stream().mapToDouble(x -> (double) x).summaryStatistics();
+        DoubleSummaryStatistics yVelocityStats = this.xVelocityTranslation.stream().mapToDouble(x -> (double) x).summaryStatistics();
         double minYVelocity = yVelocityStats.getMin();
         double maxYVelocity = yVelocityStats.getMax();
         double avgYVelocity = yVelocityStats.getAverage();
-        double varYVelocity = this.yVelocities.stream().map(i -> i - avgYVelocity).map(i -> i*i).mapToDouble(i -> i).average().getAsDouble();
+        double varYVelocity = this.yVelocityTranslation.stream().map(i -> i - avgYVelocity).map(i -> i*i).mapToDouble(i -> i).average().getAsDouble();
         double stdYVelocity = Math.sqrt(varYVelocity);
 
-        DoubleSummaryStatistics xAccelerationStats = this.xAccelerations.stream().mapToDouble(x -> (double) x).summaryStatistics();
-        double minXAcceleration = xAccelerationStats.getMin();
-        double maxXAcceleration = xAccelerationStats.getMax();
-        double avgXAcceleration = xAccelerationStats.getAverage();
-        double varXAcceleration = this.xAccelerations.stream().map(i -> i - avgXAcceleration).map(i -> i*i).mapToDouble(i -> i).average().getAsDouble();
-        double stdXAcceleration = Math.sqrt(varXAcceleration);
+        DoubleSummaryStatistics xAccelerometerStats = this.xAccelerometers.stream().mapToDouble(x -> (double) x).summaryStatistics();
+        double minXAccelerometer = xAccelerometerStats.getMin();
+        double maxXAccelerometer = xAccelerometerStats.getMax();
+        double avgXAccelerometer = xAccelerometerStats.getAverage();
+        double varXAccelerometer = this.xAccelerometers.stream().map(i -> i - avgXAccelerometer).map(i -> i*i).mapToDouble(i -> i).average().getAsDouble();
+        double stdXAccelerometer = Math.sqrt(varXAccelerometer);
 
-        DoubleSummaryStatistics yAccelerationStats = this.yAccelerations.stream().mapToDouble(x -> (double) x).summaryStatistics();
-        double minYAcceleration = yAccelerationStats.getMin();
-        double maxYAcceleration = yAccelerationStats.getMax();
-        double avgYAcceleration = yAccelerationStats.getAverage();
-        double varYAcceleration = this.yAccelerations.stream().map(i -> i - avgYAcceleration).map(i -> i*i).mapToDouble(i -> i).average().getAsDouble();
-        double stdYAcceleration = Math.sqrt(varYAcceleration);
+        DoubleSummaryStatistics yAccelerometerStats = this.yAccelerometers.stream().mapToDouble(x -> (double) x).summaryStatistics();
+        double minYAccelerometer = yAccelerometerStats.getMin();
+        double maxYAccelerometer = yAccelerometerStats.getMax();
+        double avgYAccelerometer = yAccelerometerStats.getAverage();
+        double varYAccelerometer = this.yAccelerometers.stream().map(i -> i - avgYAccelerometer).map(i -> i*i).mapToDouble(i -> i).average().getAsDouble();
+        double stdYAccelerometer = Math.sqrt(varYAccelerometer);
+
+        DoubleSummaryStatistics zAccelerometerStats = this.zAccelerometers.stream().mapToDouble(x -> (double) x).summaryStatistics();
+        double minZAccelerometer = zAccelerometerStats.getMin();
+        double maxZAccelerometer = zAccelerometerStats.getMax();
+        double avgZAccelerometer = zAccelerometerStats.getAverage();
+        double varZAccelerometer = this.zAccelerometers.stream().map(i -> i - avgZAccelerometer).map(i -> i*i).mapToDouble(i -> i).average().getAsDouble();
+        double stdZAccelerometer = Math.sqrt(varZAccelerometer);
+
+        DoubleSummaryStatistics xGyroscopeStats = this.xGyroscopes.stream().mapToDouble(x -> (double) x).summaryStatistics();
+        double minXGyroscope = xGyroscopeStats.getMin();
+        double maxXGyroscope = xGyroscopeStats.getMax();
+        double avgXGyroscope = xGyroscopeStats.getAverage();
+        double varXGyroscope = this.xGyroscopes.stream().map(i -> i - avgXGyroscope).map(i -> i*i).mapToDouble(i -> i).average().getAsDouble();
+        double stdXGyroscope = Math.sqrt(varXGyroscope);
+
+        DoubleSummaryStatistics yGyroscopeStats = this.yGyroscopes.stream().mapToDouble(x -> (double) x).summaryStatistics();
+        double minYGyroscope = yGyroscopeStats.getMin();
+        double maxYGyroscope = yGyroscopeStats.getMax();
+        double avgYGyroscope = yGyroscopeStats.getAverage();
+        double varYGyroscope = this.yGyroscopes.stream().map(i -> i - avgYGyroscope).map(i -> i*i).mapToDouble(i -> i).average().getAsDouble();
+        double stdYGyroscope = Math.sqrt(varYGyroscope);
+
+        DoubleSummaryStatistics zGyroscopeStats = this.zGyroscopes.stream().mapToDouble(x -> (double) x).summaryStatistics();
+        double minZGyroscope = zGyroscopeStats.getMin();
+        double maxZGyroscope = zGyroscopeStats.getMax();
+        double avgZGyroscope = zGyroscopeStats.getAverage();
+        double varZGyroscope = this.zGyroscopes.stream().map(i -> i - avgZGyroscope).map(i -> i*i).mapToDouble(i -> i).average().getAsDouble();
+        double stdZGyroscope = Math.sqrt(varZGyroscope);
 
         Swipe newSwipe = new Swipe();
         newSwipe.setDuration(duration);
@@ -385,17 +462,41 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         newSwipe.setStdYVelocity(stdYVelocity);
         newSwipe.setVarYVelocity(varYVelocity);
 
-        newSwipe.setMinXAcceleration(minXAcceleration);
-        newSwipe.setMaxXAcceleration(maxXAcceleration);
-        newSwipe.setAvgXAcceleration(avgXAcceleration);
-        newSwipe.setStdXAcceleration(stdXAcceleration);
-        newSwipe.setVarXAcceleration(varXAcceleration);
+        newSwipe.setMinXAccelerometer(minXAccelerometer);
+        newSwipe.setMaxXAccelerometer(maxXAccelerometer);
+        newSwipe.setAvgXAccelerometer(avgXAccelerometer);
+        newSwipe.setStdXAccelerometer(stdXAccelerometer);
+        newSwipe.setVarXAccelerometer(varXAccelerometer);
 
-        newSwipe.setMinYAcceleration(minYAcceleration);
-        newSwipe.setMaxYAcceleration(maxYAcceleration);
-        newSwipe.setAvgYAcceleration(avgYAcceleration);
-        newSwipe.setStdYAcceleration(stdYAcceleration);
-        newSwipe.setVarYAcceleration(varYAcceleration);
+        newSwipe.setMinYAccelerometer(minYAccelerometer);
+        newSwipe.setMaxYAccelerometer(maxYAccelerometer);
+        newSwipe.setAvgYAccelerometer(avgYAccelerometer);
+        newSwipe.setStdYAccelerometer(stdYAccelerometer);
+        newSwipe.setVarYAccelerometer(varYAccelerometer);
+
+        newSwipe.setMinZAccelerometer(minZAccelerometer);
+        newSwipe.setMaxZAccelerometer(maxZAccelerometer);
+        newSwipe.setAvgZAccelerometer(avgZAccelerometer);
+        newSwipe.setStdZAccelerometer(stdZAccelerometer);
+        newSwipe.setVarZAccelerometer(varZAccelerometer);
+
+        newSwipe.setMinXGyroscope(minXGyroscope);
+        newSwipe.setMaxXGyroscope(maxXGyroscope);
+        newSwipe.setAvgXGyroscope(avgXGyroscope);
+        newSwipe.setStdXGyroscope(stdXGyroscope);
+        newSwipe.setVarXGyroscope(varXGyroscope);
+
+        newSwipe.setMinYGyroscope(minYGyroscope);
+        newSwipe.setMaxYGyroscope(maxYGyroscope);
+        newSwipe.setAvgYGyroscope(avgYGyroscope);
+        newSwipe.setStdYGyroscope(stdYGyroscope);
+        newSwipe.setVarYGyroscope(varYGyroscope);
+
+        newSwipe.setMinZGyroscope(minZGyroscope);
+        newSwipe.setMaxZGyroscope(maxZGyroscope);
+        newSwipe.setAvgZGyroscope(avgZGyroscope);
+        newSwipe.setStdZGyroscope(stdZGyroscope);
+        newSwipe.setVarZGyroscope(varZGyroscope);
 
         if (this.isTrainingMode) {
             newSwipe.setHoldingPosition(this.holdingPosition);
@@ -421,6 +522,120 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         System.out.println("--------------------------------------------New Swipe---------------------------------------------------------------");
         System.out.println(newSwipe);
         return newSwipe;
+    }
+
+    public void disableUserInteraction() {
+        this.trainButton.setEnabled(false);
+        this.ganButton.setEnabled(false);
+        this.profileButton.setEnabled(false);
+        this.resetButton.setEnabled(false);
+    }
+
+    public void enableUserInteraction() {
+        this.trainButton.setEnabled(true);
+        this.ganButton.setEnabled(true);
+        this.profileButton.setEnabled(true);
+        this.resetButton.setEnabled(true);
+    }
+
+    public void editProfile(View view) {
+        // inflate the layout of the popup window
+        LayoutInflater inflater = (LayoutInflater)
+                getSystemService(LAYOUT_INFLATER_SERVICE);
+        View popupView = inflater.inflate(R.layout.profile_window, null);
+
+
+        // create the popup window
+        int width = LinearLayout.LayoutParams.WRAP_CONTENT;
+        int height = LinearLayout.LayoutParams.WRAP_CONTENT;
+        boolean focusable = true; // lets taps outside the popup also dismiss it
+        final PopupWindow popupWindow = new PopupWindow(popupView, width, height, focusable);
+
+        // show the popup window
+        // which view you pass in doesn't matter, it is only used for the window tolken
+        popupWindow.showAtLocation(view, Gravity.CENTER, 0, 0);
+
+        this.profileButton.setVisibility(View.INVISIBLE);
+        this.resetButton.setVisibility(View.INVISIBLE);
+        this.inputTextView.setVisibility(View.INVISIBLE);
+        this.trainButton.setVisibility(View.INVISIBLE);
+        this.ganButton.setVisibility(View.INVISIBLE);
+        this.swipeImageView.setVisibility(View.INVISIBLE);
+
+        popupWindow.setOnDismissListener(new PopupWindow.OnDismissListener() {
+            @Override
+            public void onDismiss() {
+                profileButton.setVisibility(View.VISIBLE);
+                resetButton.setVisibility(View.VISIBLE);
+                inputTextView.setVisibility(View.VISIBLE);
+                trainButton.setVisibility(View.VISIBLE);
+                ganButton.setVisibility(View.VISIBLE);
+                swipeImageView.setVisibility(View.VISIBLE);
+            }
+        });
+
+        ArrayList<String> userData = dbHelper.getUserData();
+
+        EditText nicknameEditText = popupView.findViewById(R.id.nicknameEditText);
+        nicknameEditText.setText(userData.get(0));
+
+        RadioGroup genderRadioGroup = popupView.findViewById(R.id.genderRadioGroup);
+        ArrayList<Integer> genderRadioGroupIndices = new ArrayList<Integer>();
+        genderRadioGroupIndices.add(new Integer(R.id.genderNoneRadioButton));
+        genderRadioGroupIndices.add(new Integer(R.id.genderMaleRadioButton));
+        genderRadioGroupIndices.add(new Integer(R.id.genderFemaleRadioButton));
+        int genderIdx = (int) Double.parseDouble(userData.get(1));
+        genderRadioGroup.check(genderRadioGroupIndices.get(genderIdx));
+
+        RadioGroup ageRadioGroup = popupView.findViewById(R.id.ageRadioGroup);
+        ArrayList<Integer> ageRadioGroupIndices = new ArrayList<Integer>();
+        ageRadioGroupIndices.add(new Integer(R.id.ageNoneRadioButton));
+        ageRadioGroupIndices.add(new Integer(R.id.age20RadioButton));
+        ageRadioGroupIndices.add(new Integer(R.id.age40RadioButton));
+        ageRadioGroupIndices.add(new Integer(R.id.age60RadioButton));
+        ageRadioGroupIndices.add(new Integer(R.id.age80RadioButton));
+        int ageIdx = (int) Double.parseDouble(userData.get(2));
+        ageRadioGroup.check(ageRadioGroupIndices.get(ageIdx));
+
+        EditText nationalityEditText = popupView.findViewById(R.id.nationalityEditText);
+        nationalityEditText.setText(userData.get(3));
+
+        RadioGroup holdingRadioGroup = popupView.findViewById(R.id.holdingRadioGroup);
+        ArrayList<Integer> holdingRadioGroupIndices = new ArrayList<Integer>();
+        holdingRadioGroupIndices.add(new Integer(R.id.holdingNoneRadioButton));
+        holdingRadioGroupIndices.add(new Integer(R.id.holdingRightRadioButton));
+        holdingRadioGroupIndices.add(new Integer(R.id.holdingLeftRadioButton));
+        holdingRadioGroupIndices.add(new Integer(R.id.holdingBothRadioButton));
+        int holdingIdx = (int) Double.parseDouble(userData.get(4));
+        holdingRadioGroup.check(holdingRadioGroupIndices.get(holdingIdx));
+
+        Button saveProfileButton = popupView.findViewById(R.id.saveProfileButton);
+        saveProfileButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String nickname = nicknameEditText.getText().toString();
+                int genderIndex = genderRadioGroupIndices.indexOf(new Integer(genderRadioGroup.getCheckedRadioButtonId()));
+                int ageIndex = ageRadioGroupIndices.indexOf(new Integer(ageRadioGroup.getCheckedRadioButtonId()));
+                String nationality = nationalityEditText.getText().toString();
+                int holdingIndex = holdingRadioGroupIndices.lastIndexOf(new Integer(holdingRadioGroup.getCheckedRadioButtonId()));
+
+                dbHelper.resetDB();
+                dbHelper.saveUserData(nickname, genderIndex, ageIndex, nationality, holdingIndex);
+
+                inputTextView.setText("Inputs 0 (min 5)");
+
+                popupWindow.dismiss();
+            }
+        });
+
+        Button cancelButton = popupView.findViewById(R.id.cancelButton);
+        cancelButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                popupWindow.dismiss();
+            }
+        });
+
     }
 
     public void resetData(View view) {
@@ -478,6 +693,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             this.trainButton.setVisibility(View.VISIBLE);
             this.saveButton.setVisibility(View.VISIBLE);
             this.attackSwitch.setVisibility(View.INVISIBLE);
+            this.profileButton.setVisibility(View.VISIBLE);
             this.holdingPositionRadioGroup.setVisibility(View.VISIBLE);
             this.isTrainingMode = true;
             this.resetButton.setText("Reset DB");
@@ -486,6 +702,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     public void train(View view) {
         this.isTrainingClassifier = true;
+        this.disableUserInteraction();
 
         this.progressTextView.setText("Training classifier");
         this.train(false);
@@ -494,6 +711,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     public void trainWithGAN(View view) {
         this.isTrainingClassifier = true;
+        this.disableUserInteraction();
 
         this.progressTextView.setText("GAN epoch: 0 (out of " + NUM_EPOCHS + ")");
         this.train(true);
@@ -504,6 +722,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         if (this.dbHelper.getRecordsCount("REAL_SWIPES") < 5) {
             this.showAlertDialog("ATTENTION", "You need to enter at least 5 swipes as input before training.");
             this.isTrainingClassifier = false;
+            this.enableUserInteraction();
             return;
         }
 
@@ -516,17 +735,18 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         Handler uiHandler = new Handler(Looper.getMainLooper());
         Runnable uiRunnable = () -> {
-            inputTextView.setText("Swipe to authenticate");
-            ganButton.setVisibility(View.INVISIBLE);
-            trainButton.setVisibility(View.INVISIBLE);
-            saveButton.setVisibility(View.INVISIBLE);
-            resetButton.setText("Done");
+            this.inputTextView.setText("Swipe to authenticate");
+            this.ganButton.setVisibility(View.INVISIBLE);
+            this.trainButton.setVisibility(View.INVISIBLE);
+            this.saveButton.setVisibility(View.INVISIBLE);
+            this.resetButton.setText("Done");
 
-            progressTextView.setVisibility(View.INVISIBLE);
-            progressBar.setVisibility(View.INVISIBLE);
-            swipeImageView.setVisibility(View.VISIBLE);
-            attackSwitch.setVisibility(View.VISIBLE);
-            attackSwitch.setChecked(false);
+            this.progressTextView.setVisibility(View.INVISIBLE);
+            this.progressBar.setVisibility(View.INVISIBLE);
+            this.swipeImageView.setVisibility(View.VISIBLE);
+            this.attackSwitch.setVisibility(View.VISIBLE);
+            this.attackSwitch.setChecked(false);
+            this.profileButton.setVisibility(View.INVISIBLE);
             this.holdingPositionRadioGroup.setVisibility(View.INVISIBLE);
         };
 
@@ -626,6 +846,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         final String strSummary = finalSummary;
         MainActivity context = this;
 
+        runOnUiThread(() -> context.enableUserInteraction());
         runOnUiThread(() -> context.showAlertDialog("TRAINING RESULTS", strSummary));
 
     }
@@ -690,13 +911,15 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         final String strSummary = finalSummary;
         MainActivity context = this;
 
+        runOnUiThread(() -> context.enableUserInteraction());
         runOnUiThread(() -> context.showAlertDialog("TRAINING RESULTS", strSummary));
     }
 
     public synchronized void saveData(View view) {
 
         try {
-            dbHelper.saveAllTablesAsCSV(getContentResolver(), getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS).getPath());
+            ArrayList<String> userData = dbHelper.getUserData();
+            dbHelper.saveAllTablesAsCSV(getContentResolver(), getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS).getPath() + File.separator + userData.get(0));
             //this.showAlertDialog("SUCCESS", "CSV files have been saved into the file manager");
             this.showSnackBar("CSV files saved to /Downloads", "#238823");
 
@@ -743,16 +966,36 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         Attribute avgYVelocity = new Attribute("avgYVelocity");
         Attribute stdYVelocity = new Attribute("stdYVelocity");
         Attribute varYVelocity = new Attribute("varYVelocity");
-        Attribute minXAcceleration = new Attribute("minXAcceleration");
-        Attribute maxXAcceleration = new Attribute("maxXAcceleration");
-        Attribute avgXAcceleration = new Attribute("avgXAcceleration");
-        Attribute stdXAcceleration = new Attribute("stdXAcceleration");
-        Attribute varXAcceleration = new Attribute("varXAcceleration");
-        Attribute minYAcceleration = new Attribute("minYAcceleration");
-        Attribute maxYAcceleration = new Attribute("maxYAcceleration");
-        Attribute avgYAcceleration = new Attribute("avgYAcceleration");
-        Attribute stdYAcceleration = new Attribute("stdYAcceleration");
-        Attribute varYAcceleration = new Attribute("varYAcceleration");
+        Attribute minXAccelerometer = new Attribute("minXAccelerometer");
+        Attribute maxXAccelerometer = new Attribute("maxXAccelerometer");
+        Attribute avgXAccelerometer = new Attribute("avgXAccelerometer");
+        Attribute stdXAccelerometer = new Attribute("stdXAccelerometer");
+        Attribute varXAccelerometer = new Attribute("varXAccelerometer");
+        Attribute minYAccelerometer = new Attribute("minYAccelerometer");
+        Attribute maxYAccelerometer = new Attribute("maxYAccelerometer");
+        Attribute avgYAccelerometer = new Attribute("avgYAccelerometer");
+        Attribute stdYAccelerometer = new Attribute("stdYAccelerometer");
+        Attribute varYAccelerometer = new Attribute("varYAccelerometer");
+        Attribute minZAccelerometer = new Attribute("minZAccelerometer");
+        Attribute maxZAccelerometer = new Attribute("maxZAccelerometer");
+        Attribute avgZAccelerometer = new Attribute("avgZAccelerometer");
+        Attribute stdZAccelerometer = new Attribute("stdZAccelerometer");
+        Attribute varZAccelerometer = new Attribute("varZAccelerometer");
+        Attribute minXGyroscope = new Attribute("minXGyroscope");
+        Attribute maxXGyroscope = new Attribute("maxXGyroscope");
+        Attribute avgXGyroscope = new Attribute("avgXGyroscope");
+        Attribute stdXGyroscope = new Attribute("stdXGyroscope");
+        Attribute varXGyroscope = new Attribute("varXGyroscope");
+        Attribute minYGyroscope = new Attribute("minYGyroscope");
+        Attribute maxYGyroscope = new Attribute("maxYGyroscope");
+        Attribute avgYGyroscope = new Attribute("avgYGyroscope");
+        Attribute stdYGyroscope = new Attribute("stdYGyroscope");
+        Attribute varYGyroscope = new Attribute("varYGyroscope");
+        Attribute minZGyroscope = new Attribute("minZGyroscope");
+        Attribute maxZGyroscope = new Attribute("maxZGyroscope");
+        Attribute avgZGyroscope = new Attribute("avgZGyroscope");
+        Attribute stdZGyroscope = new Attribute("stdZGyroscope");
+        Attribute varZGyroscope = new Attribute("varZGyroscope");
         ArrayList<String> myNominalValues = new ArrayList<>(2);
         myNominalValues.add("User");
         myNominalValues.add("Attacker");
@@ -776,16 +1019,36 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         attributes.add(avgYVelocity);
         attributes.add(stdYVelocity);
         attributes.add(varYVelocity);
-        attributes.add(minXAcceleration);
-        attributes.add(maxXAcceleration);
-        attributes.add(avgXAcceleration);
-        attributes.add(stdXAcceleration);
-        attributes.add(varXAcceleration);
-        attributes.add(minYAcceleration);
-        attributes.add(maxYAcceleration);
-        attributes.add(avgYAcceleration);
-        attributes.add(stdYAcceleration);
-        attributes.add(varYAcceleration);
+        attributes.add(minXAccelerometer);
+        attributes.add(maxXAccelerometer);
+        attributes.add(avgXAccelerometer);
+        attributes.add(stdXAccelerometer);
+        attributes.add(varXAccelerometer);
+        attributes.add(minYAccelerometer);
+        attributes.add(maxYAccelerometer);
+        attributes.add(avgYAccelerometer);
+        attributes.add(stdYAccelerometer);
+        attributes.add(varYAccelerometer);
+        attributes.add(minZAccelerometer);
+        attributes.add(maxZAccelerometer);
+        attributes.add(avgZAccelerometer);
+        attributes.add(stdZAccelerometer);
+        attributes.add(varZAccelerometer);
+        attributes.add(minXGyroscope);
+        attributes.add(maxXGyroscope);
+        attributes.add(avgXGyroscope);
+        attributes.add(stdXGyroscope);
+        attributes.add(varXGyroscope);
+        attributes.add(minYGyroscope);
+        attributes.add(maxYGyroscope);
+        attributes.add(avgYGyroscope);
+        attributes.add(stdYGyroscope);
+        attributes.add(varYGyroscope);
+        attributes.add(minZGyroscope);
+        attributes.add(maxZGyroscope);
+        attributes.add(avgZGyroscope);
+        attributes.add(stdZGyroscope);
+        attributes.add(varZGyroscope);
         attributes.add(owner);
 
         Instances dataSet = new Instances("swipes", attributes, 0);

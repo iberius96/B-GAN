@@ -59,7 +59,7 @@ public class GAN {
                         .build(),
                 new DenseLayer.Builder()
                         .nIn(NUM_LAYER_UNITS) //try 128
-                        .nOut(27)
+                        .nOut(47)
                         .weightInit(WeightInit.XAVIER_UNIFORM)
                         .activation(Activation.SIGMOID)
                         .build()
@@ -81,7 +81,7 @@ public class GAN {
     private Layer[] getDiscriminatorLayers() {
         return new Layer[]{
                 new DenseLayer.Builder()
-                        .nIn(27)
+                        .nIn(47)
                         .nOut(NUM_LAYER_UNITS)
                         .weightInit(WeightInit.RELU_UNIFORM)
                         .activation(Activation.RELU)

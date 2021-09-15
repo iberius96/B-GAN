@@ -18,7 +18,6 @@ import java.io.FileWriter;
 import java.io.OutputStreamWriter;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.Objects;
 
@@ -38,6 +37,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String REAL_RESULTS = "REAL_RESULTS";
     private static final String GAN_RESULTS = "GAN_RESULTS";
     private static final String TEST_RESULTS = "TEST_RESULTS";
+
+    private static final String USER_DATA = "USER_DATA";
 
     private static final String COL_AUTHENTICATION = "AUTHENTICATION";
     private static final String COL_AUTHENTICATION_TIME = "AUTHENTICATION_TIME";
@@ -60,16 +61,36 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String COL_AVG_Y_VELOCITY = "avg_y_velocity";
     private static final String COL_STD_Y_VELOCITY = "std_y_velocity";
     private static final String COL_VAR_Y_VELOCITY = "var_y_velocity";
-    private static final String COL_MIN_X_ACCELERATION = "min_x_acceleration";
-    private static final String COL_MAX_X_ACCELERATION = "max_x_acceleration";
-    private static final String COL_AVG_X_ACCELERATION = "avg_x_acceleration";
-    private static final String COL_STD_X_ACCELERATION = "std_x_acceleration";
-    private static final String COL_VAR_X_ACCELERATION = "var_x_acceleration";
-    private static final String COL_MIN_Y_ACCELERATION = "min_y_acceleration";
-    private static final String COL_MAX_Y_ACCELERATION = "max_y_acceleration";
-    private static final String COL_AVG_Y_ACCELERATION = "avg_y_acceleration";
-    private static final String COL_STD_Y_ACCELERATION = "std_y_acceleration";
-    private static final String COL_VAR_Y_ACCELERATION = "var_y_acceleration";
+    private static final String COL_MIN_X_ACCELEROMETER = "min_x_accelerometer";
+    private static final String COL_MAX_X_ACCELEROMETER = "max_x_accelerometer";
+    private static final String COL_AVG_X_ACCELEROMETER = "avg_x_accelerometer";
+    private static final String COL_STD_X_ACCELEROMETER = "std_x_accelerometer";
+    private static final String COL_VAR_X_ACCELEROMETER = "var_x_accelerometer";
+    private static final String COL_MIN_Y_ACCELEROMETER = "min_y_accelerometer";
+    private static final String COL_MAX_Y_ACCELEROMETER = "max_y_accelerometer";
+    private static final String COL_AVG_Y_ACCELEROMETER = "avg_y_accelerometer";
+    private static final String COL_STD_Y_ACCELEROMETER = "std_y_accelerometer";
+    private static final String COL_VAR_Y_ACCELEROMETER = "var_y_accelerometer";
+    private static final String COL_MIN_Z_ACCELEROMETER = "min_z_accelerometer";
+    private static final String COL_MAX_Z_ACCELEROMETER = "max_z_accelerometer";
+    private static final String COL_AVG_Z_ACCELEROMETER = "avg_z_accelerometer";
+    private static final String COL_STD_Z_ACCELEROMETER = "std_z_accelerometer";
+    private static final String COL_VAR_Z_ACCELEROMETER = "var_z_accelerometer";
+    private static final String COL_MIN_X_GYROSCOPE = "min_x_gyroscope";
+    private static final String COL_MAX_X_GYROSCOPE = "max_x_gyroscope";
+    private static final String COL_AVG_X_GYROSCOPE = "avg_x_gyroscope";
+    private static final String COL_STD_X_GYROSCOPE = "std_x_gyroscope";
+    private static final String COL_VAR_X_GYROSCOPE = "var_x_gyroscope";
+    private static final String COL_MIN_Y_GYROSCOPE = "min_y_gyroscope";
+    private static final String COL_MAX_Y_GYROSCOPE = "max_y_gyroscope";
+    private static final String COL_AVG_Y_GYROSCOPE = "avg_y_gyroscope";
+    private static final String COL_STD_Y_GYROSCOPE = "std_y_gyroscope";
+    private static final String COL_VAR_Y_GYROSCOPE = "var_y_gyroscope";
+    private static final String COL_MIN_Z_GYROSCOPE = "min_z_gyroscope";
+    private static final String COL_MAX_Z_GYROSCOPE = "max_z_gyroscope";
+    private static final String COL_AVG_Z_GYROSCOPE = "avg_z_gyroscope";
+    private static final String COL_STD_Z_GYROSCOPE = "std_z_gyroscope";
+    private static final String COL_VAR_Z_GYROSCOPE = "var_z_gyroscope";
     private static final String COL_HOLDING_POSITION = "holding_position";
 
     private static final String COL_INSTANCES = "INSTANCES";
@@ -83,6 +104,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String COL_AVG_TEST_TIME = "AVG_TEST_TIME";
     private static final String COL_USER_ID = "USER_ID";
     private static final String COL_CLASSIFIER_SAMPLES = "CLASSIFIER_SAMPLES";
+
+    private static final String COL_NICKNAME = "nickname";
+    private static final String COL_GENDER = "gender";
+    private static final String COL_AGE = "age";
+    private static final String COL_NATIONALITY = "nationality";
+    private static final String COL_HOLDING_HAND = "holding_hand";
 
     public DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, 1);
@@ -109,16 +136,36 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 + COL_AVG_Y_VELOCITY + " float(53), "
                 + COL_STD_Y_VELOCITY + " float(53), "
                 + COL_VAR_Y_VELOCITY + " float(53), "
-                + COL_MIN_X_ACCELERATION + " float(53), "
-                + COL_MAX_X_ACCELERATION + " float(53), "
-                + COL_AVG_X_ACCELERATION + " float(53), "
-                + COL_STD_X_ACCELERATION + " float(53), "
-                + COL_VAR_X_ACCELERATION + " float(53), "
-                + COL_MIN_Y_ACCELERATION + " float(53), "
-                + COL_MAX_Y_ACCELERATION + " float(53), "
-                + COL_AVG_Y_ACCELERATION + " float(53), "
-                + COL_STD_Y_ACCELERATION + " float(53), "
-                + COL_VAR_Y_ACCELERATION + " float(53), "
+                + COL_MIN_X_ACCELEROMETER + " float(53), "
+                + COL_MAX_X_ACCELEROMETER + " float(53), "
+                + COL_AVG_X_ACCELEROMETER + " float(53), "
+                + COL_STD_X_ACCELEROMETER + " float(53), "
+                + COL_VAR_X_ACCELEROMETER + " float(53), "
+                + COL_MIN_Y_ACCELEROMETER + " float(53), "
+                + COL_MAX_Y_ACCELEROMETER + " float(53), "
+                + COL_AVG_Y_ACCELEROMETER + " float(53), "
+                + COL_STD_Y_ACCELEROMETER + " float(53), "
+                + COL_VAR_Y_ACCELEROMETER + " float(53), "
+                + COL_MIN_Z_ACCELEROMETER + " float(53), "
+                + COL_MAX_Z_ACCELEROMETER + " float(53), "
+                + COL_AVG_Z_ACCELEROMETER + " float(53), "
+                + COL_STD_Z_ACCELEROMETER + " float(53), "
+                + COL_VAR_Z_ACCELEROMETER + " float(53), "
+                + COL_MIN_X_GYROSCOPE + " float(53), "
+                + COL_MAX_X_GYROSCOPE + " float(53), "
+                + COL_AVG_X_GYROSCOPE + " float(53), "
+                + COL_STD_X_GYROSCOPE + " float(53), "
+                + COL_VAR_X_GYROSCOPE + " float(53), "
+                + COL_MIN_Y_GYROSCOPE + " float(53), "
+                + COL_MAX_Y_GYROSCOPE + " float(53), "
+                + COL_AVG_Y_GYROSCOPE + " float(53), "
+                + COL_STD_Y_GYROSCOPE + " float(53), "
+                + COL_VAR_Y_GYROSCOPE + " float(53), "
+                + COL_MIN_Z_GYROSCOPE + " float(53), "
+                + COL_MAX_Z_GYROSCOPE + " float(53), "
+                + COL_AVG_Z_GYROSCOPE + " float(53), "
+                + COL_STD_Z_GYROSCOPE + " float(53), "
+                + COL_VAR_Z_GYROSCOPE + " float(53), "
                 + COL_HOLDING_POSITION + " float(53), "
                 + COL_USER_ID + " varchar(20))";
 
@@ -141,16 +188,36 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 + COL_AVG_Y_VELOCITY + " float(53), "
                 + COL_STD_Y_VELOCITY + " float(53), "
                 + COL_VAR_Y_VELOCITY + " float(53), "
-                + COL_MIN_X_ACCELERATION + " float(53), "
-                + COL_MAX_X_ACCELERATION + " float(53), "
-                + COL_AVG_X_ACCELERATION + " float(53), "
-                + COL_STD_X_ACCELERATION + " float(53), "
-                + COL_VAR_X_ACCELERATION + " float(53), "
-                + COL_MIN_Y_ACCELERATION + " float(53), "
-                + COL_MAX_Y_ACCELERATION + " float(53), "
-                + COL_AVG_Y_ACCELERATION + " float(53), "
-                + COL_STD_Y_ACCELERATION + " float(53), "
-                + COL_VAR_Y_ACCELERATION + " float(53), "
+                + COL_MIN_X_ACCELEROMETER + " float(53), "
+                + COL_MAX_X_ACCELEROMETER + " float(53), "
+                + COL_AVG_X_ACCELEROMETER + " float(53), "
+                + COL_STD_X_ACCELEROMETER + " float(53), "
+                + COL_VAR_X_ACCELEROMETER + " float(53), "
+                + COL_MIN_Y_ACCELEROMETER + " float(53), "
+                + COL_MAX_Y_ACCELEROMETER + " float(53), "
+                + COL_AVG_Y_ACCELEROMETER + " float(53), "
+                + COL_STD_Y_ACCELEROMETER + " float(53), "
+                + COL_VAR_Y_ACCELEROMETER + " float(53), "
+                + COL_MIN_Z_ACCELEROMETER + " float(53), "
+                + COL_MAX_Z_ACCELEROMETER + " float(53), "
+                + COL_AVG_Z_ACCELEROMETER + " float(53), "
+                + COL_STD_Z_ACCELEROMETER + " float(53), "
+                + COL_VAR_Z_ACCELEROMETER + " float(53), "
+                + COL_MIN_X_GYROSCOPE + " float(53), "
+                + COL_MAX_X_GYROSCOPE + " float(53), "
+                + COL_AVG_X_GYROSCOPE + " float(53), "
+                + COL_STD_X_GYROSCOPE + " float(53), "
+                + COL_VAR_X_GYROSCOPE + " float(53), "
+                + COL_MIN_Y_GYROSCOPE + " float(53), "
+                + COL_MAX_Y_GYROSCOPE + " float(53), "
+                + COL_AVG_Y_GYROSCOPE + " float(53), "
+                + COL_STD_Y_GYROSCOPE + " float(53), "
+                + COL_VAR_Y_GYROSCOPE + " float(53), "
+                + COL_MIN_Z_GYROSCOPE + " float(53), "
+                + COL_MAX_Z_GYROSCOPE + " float(53), "
+                + COL_AVG_Z_GYROSCOPE + " float(53), "
+                + COL_STD_Z_GYROSCOPE + " float(53), "
+                + COL_VAR_Z_GYROSCOPE + " float(53), "
                 + COL_HOLDING_POSITION + " float(53), "
                 + COL_USER_ID + " varchar(20))";
 
@@ -173,16 +240,36 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 + COL_AVG_Y_VELOCITY + " float(53), "
                 + COL_STD_Y_VELOCITY + " float(53), "
                 + COL_VAR_Y_VELOCITY + " float(53), "
-                + COL_MIN_X_ACCELERATION + " float(53), "
-                + COL_MAX_X_ACCELERATION + " float(53), "
-                + COL_AVG_X_ACCELERATION + " float(53), "
-                + COL_STD_X_ACCELERATION + " float(53), "
-                + COL_VAR_X_ACCELERATION + " float(53), "
-                + COL_MIN_Y_ACCELERATION + " float(53), "
-                + COL_MAX_Y_ACCELERATION + " float(53), "
-                + COL_AVG_Y_ACCELERATION + " float(53), "
-                + COL_STD_Y_ACCELERATION + " float(53), "
-                + COL_VAR_Y_ACCELERATION + " float(53), "
+                + COL_MIN_X_ACCELEROMETER + " float(53), "
+                + COL_MAX_X_ACCELEROMETER + " float(53), "
+                + COL_AVG_X_ACCELEROMETER + " float(53), "
+                + COL_STD_X_ACCELEROMETER + " float(53), "
+                + COL_VAR_X_ACCELEROMETER + " float(53), "
+                + COL_MIN_Y_ACCELEROMETER + " float(53), "
+                + COL_MAX_Y_ACCELEROMETER + " float(53), "
+                + COL_AVG_Y_ACCELEROMETER + " float(53), "
+                + COL_STD_Y_ACCELEROMETER + " float(53), "
+                + COL_VAR_Y_ACCELEROMETER + " float(53), "
+                + COL_MIN_Z_ACCELEROMETER + " float(53), "
+                + COL_MAX_Z_ACCELEROMETER + " float(53), "
+                + COL_AVG_Z_ACCELEROMETER + " float(53), "
+                + COL_STD_Z_ACCELEROMETER + " float(53), "
+                + COL_VAR_Z_ACCELEROMETER + " float(53), "
+                + COL_MIN_X_GYROSCOPE + " float(53), "
+                + COL_MAX_X_GYROSCOPE + " float(53), "
+                + COL_AVG_X_GYROSCOPE + " float(53), "
+                + COL_STD_X_GYROSCOPE + " float(53), "
+                + COL_VAR_X_GYROSCOPE + " float(53), "
+                + COL_MIN_Y_GYROSCOPE + " float(53), "
+                + COL_MAX_Y_GYROSCOPE + " float(53), "
+                + COL_AVG_Y_GYROSCOPE + " float(53), "
+                + COL_STD_Y_GYROSCOPE + " float(53), "
+                + COL_VAR_Y_GYROSCOPE + " float(53), "
+                + COL_MIN_Z_GYROSCOPE + " float(53), "
+                + COL_MAX_Z_GYROSCOPE + " float(53), "
+                + COL_AVG_Z_GYROSCOPE + " float(53), "
+                + COL_STD_Z_GYROSCOPE + " float(53), "
+                + COL_VAR_Z_GYROSCOPE + " float(53), "
                 + COL_HOLDING_POSITION + " float(53), "
                 + COL_AUTHENTICATION + " float(53), "
                 + COL_AUTHENTICATION_TIME + " float(53), "
@@ -208,16 +295,36 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 + COL_AVG_Y_VELOCITY + " float(53), "
                 + COL_STD_Y_VELOCITY + " float(53), "
                 + COL_VAR_Y_VELOCITY + " float(53), "
-                + COL_MIN_X_ACCELERATION + " float(53), "
-                + COL_MAX_X_ACCELERATION + " float(53), "
-                + COL_AVG_X_ACCELERATION + " float(53), "
-                + COL_STD_X_ACCELERATION + " float(53), "
-                + COL_VAR_X_ACCELERATION + " float(53), "
-                + COL_MIN_Y_ACCELERATION + " float(53), "
-                + COL_MAX_Y_ACCELERATION + " float(53), "
-                + COL_AVG_Y_ACCELERATION + " float(53), "
-                + COL_STD_Y_ACCELERATION + " float(53), "
-                + COL_VAR_Y_ACCELERATION + " float(53), "
+                + COL_MIN_X_ACCELEROMETER + " float(53), "
+                + COL_MAX_X_ACCELEROMETER + " float(53), "
+                + COL_AVG_X_ACCELEROMETER + " float(53), "
+                + COL_STD_X_ACCELEROMETER + " float(53), "
+                + COL_VAR_X_ACCELEROMETER + " float(53), "
+                + COL_MIN_Y_ACCELEROMETER + " float(53), "
+                + COL_MAX_Y_ACCELEROMETER + " float(53), "
+                + COL_AVG_Y_ACCELEROMETER + " float(53), "
+                + COL_STD_Y_ACCELEROMETER + " float(53), "
+                + COL_VAR_Y_ACCELEROMETER + " float(53), "
+                + COL_MIN_Z_ACCELEROMETER + " float(53), "
+                + COL_MAX_Z_ACCELEROMETER + " float(53), "
+                + COL_AVG_Z_ACCELEROMETER + " float(53), "
+                + COL_STD_Z_ACCELEROMETER + " float(53), "
+                + COL_VAR_Z_ACCELEROMETER + " float(53), "
+                + COL_MIN_X_GYROSCOPE + " float(53), "
+                + COL_MAX_X_GYROSCOPE + " float(53), "
+                + COL_AVG_X_GYROSCOPE + " float(53), "
+                + COL_STD_X_GYROSCOPE + " float(53), "
+                + COL_VAR_X_GYROSCOPE + " float(53), "
+                + COL_MIN_Y_GYROSCOPE + " float(53), "
+                + COL_MAX_Y_GYROSCOPE + " float(53), "
+                + COL_AVG_Y_GYROSCOPE + " float(53), "
+                + COL_STD_Y_GYROSCOPE + " float(53), "
+                + COL_VAR_Y_GYROSCOPE + " float(53), "
+                + COL_MIN_Z_GYROSCOPE + " float(53), "
+                + COL_MAX_Z_GYROSCOPE + " float(53), "
+                + COL_AVG_Z_GYROSCOPE + " float(53), "
+                + COL_STD_Z_GYROSCOPE + " float(53), "
+                + COL_VAR_Z_GYROSCOPE + " float(53), "
                 + COL_HOLDING_POSITION + " float(53), "
                 + COL_USER_ID + " varchar(20))";
 
@@ -240,16 +347,36 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 + COL_AVG_Y_VELOCITY + " float(53), "
                 + COL_STD_Y_VELOCITY + " float(53), "
                 + COL_VAR_Y_VELOCITY + " float(53), "
-                + COL_MIN_X_ACCELERATION + " float(53), "
-                + COL_MAX_X_ACCELERATION + " float(53), "
-                + COL_AVG_X_ACCELERATION + " float(53), "
-                + COL_STD_X_ACCELERATION + " float(53), "
-                + COL_VAR_X_ACCELERATION + " float(53), "
-                + COL_MIN_Y_ACCELERATION + " float(53), "
-                + COL_MAX_Y_ACCELERATION + " float(53), "
-                + COL_AVG_Y_ACCELERATION + " float(53), "
-                + COL_STD_Y_ACCELERATION + " float(53), "
-                + COL_VAR_Y_ACCELERATION + " float(53), "
+                + COL_MIN_X_ACCELEROMETER + " float(53), "
+                + COL_MAX_X_ACCELEROMETER + " float(53), "
+                + COL_AVG_X_ACCELEROMETER + " float(53), "
+                + COL_STD_X_ACCELEROMETER + " float(53), "
+                + COL_VAR_X_ACCELEROMETER + " float(53), "
+                + COL_MIN_Y_ACCELEROMETER + " float(53), "
+                + COL_MAX_Y_ACCELEROMETER + " float(53), "
+                + COL_AVG_Y_ACCELEROMETER + " float(53), "
+                + COL_STD_Y_ACCELEROMETER + " float(53), "
+                + COL_VAR_Y_ACCELEROMETER + " float(53), "
+                + COL_MIN_Z_ACCELEROMETER + " float(53), "
+                + COL_MAX_Z_ACCELEROMETER + " float(53), "
+                + COL_AVG_Z_ACCELEROMETER + " float(53), "
+                + COL_STD_Z_ACCELEROMETER + " float(53), "
+                + COL_VAR_Z_ACCELEROMETER + " float(53), "
+                + COL_MIN_X_GYROSCOPE + " float(53), "
+                + COL_MAX_X_GYROSCOPE + " float(53), "
+                + COL_AVG_X_GYROSCOPE + " float(53), "
+                + COL_STD_X_GYROSCOPE + " float(53), "
+                + COL_VAR_X_GYROSCOPE + " float(53), "
+                + COL_MIN_Y_GYROSCOPE + " float(53), "
+                + COL_MAX_Y_GYROSCOPE + " float(53), "
+                + COL_AVG_Y_GYROSCOPE + " float(53), "
+                + COL_STD_Y_GYROSCOPE + " float(53), "
+                + COL_VAR_Y_GYROSCOPE + " float(53), "
+                + COL_MIN_Z_GYROSCOPE + " float(53), "
+                + COL_MAX_Z_GYROSCOPE + " float(53), "
+                + COL_AVG_Z_GYROSCOPE + " float(53), "
+                + COL_STD_Z_GYROSCOPE + " float(53), "
+                + COL_VAR_Z_GYROSCOPE + " float(53), "
                 + COL_HOLDING_POSITION + " float(53), "
                 + COL_USER_ID + " varchar(20))";
 
@@ -272,16 +399,36 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 + COL_AVG_Y_VELOCITY + " float(53), "
                 + COL_STD_Y_VELOCITY + " float(53), "
                 + COL_VAR_Y_VELOCITY + " float(53), "
-                + COL_MIN_X_ACCELERATION + " float(53), "
-                + COL_MAX_X_ACCELERATION + " float(53), "
-                + COL_AVG_X_ACCELERATION + " float(53), "
-                + COL_STD_X_ACCELERATION + " float(53), "
-                + COL_VAR_X_ACCELERATION + " float(53), "
-                + COL_MIN_Y_ACCELERATION + " float(53), "
-                + COL_MAX_Y_ACCELERATION + " float(53), "
-                + COL_AVG_Y_ACCELERATION + " float(53), "
-                + COL_STD_Y_ACCELERATION + " float(53), "
-                + COL_VAR_Y_ACCELERATION + " float(53), "
+                + COL_MIN_X_ACCELEROMETER + " float(53), "
+                + COL_MAX_X_ACCELEROMETER + " float(53), "
+                + COL_AVG_X_ACCELEROMETER + " float(53), "
+                + COL_STD_X_ACCELEROMETER + " float(53), "
+                + COL_VAR_X_ACCELEROMETER + " float(53), "
+                + COL_MIN_Y_ACCELEROMETER + " float(53), "
+                + COL_MAX_Y_ACCELEROMETER + " float(53), "
+                + COL_AVG_Y_ACCELEROMETER + " float(53), "
+                + COL_STD_Y_ACCELEROMETER + " float(53), "
+                + COL_VAR_Y_ACCELEROMETER + " float(53), "
+                + COL_MIN_Z_ACCELEROMETER + " float(53), "
+                + COL_MAX_Z_ACCELEROMETER + " float(53), "
+                + COL_AVG_Z_ACCELEROMETER + " float(53), "
+                + COL_STD_Z_ACCELEROMETER + " float(53), "
+                + COL_VAR_Z_ACCELEROMETER + " float(53), "
+                + COL_MIN_X_GYROSCOPE + " float(53), "
+                + COL_MAX_X_GYROSCOPE + " float(53), "
+                + COL_AVG_X_GYROSCOPE + " float(53), "
+                + COL_STD_X_GYROSCOPE + " float(53), "
+                + COL_VAR_X_GYROSCOPE + " float(53), "
+                + COL_MIN_Y_GYROSCOPE + " float(53), "
+                + COL_MAX_Y_GYROSCOPE + " float(53), "
+                + COL_AVG_Y_GYROSCOPE + " float(53), "
+                + COL_STD_Y_GYROSCOPE + " float(53), "
+                + COL_VAR_Y_GYROSCOPE + " float(53), "
+                + COL_MIN_Z_GYROSCOPE + " float(53), "
+                + COL_MAX_Z_GYROSCOPE + " float(53), "
+                + COL_AVG_Z_GYROSCOPE + " float(53), "
+                + COL_STD_Z_GYROSCOPE + " float(53), "
+                + COL_VAR_Z_GYROSCOPE + " float(53), "
                 + COL_HOLDING_POSITION + " float(53), "
                 + COL_AUTHENTICATION + " float(53), "
                 + COL_AUTHENTICATION_TIME + " float(53), "
@@ -318,6 +465,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 + COL_AVG_TEST_TIME + " float(53), "
                 + COL_CLASSIFIER_SAMPLES + " float(53))";
 
+        String createUserDataTable = "CREATE TABLE " + USER_DATA
+                + " (id INTEGER PRIMARY KEY AUTOINCREMENT, "
+                + COL_NICKNAME + " varchar(20), "
+                + COL_GENDER + " float(53), "
+                + COL_AGE + " float(53), "
+                + COL_NATIONALITY + " varchar(20), "
+                + COL_HOLDING_HAND + " float(53))";
+
         db.execSQL(createRealSwipesTable);
         db.execSQL(createGanSwipesTable);
         db.execSQL(createTestSwipesTable);
@@ -329,6 +484,26 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL(createRealResultsTable);
         db.execSQL(createGanResultsTable);
         db.execSQL(createTestResultsTable);
+
+        db.execSQL(createUserDataTable);
+
+        String query = "SELECT * FROM " + USER_DATA;
+        Cursor cursor = db.rawQuery(query, null);
+        int count = cursor.getCount();
+        cursor.close();
+
+        if (count == 0) {
+            ContentValues contentValues = new ContentValues();
+
+            contentValues.put(COL_NICKNAME, "None");
+            contentValues.put(COL_GENDER, 0);
+            contentValues.put(COL_AGE, 0);
+            contentValues.put(COL_NATIONALITY, "None");
+            contentValues.put(COL_HOLDING_HAND, 0);
+
+            db.insert(USER_DATA, null, contentValues);
+        }
+
     }
 
     @Override
@@ -342,6 +517,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL("DROP TABLE IF EXISTS " + REAL_RESULTS);
         db.execSQL("DROP TABLE IF EXISTS " + GAN_RESULTS);
         db.execSQL("DROP TABLE IF EXISTS " + TEST_RESULTS);
+        db.execSQL("DROP TABLE IF EXISTS " + USER_DATA);
         onCreate(db);
     }
 
@@ -366,16 +542,36 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         contentValues.put(COL_AVG_Y_VELOCITY, swipe.getAvgYVelocity());
         contentValues.put(COL_STD_Y_VELOCITY, swipe.getStdYVelocity());
         contentValues.put(COL_VAR_Y_VELOCITY, swipe.getVarYVelocity());
-        contentValues.put(COL_MIN_X_ACCELERATION, swipe.getMinXAcceleration());
-        contentValues.put(COL_MAX_X_ACCELERATION, swipe.getMaxXAcceleration());
-        contentValues.put(COL_AVG_X_ACCELERATION, swipe.getAvgXAcceleration());
-        contentValues.put(COL_STD_X_ACCELERATION, swipe.getStdXAcceleration());
-        contentValues.put(COL_VAR_X_ACCELERATION, swipe.getVarXAcceleration());
-        contentValues.put(COL_MIN_Y_ACCELERATION, swipe.getMinYAcceleration());
-        contentValues.put(COL_MAX_Y_ACCELERATION, swipe.getMaxYAcceleration());
-        contentValues.put(COL_AVG_Y_ACCELERATION, swipe.getAvgYAcceleration());
-        contentValues.put(COL_STD_Y_ACCELERATION, swipe.getStdYAcceleration());
-        contentValues.put(COL_VAR_Y_ACCELERATION, swipe.getVarYAcceleration());
+        contentValues.put(COL_MIN_X_ACCELEROMETER, swipe.getMinXAccelerometer());
+        contentValues.put(COL_MAX_X_ACCELEROMETER, swipe.getMaxXAccelerometer());
+        contentValues.put(COL_AVG_X_ACCELEROMETER, swipe.getAvgXAccelerometer());
+        contentValues.put(COL_STD_X_ACCELEROMETER, swipe.getStdXAccelerometer());
+        contentValues.put(COL_VAR_X_ACCELEROMETER, swipe.getVarXAccelerometer());
+        contentValues.put(COL_MIN_Y_ACCELEROMETER, swipe.getMinYAccelerometer());
+        contentValues.put(COL_MAX_Y_ACCELEROMETER, swipe.getMaxYAccelerometer());
+        contentValues.put(COL_AVG_Y_ACCELEROMETER, swipe.getAvgYAccelerometer());
+        contentValues.put(COL_STD_Y_ACCELEROMETER, swipe.getStdYAccelerometer());
+        contentValues.put(COL_VAR_Y_ACCELEROMETER, swipe.getVarYAccelerometer());
+        contentValues.put(COL_MIN_Z_ACCELEROMETER, swipe.getMinZAccelerometer());
+        contentValues.put(COL_MAX_Z_ACCELEROMETER, swipe.getMaxZAccelerometer());
+        contentValues.put(COL_AVG_Z_ACCELEROMETER, swipe.getAvgZAccelerometer());
+        contentValues.put(COL_STD_Z_ACCELEROMETER, swipe.getStdZAccelerometer());
+        contentValues.put(COL_VAR_Z_ACCELEROMETER, swipe.getVarZAccelerometer());
+        contentValues.put(COL_MIN_X_GYROSCOPE, swipe.getMinXGyroscope());
+        contentValues.put(COL_MAX_X_GYROSCOPE, swipe.getMaxXGyroscope());
+        contentValues.put(COL_AVG_X_GYROSCOPE, swipe.getAvgXGyroscope());
+        contentValues.put(COL_STD_X_GYROSCOPE, swipe.getStdXGyroscope());
+        contentValues.put(COL_VAR_X_GYROSCOPE, swipe.getVarXGyroscope());
+        contentValues.put(COL_MIN_Y_GYROSCOPE, swipe.getMinYGyroscope());
+        contentValues.put(COL_MAX_Y_GYROSCOPE, swipe.getMaxYGyroscope());
+        contentValues.put(COL_AVG_Y_GYROSCOPE, swipe.getAvgYGyroscope());
+        contentValues.put(COL_STD_Y_GYROSCOPE, swipe.getStdYGyroscope());
+        contentValues.put(COL_VAR_Y_GYROSCOPE, swipe.getVarYGyroscope());
+        contentValues.put(COL_MIN_Z_GYROSCOPE, swipe.getMinZGyroscope());
+        contentValues.put(COL_MAX_Z_GYROSCOPE, swipe.getMaxZGyroscope());
+        contentValues.put(COL_AVG_Z_GYROSCOPE, swipe.getAvgZGyroscope());
+        contentValues.put(COL_STD_Z_GYROSCOPE, swipe.getStdZGyroscope());
+        contentValues.put(COL_VAR_Z_GYROSCOPE, swipe.getVarZGyroscope());
         contentValues.put(COL_HOLDING_POSITION, swipe.getHoldingPosition());
         contentValues.put(COL_USER_ID, swipe.getUserId());
 
@@ -421,16 +617,36 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         contentValues.put(COL_AVG_Y_VELOCITY, swipe.getAvgYVelocity());
         contentValues.put(COL_STD_Y_VELOCITY, swipe.getStdYVelocity());
         contentValues.put(COL_VAR_Y_VELOCITY, swipe.getVarYVelocity());
-        contentValues.put(COL_MIN_X_ACCELERATION, swipe.getMinXAcceleration());
-        contentValues.put(COL_MAX_X_ACCELERATION, swipe.getMaxXAcceleration());
-        contentValues.put(COL_AVG_X_ACCELERATION, swipe.getAvgXAcceleration());
-        contentValues.put(COL_STD_X_ACCELERATION, swipe.getStdXAcceleration());
-        contentValues.put(COL_VAR_X_ACCELERATION, swipe.getVarXAcceleration());
-        contentValues.put(COL_MIN_Y_ACCELERATION, swipe.getMinYAcceleration());
-        contentValues.put(COL_MAX_Y_ACCELERATION, swipe.getMaxYAcceleration());
-        contentValues.put(COL_AVG_Y_ACCELERATION, swipe.getAvgYAcceleration());
-        contentValues.put(COL_STD_Y_ACCELERATION, swipe.getStdYAcceleration());
-        contentValues.put(COL_VAR_Y_ACCELERATION, swipe.getVarYAcceleration());
+        contentValues.put(COL_MIN_X_ACCELEROMETER, swipe.getMinXAccelerometer());
+        contentValues.put(COL_MAX_X_ACCELEROMETER, swipe.getMaxXAccelerometer());
+        contentValues.put(COL_AVG_X_ACCELEROMETER, swipe.getAvgXAccelerometer());
+        contentValues.put(COL_STD_X_ACCELEROMETER, swipe.getStdXAccelerometer());
+        contentValues.put(COL_VAR_X_ACCELEROMETER, swipe.getVarXAccelerometer());
+        contentValues.put(COL_MIN_Y_ACCELEROMETER, swipe.getMinYAccelerometer());
+        contentValues.put(COL_MAX_Y_ACCELEROMETER, swipe.getMaxYAccelerometer());
+        contentValues.put(COL_AVG_Y_ACCELEROMETER, swipe.getAvgYAccelerometer());
+        contentValues.put(COL_STD_Y_ACCELEROMETER, swipe.getStdYAccelerometer());
+        contentValues.put(COL_VAR_Y_ACCELEROMETER, swipe.getVarYAccelerometer());
+        contentValues.put(COL_MIN_Z_ACCELEROMETER, swipe.getMinZAccelerometer());
+        contentValues.put(COL_MAX_Z_ACCELEROMETER, swipe.getMaxZAccelerometer());
+        contentValues.put(COL_AVG_Z_ACCELEROMETER, swipe.getAvgZAccelerometer());
+        contentValues.put(COL_STD_Z_ACCELEROMETER, swipe.getStdZAccelerometer());
+        contentValues.put(COL_VAR_Z_ACCELEROMETER, swipe.getVarZAccelerometer());
+        contentValues.put(COL_MIN_X_GYROSCOPE, swipe.getMinXGyroscope());
+        contentValues.put(COL_MAX_X_GYROSCOPE, swipe.getMaxXGyroscope());
+        contentValues.put(COL_AVG_X_GYROSCOPE, swipe.getAvgXGyroscope());
+        contentValues.put(COL_STD_X_GYROSCOPE, swipe.getStdXGyroscope());
+        contentValues.put(COL_VAR_X_GYROSCOPE, swipe.getVarXGyroscope());
+        contentValues.put(COL_MIN_Y_GYROSCOPE, swipe.getMinYGyroscope());
+        contentValues.put(COL_MAX_Y_GYROSCOPE, swipe.getMaxYGyroscope());
+        contentValues.put(COL_AVG_Y_GYROSCOPE, swipe.getAvgYGyroscope());
+        contentValues.put(COL_STD_Y_GYROSCOPE, swipe.getStdYGyroscope());
+        contentValues.put(COL_VAR_Y_GYROSCOPE, swipe.getVarYGyroscope());
+        contentValues.put(COL_MIN_Z_GYROSCOPE, swipe.getMinZGyroscope());
+        contentValues.put(COL_MAX_Z_GYROSCOPE, swipe.getMaxZGyroscope());
+        contentValues.put(COL_AVG_Z_GYROSCOPE, swipe.getAvgZGyroscope());
+        contentValues.put(COL_STD_Z_GYROSCOPE, swipe.getStdZGyroscope());
+        contentValues.put(COL_VAR_Z_GYROSCOPE, swipe.getVarZGyroscope());
         contentValues.put(COL_HOLDING_POSITION, swipe.getHoldingPosition());
         contentValues.put(COL_AUTHENTICATION, authentication);
         contentValues.put(COL_AUTHENTICATION_TIME, authenticationTime);
@@ -469,16 +685,36 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         contentValues.put(COL_AVG_Y_VELOCITY, swipeValues[14]);
         contentValues.put(COL_STD_Y_VELOCITY, swipeValues[15]);
         contentValues.put(COL_VAR_Y_VELOCITY, swipeValues[16]);
-        contentValues.put(COL_MIN_X_ACCELERATION, swipeValues[17]);
-        contentValues.put(COL_MAX_X_ACCELERATION, swipeValues[18]);
-        contentValues.put(COL_AVG_X_ACCELERATION, swipeValues[19]);
-        contentValues.put(COL_STD_X_ACCELERATION, swipeValues[20]);
-        contentValues.put(COL_VAR_X_ACCELERATION, swipeValues[21]);
-        contentValues.put(COL_MIN_Y_ACCELERATION, swipeValues[22]);
-        contentValues.put(COL_MAX_Y_ACCELERATION, swipeValues[23]);
-        contentValues.put(COL_AVG_Y_ACCELERATION, swipeValues[24]);
-        contentValues.put(COL_STD_Y_ACCELERATION, swipeValues[25]);
-        contentValues.put(COL_VAR_Y_ACCELERATION, swipeValues[26]);
+        contentValues.put(COL_MIN_X_ACCELEROMETER, swipeValues[17]);
+        contentValues.put(COL_MAX_X_ACCELEROMETER, swipeValues[18]);
+        contentValues.put(COL_AVG_X_ACCELEROMETER, swipeValues[19]);
+        contentValues.put(COL_STD_X_ACCELEROMETER, swipeValues[20]);
+        contentValues.put(COL_VAR_X_ACCELEROMETER, swipeValues[21]);
+        contentValues.put(COL_MIN_Y_ACCELEROMETER, swipeValues[22]);
+        contentValues.put(COL_MAX_Y_ACCELEROMETER, swipeValues[23]);
+        contentValues.put(COL_AVG_Y_ACCELEROMETER, swipeValues[24]);
+        contentValues.put(COL_STD_Y_ACCELEROMETER, swipeValues[25]);
+        contentValues.put(COL_VAR_Y_ACCELEROMETER, swipeValues[26]);
+        contentValues.put(COL_MIN_Z_ACCELEROMETER, swipeValues[27]);
+        contentValues.put(COL_MAX_Z_ACCELEROMETER, swipeValues[28]);
+        contentValues.put(COL_AVG_Z_ACCELEROMETER, swipeValues[29]);
+        contentValues.put(COL_STD_Z_ACCELEROMETER, swipeValues[30]);
+        contentValues.put(COL_VAR_Z_ACCELEROMETER, swipeValues[31]);
+        contentValues.put(COL_MIN_X_GYROSCOPE, swipeValues[32]);
+        contentValues.put(COL_MAX_X_GYROSCOPE, swipeValues[33]);
+        contentValues.put(COL_AVG_X_GYROSCOPE, swipeValues[34]);
+        contentValues.put(COL_STD_X_GYROSCOPE, swipeValues[35]);
+        contentValues.put(COL_VAR_X_GYROSCOPE, swipeValues[36]);
+        contentValues.put(COL_MIN_Y_GYROSCOPE, swipeValues[37]);
+        contentValues.put(COL_MAX_Y_GYROSCOPE, swipeValues[38]);
+        contentValues.put(COL_AVG_Y_GYROSCOPE, swipeValues[39]);
+        contentValues.put(COL_STD_Y_GYROSCOPE, swipeValues[40]);
+        contentValues.put(COL_VAR_Y_GYROSCOPE, swipeValues[41]);
+        contentValues.put(COL_MIN_Z_GYROSCOPE, swipeValues[42]);
+        contentValues.put(COL_MAX_Z_GYROSCOPE, swipeValues[43]);
+        contentValues.put(COL_AVG_Z_GYROSCOPE, swipeValues[44]);
+        contentValues.put(COL_STD_Z_GYROSCOPE, swipeValues[45]);
+        contentValues.put(COL_VAR_Z_GYROSCOPE, swipeValues[46]);
         contentValues.put(COL_HOLDING_POSITION, swipe.getHoldingPosition());
         contentValues.put(COL_USER_ID, swipe.getUserId());
 
@@ -510,16 +746,36 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         contentValues.put(COL_AVG_Y_VELOCITY, swipeValues[14]);
         contentValues.put(COL_STD_Y_VELOCITY, swipeValues[15]);
         contentValues.put(COL_VAR_Y_VELOCITY, swipeValues[16]);
-        contentValues.put(COL_MIN_X_ACCELERATION, swipeValues[17]);
-        contentValues.put(COL_MAX_X_ACCELERATION, swipeValues[18]);
-        contentValues.put(COL_AVG_X_ACCELERATION, swipeValues[19]);
-        contentValues.put(COL_STD_X_ACCELERATION, swipeValues[20]);
-        contentValues.put(COL_VAR_X_ACCELERATION, swipeValues[21]);
-        contentValues.put(COL_MIN_Y_ACCELERATION, swipeValues[22]);
-        contentValues.put(COL_MAX_Y_ACCELERATION, swipeValues[23]);
-        contentValues.put(COL_AVG_Y_ACCELERATION, swipeValues[24]);
-        contentValues.put(COL_STD_Y_ACCELERATION, swipeValues[25]);
-        contentValues.put(COL_VAR_Y_ACCELERATION, swipeValues[26]);
+        contentValues.put(COL_MIN_X_ACCELEROMETER, swipeValues[17]);
+        contentValues.put(COL_MAX_X_ACCELEROMETER, swipeValues[18]);
+        contentValues.put(COL_AVG_X_ACCELEROMETER, swipeValues[19]);
+        contentValues.put(COL_STD_X_ACCELEROMETER, swipeValues[20]);
+        contentValues.put(COL_VAR_X_ACCELEROMETER, swipeValues[21]);
+        contentValues.put(COL_MIN_Y_ACCELEROMETER, swipeValues[22]);
+        contentValues.put(COL_MAX_Y_ACCELEROMETER, swipeValues[23]);
+        contentValues.put(COL_AVG_Y_ACCELEROMETER, swipeValues[24]);
+        contentValues.put(COL_STD_Y_ACCELEROMETER, swipeValues[25]);
+        contentValues.put(COL_VAR_Y_ACCELEROMETER, swipeValues[26]);
+        contentValues.put(COL_MIN_Z_ACCELEROMETER, swipeValues[27]);
+        contentValues.put(COL_MAX_Z_ACCELEROMETER, swipeValues[28]);
+        contentValues.put(COL_AVG_Z_ACCELEROMETER, swipeValues[29]);
+        contentValues.put(COL_STD_Z_ACCELEROMETER, swipeValues[30]);
+        contentValues.put(COL_VAR_Z_ACCELEROMETER, swipeValues[31]);
+        contentValues.put(COL_MIN_X_GYROSCOPE, swipeValues[32]);
+        contentValues.put(COL_MAX_X_GYROSCOPE, swipeValues[33]);
+        contentValues.put(COL_AVG_X_GYROSCOPE, swipeValues[34]);
+        contentValues.put(COL_STD_X_GYROSCOPE, swipeValues[35]);
+        contentValues.put(COL_VAR_X_GYROSCOPE, swipeValues[36]);
+        contentValues.put(COL_MIN_Y_GYROSCOPE, swipeValues[37]);
+        contentValues.put(COL_MAX_Y_GYROSCOPE, swipeValues[38]);
+        contentValues.put(COL_AVG_Y_GYROSCOPE, swipeValues[39]);
+        contentValues.put(COL_STD_Y_GYROSCOPE, swipeValues[40]);
+        contentValues.put(COL_VAR_Y_GYROSCOPE, swipeValues[41]);
+        contentValues.put(COL_MIN_Z_GYROSCOPE, swipeValues[42]);
+        contentValues.put(COL_MAX_Z_GYROSCOPE, swipeValues[43]);
+        contentValues.put(COL_AVG_Z_GYROSCOPE, swipeValues[44]);
+        contentValues.put(COL_STD_Z_GYROSCOPE, swipeValues[45]);
+        contentValues.put(COL_VAR_Z_GYROSCOPE, swipeValues[46]);
         contentValues.put(COL_HOLDING_POSITION, swipe.getHoldingPosition());
         contentValues.put(COL_AUTHENTICATION, authentication);
         contentValues.put(COL_AUTHENTICATION_TIME, authenticationTime);
@@ -560,17 +816,41 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             swipe.setStdYVelocity(cursor.getDouble(cursor.getColumnIndex(COL_STD_Y_VELOCITY)));
             swipe.setVarYVelocity(cursor.getDouble(cursor.getColumnIndex(COL_VAR_Y_VELOCITY)));
 
-            swipe.setMinXAcceleration(cursor.getDouble(cursor.getColumnIndex(COL_MIN_X_ACCELERATION)));
-            swipe.setMaxXAcceleration(cursor.getDouble(cursor.getColumnIndex(COL_MAX_X_ACCELERATION)));
-            swipe.setAvgXAcceleration(cursor.getDouble(cursor.getColumnIndex(COL_AVG_X_ACCELERATION)));
-            swipe.setStdXAcceleration(cursor.getDouble(cursor.getColumnIndex(COL_STD_X_ACCELERATION)));
-            swipe.setVarXAcceleration(cursor.getDouble(cursor.getColumnIndex(COL_VAR_X_ACCELERATION)));
+            swipe.setMinXAccelerometer(cursor.getDouble(cursor.getColumnIndex(COL_MIN_X_ACCELEROMETER)));
+            swipe.setMaxXAccelerometer(cursor.getDouble(cursor.getColumnIndex(COL_MAX_X_ACCELEROMETER)));
+            swipe.setAvgXAccelerometer(cursor.getDouble(cursor.getColumnIndex(COL_AVG_X_ACCELEROMETER)));
+            swipe.setStdXAccelerometer(cursor.getDouble(cursor.getColumnIndex(COL_STD_X_ACCELEROMETER)));
+            swipe.setVarXAccelerometer(cursor.getDouble(cursor.getColumnIndex(COL_VAR_X_ACCELEROMETER)));
 
-            swipe.setMinYAcceleration(cursor.getDouble(cursor.getColumnIndex(COL_MIN_Y_ACCELERATION)));
-            swipe.setMaxYAcceleration(cursor.getDouble(cursor.getColumnIndex(COL_MAX_Y_ACCELERATION)));
-            swipe.setAvgYAcceleration(cursor.getDouble(cursor.getColumnIndex(COL_AVG_Y_ACCELERATION)));
-            swipe.setStdYAcceleration(cursor.getDouble(cursor.getColumnIndex(COL_STD_Y_ACCELERATION)));
-            swipe.setVarYAcceleration(cursor.getDouble(cursor.getColumnIndex(COL_VAR_Y_ACCELERATION)));
+            swipe.setMinYAccelerometer(cursor.getDouble(cursor.getColumnIndex(COL_MIN_Y_ACCELEROMETER)));
+            swipe.setMaxYAccelerometer(cursor.getDouble(cursor.getColumnIndex(COL_MAX_Y_ACCELEROMETER)));
+            swipe.setAvgYAccelerometer(cursor.getDouble(cursor.getColumnIndex(COL_AVG_Y_ACCELEROMETER)));
+            swipe.setStdYAccelerometer(cursor.getDouble(cursor.getColumnIndex(COL_STD_Y_ACCELEROMETER)));
+            swipe.setVarYAccelerometer(cursor.getDouble(cursor.getColumnIndex(COL_VAR_Y_ACCELEROMETER)));
+
+            swipe.setMinZAccelerometer(cursor.getDouble(cursor.getColumnIndex(COL_MIN_Z_ACCELEROMETER)));
+            swipe.setMaxZAccelerometer(cursor.getDouble(cursor.getColumnIndex(COL_MAX_Z_ACCELEROMETER)));
+            swipe.setAvgZAccelerometer(cursor.getDouble(cursor.getColumnIndex(COL_AVG_Z_ACCELEROMETER)));
+            swipe.setStdZAccelerometer(cursor.getDouble(cursor.getColumnIndex(COL_STD_Z_ACCELEROMETER)));
+            swipe.setVarZAccelerometer(cursor.getDouble(cursor.getColumnIndex(COL_VAR_Z_ACCELEROMETER)));
+
+            swipe.setMinXGyroscope(cursor.getDouble(cursor.getColumnIndex(COL_MIN_X_GYROSCOPE)));
+            swipe.setMaxXGyroscope(cursor.getDouble(cursor.getColumnIndex(COL_MAX_X_GYROSCOPE)));
+            swipe.setAvgXGyroscope(cursor.getDouble(cursor.getColumnIndex(COL_AVG_X_GYROSCOPE)));
+            swipe.setStdXGyroscope(cursor.getDouble(cursor.getColumnIndex(COL_STD_X_GYROSCOPE)));
+            swipe.setVarXGyroscope(cursor.getDouble(cursor.getColumnIndex(COL_VAR_X_GYROSCOPE)));
+
+            swipe.setMinYGyroscope(cursor.getDouble(cursor.getColumnIndex(COL_MIN_Y_GYROSCOPE)));
+            swipe.setMaxYGyroscope(cursor.getDouble(cursor.getColumnIndex(COL_MAX_Y_GYROSCOPE)));
+            swipe.setAvgYGyroscope(cursor.getDouble(cursor.getColumnIndex(COL_AVG_Y_GYROSCOPE)));
+            swipe.setStdYGyroscope(cursor.getDouble(cursor.getColumnIndex(COL_STD_Y_GYROSCOPE)));
+            swipe.setVarYGyroscope(cursor.getDouble(cursor.getColumnIndex(COL_VAR_Y_GYROSCOPE)));
+
+            swipe.setMinZGyroscope(cursor.getDouble(cursor.getColumnIndex(COL_MIN_Z_GYROSCOPE)));
+            swipe.setMaxZGyroscope(cursor.getDouble(cursor.getColumnIndex(COL_MAX_Z_GYROSCOPE)));
+            swipe.setAvgZGyroscope(cursor.getDouble(cursor.getColumnIndex(COL_AVG_Z_GYROSCOPE)));
+            swipe.setStdZGyroscope(cursor.getDouble(cursor.getColumnIndex(COL_STD_Z_GYROSCOPE)));
+            swipe.setVarZGyroscope(cursor.getDouble(cursor.getColumnIndex(COL_VAR_Z_GYROSCOPE)));
 
             swipe.setHoldingPosition(cursor.getDouble(cursor.getColumnIndex(COL_HOLDING_POSITION)));
 
@@ -615,17 +895,41 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             swipe.setStdYVelocity(cursor.getDouble(cursor.getColumnIndex(COL_STD_Y_VELOCITY)));
             swipe.setVarYVelocity(cursor.getDouble(cursor.getColumnIndex(COL_VAR_Y_VELOCITY)));
 
-            swipe.setMinXAcceleration(cursor.getDouble(cursor.getColumnIndex(COL_MIN_X_ACCELERATION)));
-            swipe.setMaxXAcceleration(cursor.getDouble(cursor.getColumnIndex(COL_MAX_X_ACCELERATION)));
-            swipe.setAvgXAcceleration(cursor.getDouble(cursor.getColumnIndex(COL_AVG_X_ACCELERATION)));
-            swipe.setStdXAcceleration(cursor.getDouble(cursor.getColumnIndex(COL_STD_X_ACCELERATION)));
-            swipe.setVarXAcceleration(cursor.getDouble(cursor.getColumnIndex(COL_VAR_X_ACCELERATION)));
+            swipe.setMinXAccelerometer(cursor.getDouble(cursor.getColumnIndex(COL_MIN_X_ACCELEROMETER)));
+            swipe.setMaxXAccelerometer(cursor.getDouble(cursor.getColumnIndex(COL_MAX_X_ACCELEROMETER)));
+            swipe.setAvgXAccelerometer(cursor.getDouble(cursor.getColumnIndex(COL_AVG_X_ACCELEROMETER)));
+            swipe.setStdXAccelerometer(cursor.getDouble(cursor.getColumnIndex(COL_STD_X_ACCELEROMETER)));
+            swipe.setVarXAccelerometer(cursor.getDouble(cursor.getColumnIndex(COL_VAR_X_ACCELEROMETER)));
 
-            swipe.setMinYAcceleration(cursor.getDouble(cursor.getColumnIndex(COL_MIN_Y_ACCELERATION)));
-            swipe.setMaxYAcceleration(cursor.getDouble(cursor.getColumnIndex(COL_MAX_Y_ACCELERATION)));
-            swipe.setAvgYAcceleration(cursor.getDouble(cursor.getColumnIndex(COL_AVG_Y_ACCELERATION)));
-            swipe.setStdYAcceleration(cursor.getDouble(cursor.getColumnIndex(COL_STD_Y_ACCELERATION)));
-            swipe.setVarYAcceleration(cursor.getDouble(cursor.getColumnIndex(COL_VAR_Y_ACCELERATION)));
+            swipe.setMinYAccelerometer(cursor.getDouble(cursor.getColumnIndex(COL_MIN_Y_ACCELEROMETER)));
+            swipe.setMaxYAccelerometer(cursor.getDouble(cursor.getColumnIndex(COL_MAX_Y_ACCELEROMETER)));
+            swipe.setAvgYAccelerometer(cursor.getDouble(cursor.getColumnIndex(COL_AVG_Y_ACCELEROMETER)));
+            swipe.setStdYAccelerometer(cursor.getDouble(cursor.getColumnIndex(COL_STD_Y_ACCELEROMETER)));
+            swipe.setVarYAccelerometer(cursor.getDouble(cursor.getColumnIndex(COL_VAR_Y_ACCELEROMETER)));
+
+            swipe.setMinZAccelerometer(cursor.getDouble(cursor.getColumnIndex(COL_MIN_Z_ACCELEROMETER)));
+            swipe.setMaxZAccelerometer(cursor.getDouble(cursor.getColumnIndex(COL_MAX_Z_ACCELEROMETER)));
+            swipe.setAvgZAccelerometer(cursor.getDouble(cursor.getColumnIndex(COL_AVG_Z_ACCELEROMETER)));
+            swipe.setStdZAccelerometer(cursor.getDouble(cursor.getColumnIndex(COL_STD_Z_ACCELEROMETER)));
+            swipe.setVarZAccelerometer(cursor.getDouble(cursor.getColumnIndex(COL_VAR_Z_ACCELEROMETER)));
+
+            swipe.setMinXGyroscope(cursor.getDouble(cursor.getColumnIndex(COL_MIN_X_GYROSCOPE)));
+            swipe.setMaxXGyroscope(cursor.getDouble(cursor.getColumnIndex(COL_MAX_X_GYROSCOPE)));
+            swipe.setAvgXGyroscope(cursor.getDouble(cursor.getColumnIndex(COL_AVG_X_GYROSCOPE)));
+            swipe.setStdXGyroscope(cursor.getDouble(cursor.getColumnIndex(COL_STD_X_GYROSCOPE)));
+            swipe.setVarXGyroscope(cursor.getDouble(cursor.getColumnIndex(COL_VAR_X_GYROSCOPE)));
+
+            swipe.setMinYGyroscope(cursor.getDouble(cursor.getColumnIndex(COL_MIN_Y_GYROSCOPE)));
+            swipe.setMaxYGyroscope(cursor.getDouble(cursor.getColumnIndex(COL_MAX_Y_GYROSCOPE)));
+            swipe.setAvgYGyroscope(cursor.getDouble(cursor.getColumnIndex(COL_AVG_Y_GYROSCOPE)));
+            swipe.setStdYGyroscope(cursor.getDouble(cursor.getColumnIndex(COL_STD_Y_GYROSCOPE)));
+            swipe.setVarYGyroscope(cursor.getDouble(cursor.getColumnIndex(COL_VAR_Y_GYROSCOPE)));
+
+            swipe.setMinZGyroscope(cursor.getDouble(cursor.getColumnIndex(COL_MIN_Z_GYROSCOPE)));
+            swipe.setMaxZGyroscope(cursor.getDouble(cursor.getColumnIndex(COL_MAX_Z_GYROSCOPE)));
+            swipe.setAvgZGyroscope(cursor.getDouble(cursor.getColumnIndex(COL_AVG_Z_GYROSCOPE)));
+            swipe.setStdZGyroscope(cursor.getDouble(cursor.getColumnIndex(COL_STD_Z_GYROSCOPE)));
+            swipe.setVarZGyroscope(cursor.getDouble(cursor.getColumnIndex(COL_VAR_Z_GYROSCOPE)));
 
             swipe.setHoldingPosition(cursor.getDouble(cursor.getColumnIndex(COL_HOLDING_POSITION)));
 
@@ -739,6 +1043,43 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return result != -1;
     }
 
+    public boolean saveUserData(String nickname, double gender, double age, String nationality, double holdingHand) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.execSQL("DELETE FROM " + USER_DATA);
+
+        ContentValues contentValues = new ContentValues();
+
+        contentValues.put(COL_NICKNAME, nickname);
+        contentValues.put(COL_GENDER, gender);
+        contentValues.put(COL_AGE, age);
+        contentValues.put(COL_NATIONALITY, nationality);
+        contentValues.put(COL_HOLDING_HAND, holdingHand);
+
+        long result = db.insert(USER_DATA, null, contentValues);
+        //if inserted incorrectly it will return -1
+        return result != -1;
+    }
+
+    public ArrayList<String> getUserData() {
+        SQLiteDatabase db = this.getReadableDatabase();
+        String query = "SELECT * FROM " + USER_DATA;
+
+        Cursor cursor = db.rawQuery(query, null);
+        cursor.moveToFirst();
+
+        ArrayList<String> userData = new ArrayList<>();
+
+        userData.add(cursor.getString(cursor.getColumnIndex(COL_NICKNAME)));
+        userData.add(Double.toString(cursor.getDouble(cursor.getColumnIndex(COL_GENDER))));
+        userData.add(Double.toString(cursor.getDouble(cursor.getColumnIndex(COL_AGE))));
+        userData.add(cursor.getString(cursor.getColumnIndex(COL_NATIONALITY)));
+        userData.add(Double.toString(cursor.getDouble(cursor.getColumnIndex(COL_HOLDING_HAND))));
+
+        cursor.close();
+
+        return userData;
+    }
+
     public synchronized void saveAsCSV(String tableName, String filePath, ContentResolver resolver, String downloadPath) {
 
         FileOutputStream fos;
@@ -767,7 +1108,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                     int colCounts = curCSV.getColumnCount();
                     String[] arrStr = new String[colCounts];
                     for (int i = 0; i < colCounts; i++) {
-                        if (colNames[i].equals("USER_ID")) {
+                        if (colNames[i].equals("USER_ID") || colNames[i].equals("nickname") || colNames[i].equals("nationality")) {
                             arrStr[i] = curCSV.getString(i);
                         } else {
                             arrStr[i] = Double.toString(curCSV.getDouble(i));
@@ -793,7 +1134,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                         int colCounts = curCSV.getColumnCount();
                         String[] arrStr = new String[colCounts];
                         for (int i = 0; i < colCounts; i++) {
-                            if (colNames[i].equals("USER_ID")) {
+                            if (colNames[i].equals("USER_ID") || colNames[i].equals("nickname") || colNames[i].equals("nationality")) {
                                 arrStr[i] = curCSV.getString(i);
                             } else {
                                 arrStr[i] = Double.toString(curCSV.getDouble(i));
@@ -831,6 +1172,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         this.saveAsCSV(REAL_RESULTS, currentDateTime + "_" + "realResults.csv", resolver, downloadPath);
         this.saveAsCSV(GAN_RESULTS, currentDateTime + "_" + "ganResults.csv", resolver, downloadPath);
         this.saveAsCSV(TEST_RESULTS, currentDateTime + "_" + "testResults.csv", resolver, downloadPath);
+        this.saveAsCSV(USER_DATA, currentDateTime + "_" + "userData.csv", resolver, downloadPath);
 
     }
 
