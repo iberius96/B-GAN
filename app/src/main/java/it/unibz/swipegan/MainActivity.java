@@ -18,6 +18,7 @@ import android.os.StrictMode;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
+import android.view.OrientationEventListener;
 import android.view.VelocityTracker;
 import android.view.View;
 import android.widget.Button;
@@ -78,9 +79,18 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private ArrayList<Float> yGyroscopes = null;
     private ArrayList<Float> zGyroscopes = null;
 
+    private boolean isTrackingMagnetometer;
+    private ArrayList<Float> xOrientations = null;
+    private ArrayList<Float> yOrientations = null;
+    private ArrayList<Float> zOrientations = null;
+
+    private float[] mGravity;
+    private float[] mGeomagnetic;
+
     private SensorManager sensorManager;
     private Sensor accelerometer;
     private Sensor gyroscope;
+    private Sensor magnetometer;
 
     private DatabaseHelper dbHelper;
 
@@ -174,11 +184,17 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         this.yGyroscopes = new ArrayList<>();
         this.zGyroscopes = new ArrayList<>();
 
+        this.xOrientations = new ArrayList<>();
+        this.yOrientations = new ArrayList<>();
+        this.zOrientations = new ArrayList<>();
+
         this.sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         this.accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         this.gyroscope = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
+        this.magnetometer = sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
         this.sensorManager.registerListener(MainActivity.this, accelerometer, SensorManager.SENSOR_DELAY_NORMAL);
         this.sensorManager.registerListener(MainActivity.this, gyroscope, SensorManager.SENSOR_DELAY_NORMAL);
+        this.sensorManager.registerListener(MainActivity.this, magnetometer, SensorManager.SENSOR_DELAY_NORMAL);
 
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
             ActivityCompat.requestPermissions(this, new String[]{READ_EXTERNAL_STORAGE, WRITE_EXTERNAL_STORAGE}, PackageManager.PERMISSION_GRANTED);
@@ -197,20 +213,45 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     @Override
     public void onSensorChanged(SensorEvent event) {
-        if (event.sensor.getStringType().equals(Sensor.STRING_TYPE_ACCELEROMETER)) {
-            if (this.isTrackingAccelerometer) {
-                this.xAccelerometers.add(event.values[0]);
-                this.yAccelerometers.add(event.values[1]);
-                this.zAccelerometers.add(event.values[2]);
-            }
-        } else if (event.sensor.getStringType().equals(Sensor.STRING_TYPE_GYROSCOPE)) {
-            if (this.isTrackingGyroscope) {
-                this.xGyroscopes.add(event.values[0]);
-                this.yGyroscopes.add(event.values[1]);
-                this.zGyroscopes.add(event.values[2]);
+        if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER && this.isTrackingAccelerometer) {
+            this.mGravity = applyLowPassFilter(event.values.clone(), this.mGravity);
+
+            this.xAccelerometers.add(event.values[0]);
+            this.yAccelerometers.add(event.values[1]);
+            this.zAccelerometers.add(event.values[2]);
+        }
+        if (event.sensor.getType() == Sensor.TYPE_GYROSCOPE && this.isTrackingGyroscope) {
+            this.xGyroscopes.add(event.values[0]);
+            this.yGyroscopes.add(event.values[1]);
+            this.zGyroscopes.add(event.values[2]);
+        }
+        if (event.sensor.getType() == Sensor.TYPE_MAGNETIC_FIELD && this.isTrackingMagnetometer) {
+            this.mGeomagnetic = applyLowPassFilter(event.values.clone(), this.mGeomagnetic);
+        }
+
+        if (this.mGravity != null && this.mGeomagnetic != null) {
+            float R[] = new float[9];
+            float I[] = new float[9];
+            boolean success = SensorManager.getRotationMatrix(R, I, this.mGravity, this.mGeomagnetic);
+            if (success) {
+                float orientation[] = new float[3];
+                SensorManager.getOrientation(R, orientation);
+                this.xOrientations.add(orientation[1]);
+                this.yOrientations.add(orientation[2]);
+                this.zOrientations.add(orientation[0]);
             }
         }
     }
+
+    private float[] applyLowPassFilter(float[] input, float[] output) {
+        if ( output == null ) return input;
+
+        for ( int i=0; i<input.length; i++ ) {
+            output[i] = output[i] + 0.5f * (input[i] - output[i]);
+        }
+        return output;
+    }
+
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
@@ -228,6 +269,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 this.startTime = System.currentTimeMillis();
                 this.isTrackingAccelerometer = true;
                 this.isTrackingGyroscope = true;
+                this.isTrackingMagnetometer = true;
 
                 this.xLocations.add(event.getX(pointerId));
                 this.yLocations.add(event.getY(pointerId));
@@ -369,8 +411,16 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         this.yGyroscopes.clear();
         this.zGyroscopes.clear();
 
+        this.xOrientations.clear();
+        this.yOrientations.clear();
+        this.zOrientations.clear();
+
+        this.mGravity = null;
+        this.mGeomagnetic = null;
+
         this.isTrackingAccelerometer = false;
         this.isTrackingGyroscope = false;
+        this.isTrackingMagnetometer = false;
     }
 
     public Swipe getSwipe() {
@@ -440,6 +490,27 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         double avgZGyroscope = zGyroscopeStats.getAverage();
         double varZGyroscope = this.zGyroscopes.stream().map(i -> i - avgZGyroscope).map(i -> i*i).mapToDouble(i -> i).average().getAsDouble();
         double stdZGyroscope = Math.sqrt(varZGyroscope);
+
+        DoubleSummaryStatistics xOrientationStats = this.xOrientations.stream().mapToDouble(x -> (double) x).summaryStatistics();
+        double minXOrientation = xOrientationStats.getMin();
+        double maxXOrientation = xOrientationStats.getMax();
+        double avgXOrientation = xOrientationStats.getAverage();
+        double varXOrientation = this.xOrientations.stream().map(i -> i - avgXOrientation).map(i -> i*i).mapToDouble(i -> i).average().getAsDouble();
+        double stdXOrientation = Math.sqrt(varXOrientation);
+
+        DoubleSummaryStatistics yOrientationStats = this.yOrientations.stream().mapToDouble(x -> (double) x).summaryStatistics();
+        double minYOrientation = yOrientationStats.getMin();
+        double maxYOrientation = yOrientationStats.getMax();
+        double avgYOrientation = yOrientationStats.getAverage();
+        double varYOrientation = this.yOrientations.stream().map(i -> i - avgYOrientation).map(i -> i*i).mapToDouble(i -> i).average().getAsDouble();
+        double stdYOrientation = Math.sqrt(varYOrientation);
+
+        DoubleSummaryStatistics zOrientationStats = this.zOrientations.stream().mapToDouble(x -> (double) x).summaryStatistics();
+        double minZOrientation = zOrientationStats.getMin();
+        double maxZOrientation = zOrientationStats.getMax();
+        double avgZOrientation = zOrientationStats.getAverage();
+        double varZOrientation = this.zOrientations.stream().map(i -> i - avgZOrientation).map(i -> i*i).mapToDouble(i -> i).average().getAsDouble();
+        double stdZOrientation = Math.sqrt(varZOrientation);
 
         Swipe newSwipe = new Swipe();
         newSwipe.setDuration(duration);
