@@ -32,6 +32,7 @@ public class GAN {
     private static final int LATENT_DIM = 12;
     public static final int NUM_EPOCHS = 4_000;
     public static final int NUM_LAYER_UNITS = 8;
+    public static final int NUM_TRAIN_FEATURES = 62;
 
     private MultiLayerNetwork generator;
     private MultiLayerNetwork discriminator;
@@ -59,7 +60,7 @@ public class GAN {
                         .build(),
                 new DenseLayer.Builder()
                         .nIn(NUM_LAYER_UNITS) //try 128
-                        .nOut(47)
+                        .nOut(NUM_TRAIN_FEATURES)
                         .weightInit(WeightInit.XAVIER_UNIFORM)
                         .activation(Activation.SIGMOID)
                         .build()
@@ -81,7 +82,7 @@ public class GAN {
     private Layer[] getDiscriminatorLayers() {
         return new Layer[]{
                 new DenseLayer.Builder()
-                        .nIn(47)
+                        .nIn(NUM_TRAIN_FEATURES)
                         .nOut(NUM_LAYER_UNITS)
                         .weightInit(WeightInit.RELU_UNIFORM)
                         .activation(Activation.RELU)

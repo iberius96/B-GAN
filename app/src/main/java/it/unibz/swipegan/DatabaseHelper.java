@@ -40,6 +40,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final String USER_DATA = "USER_DATA";
 
+    private static final String FEATURE_DATA = "FEATURE_DATA";
+
     private static final String COL_AUTHENTICATION = "AUTHENTICATION";
     private static final String COL_AUTHENTICATION_TIME = "AUTHENTICATION_TIME";
 
@@ -578,6 +580,71 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 + COL_NATIONALITY + " varchar(20), "
                 + COL_HOLDING_HAND + " float(53))";
 
+        String createFeatureDataTable = "CREATE TABLE " + FEATURE_DATA
+                + " (id INTEGER PRIMARY KEY AUTOINCREMENT, "
+                + COL_DURATION + " integer(1), "
+                + COL_AVG_SIZE + " integer(1), "
+                + COL_DOWN_SIZE + " integer(1), "
+                + COL_START_X + " integer(1), "
+                + COL_START_Y + " integer(1), "
+                + COL_END_X + " integer(1), "
+                + COL_END_Y + " integer(1), "
+                + COL_MIN_X_VELOCITY + " integer(1), "
+                + COL_MAX_X_VELOCITY + " integer(1), "
+                + COL_AVG_X_VELOCITY + " integer(1), "
+                + COL_STD_X_VELOCITY + " integer(1), "
+                + COL_VAR_X_VELOCITY + " integer(1), "
+                + COL_MIN_Y_VELOCITY + " integer(1), "
+                + COL_MAX_Y_VELOCITY + " integer(1), "
+                + COL_AVG_Y_VELOCITY + " integer(1), "
+                + COL_STD_Y_VELOCITY + " integer(1), "
+                + COL_VAR_Y_VELOCITY + " integer(1), "
+                + COL_MIN_X_ACCELEROMETER + " integer(1), "
+                + COL_MAX_X_ACCELEROMETER + " integer(1), "
+                + COL_AVG_X_ACCELEROMETER + " integer(1), "
+                + COL_STD_X_ACCELEROMETER + " integer(1), "
+                + COL_VAR_X_ACCELEROMETER + " integer(1), "
+                + COL_MIN_Y_ACCELEROMETER + " integer(1), "
+                + COL_MAX_Y_ACCELEROMETER + " integer(1), "
+                + COL_AVG_Y_ACCELEROMETER + " integer(1), "
+                + COL_STD_Y_ACCELEROMETER + " integer(1), "
+                + COL_VAR_Y_ACCELEROMETER + " integer(1), "
+                + COL_MIN_Z_ACCELEROMETER + " integer(1), "
+                + COL_MAX_Z_ACCELEROMETER + " integer(1), "
+                + COL_AVG_Z_ACCELEROMETER + " integer(1), "
+                + COL_STD_Z_ACCELEROMETER + " integer(1), "
+                + COL_VAR_Z_ACCELEROMETER + " integer(1), "
+                + COL_MIN_X_GYROSCOPE + " integer(1), "
+                + COL_MAX_X_GYROSCOPE + " integer(1), "
+                + COL_AVG_X_GYROSCOPE + " integer(1), "
+                + COL_STD_X_GYROSCOPE + " integer(1), "
+                + COL_VAR_X_GYROSCOPE + " integer(1), "
+                + COL_MIN_Y_GYROSCOPE + " integer(1), "
+                + COL_MAX_Y_GYROSCOPE + " integer(1), "
+                + COL_AVG_Y_GYROSCOPE + " integer(1), "
+                + COL_STD_Y_GYROSCOPE + " integer(1), "
+                + COL_VAR_Y_GYROSCOPE + " integer(1), "
+                + COL_MIN_Z_GYROSCOPE + " integer(1), "
+                + COL_MAX_Z_GYROSCOPE + " integer(1), "
+                + COL_AVG_Z_GYROSCOPE + " integer(1), "
+                + COL_STD_Z_GYROSCOPE + " integer(1), "
+                + COL_VAR_Z_GYROSCOPE + " integer(1), "
+                + COL_MIN_X_ORIENTATION + " integer(1), "
+                + COL_MAX_X_ORIENTATION + " integer(1), "
+                + COL_AVG_X_ORIENTATION + " integer(1), "
+                + COL_STD_X_ORIENTATION + " integer(1), "
+                + COL_VAR_X_ORIENTATION + " integer(1), "
+                + COL_MIN_Y_ORIENTATION + " integer(1), "
+                + COL_MAX_Y_ORIENTATION + " integer(1), "
+                + COL_AVG_Y_ORIENTATION + " integer(1), "
+                + COL_STD_Y_ORIENTATION + " integer(1), "
+                + COL_VAR_Y_ORIENTATION + " integer(1), "
+                + COL_MIN_Z_ORIENTATION + " integer(1), "
+                + COL_MAX_Z_ORIENTATION + " integer(1), "
+                + COL_AVG_Z_ORIENTATION + " integer(1), "
+                + COL_STD_Z_ORIENTATION + " integer(1), "
+                + COL_VAR_Z_ORIENTATION + " integer(1))";
+
         db.execSQL(createRealSwipesTable);
         db.execSQL(createGanSwipesTable);
         db.execSQL(createTestSwipesTable);
@@ -591,6 +658,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL(createTestResultsTable);
 
         db.execSQL(createUserDataTable);
+
+        db.execSQL(createFeatureDataTable);
 
         String query = "SELECT * FROM " + USER_DATA;
         Cursor cursor = db.rawQuery(query, null);
@@ -623,6 +692,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL("DROP TABLE IF EXISTS " + GAN_RESULTS);
         db.execSQL("DROP TABLE IF EXISTS " + TEST_RESULTS);
         db.execSQL("DROP TABLE IF EXISTS " + USER_DATA);
+        db.execSQL("DROP TABLE IF EXISTS " + FEATURE_DATA);
         onCreate(db);
     }
 
@@ -1374,6 +1444,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         this.saveAsCSV(GAN_RESULTS, currentDateTime + "_" + "ganResults.csv", resolver, downloadPath);
         this.saveAsCSV(TEST_RESULTS, currentDateTime + "_" + "testResults.csv", resolver, downloadPath);
         this.saveAsCSV(USER_DATA, currentDateTime + "_" + "userData.csv", resolver, downloadPath);
+        this.saveAsCSV(FEATURE_DATA, currentDateTime + "_" + "featureData.csv", resolver, downloadPath);
 
     }
 

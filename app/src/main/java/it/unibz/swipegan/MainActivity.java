@@ -4,6 +4,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.Color;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -627,41 +628,41 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         this.resetButton.setEnabled(true);
     }
 
+    // TODO: Refactor this to avoid Dialog
     public void editProfile(View view) {
-        // inflate the layout of the popup window
-        LayoutInflater inflater = (LayoutInflater)
-                getSystemService(LAYOUT_INFLATER_SERVICE);
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage("Choose the profile you want to edit").setTitle("Choose profile");
+        builder.setPositiveButton("User", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                editUserProfile(view);
+            }
+        });
+        builder.setNegativeButton("Model", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                editModelProfile(view);
+            }
+        });
+        builder.setNeutralButton("Cancel", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                // User cancelled the dialog
+            }
+        });
+
+        AlertDialog dialog = builder.create();
+        dialog.show();
+    }
+
+    public void editUserProfile(View view) {
+        LayoutInflater inflater = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
         View popupView = inflater.inflate(R.layout.profile_window, null);
 
-
-        // create the popup window
         int width = LinearLayout.LayoutParams.WRAP_CONTENT;
         int height = LinearLayout.LayoutParams.WRAP_CONTENT;
         boolean focusable = true; // lets taps outside the popup also dismiss it
         final PopupWindow popupWindow = new PopupWindow(popupView, width, height, focusable);
 
-        // show the popup window
-        // which view you pass in doesn't matter, it is only used for the window tolken
         popupWindow.showAtLocation(view, Gravity.CENTER, 0, 0);
-
-        this.profileButton.setVisibility(View.INVISIBLE);
-        this.resetButton.setVisibility(View.INVISIBLE);
-        this.inputTextView.setVisibility(View.INVISIBLE);
-        this.trainButton.setVisibility(View.INVISIBLE);
-        this.ganButton.setVisibility(View.INVISIBLE);
-        this.swipeImageView.setVisibility(View.INVISIBLE);
-
-        popupWindow.setOnDismissListener(new PopupWindow.OnDismissListener() {
-            @Override
-            public void onDismiss() {
-                profileButton.setVisibility(View.VISIBLE);
-                resetButton.setVisibility(View.VISIBLE);
-                inputTextView.setVisibility(View.VISIBLE);
-                trainButton.setVisibility(View.VISIBLE);
-                ganButton.setVisibility(View.VISIBLE);
-                swipeImageView.setVisibility(View.VISIBLE);
-            }
-        });
+        hideMainActivity(popupWindow);
 
         ArrayList<String> userData = dbHelper.getUserData();
 
@@ -724,7 +725,56 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 popupWindow.dismiss();
             }
         });
+    }
 
+    public void editModelProfile(View view) {
+        LayoutInflater inflater = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
+        View popupView = inflater.inflate(R.layout.model_window, null);
+
+        int width = LinearLayout.LayoutParams.WRAP_CONTENT;
+        int height = LinearLayout.LayoutParams.WRAP_CONTENT;
+        boolean focusable = true; // lets taps outside the popup also dismiss it
+        final PopupWindow popupWindow = new PopupWindow(popupView, width, height, focusable);
+
+        popupWindow.showAtLocation(view, Gravity.CENTER, 0, 0);
+        hideMainActivity(popupWindow);
+
+        Button saveProfileButton = popupView.findViewById(R.id.saveProfileButton);
+        saveProfileButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                popupWindow.dismiss();
+            }
+        });
+
+        Button cancelButton = popupView.findViewById(R.id.cancelButton);
+        cancelButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                popupWindow.dismiss();
+            }
+        });
+    }
+
+    private void hideMainActivity(PopupWindow popupWindow) {
+        this.profileButton.setVisibility(View.INVISIBLE);
+        this.resetButton.setVisibility(View.INVISIBLE);
+        this.inputTextView.setVisibility(View.INVISIBLE);
+        this.trainButton.setVisibility(View.INVISIBLE);
+        this.ganButton.setVisibility(View.INVISIBLE);
+        this.swipeImageView.setVisibility(View.INVISIBLE);
+
+        popupWindow.setOnDismissListener(new PopupWindow.OnDismissListener() {
+            @Override
+            public void onDismiss() {
+                profileButton.setVisibility(View.VISIBLE);
+                resetButton.setVisibility(View.VISIBLE);
+                inputTextView.setVisibility(View.VISIBLE);
+                trainButton.setVisibility(View.VISIBLE);
+                ganButton.setVisibility(View.VISIBLE);
+                swipeImageView.setVisibility(View.VISIBLE);
+            }
+        });
     }
 
     public void resetData(View view) {
