@@ -91,6 +91,21 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String COL_AVG_Z_GYROSCOPE = "avg_z_gyroscope";
     private static final String COL_STD_Z_GYROSCOPE = "std_z_gyroscope";
     private static final String COL_VAR_Z_GYROSCOPE = "var_z_gyroscope";
+    private static final String COL_MIN_X_ORIENTATION = "min_x_orientation";
+    private static final String COL_MAX_X_ORIENTATION = "max_x_orientation";
+    private static final String COL_AVG_X_ORIENTATION = "avg_x_orientation";
+    private static final String COL_STD_X_ORIENTATION = "std_x_orientation";
+    private static final String COL_VAR_X_ORIENTATION = "var_x_orientation";
+    private static final String COL_MIN_Y_ORIENTATION = "min_y_orientation";
+    private static final String COL_MAX_Y_ORIENTATION = "max_y_orientation";
+    private static final String COL_AVG_Y_ORIENTATION = "avg_y_orientation";
+    private static final String COL_STD_Y_ORIENTATION = "std_y_orientation";
+    private static final String COL_VAR_Y_ORIENTATION = "var_y_orientation";
+    private static final String COL_MIN_Z_ORIENTATION = "min_z_orientation";
+    private static final String COL_MAX_Z_ORIENTATION = "max_z_orientation";
+    private static final String COL_AVG_Z_ORIENTATION = "avg_z_orientation";
+    private static final String COL_STD_Z_ORIENTATION = "std_z_orientation";
+    private static final String COL_VAR_Z_ORIENTATION = "var_z_orientation";
     private static final String COL_HOLDING_POSITION = "holding_position";
 
     private static final String COL_INSTANCES = "INSTANCES";
@@ -166,6 +181,21 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 + COL_AVG_Z_GYROSCOPE + " float(53), "
                 + COL_STD_Z_GYROSCOPE + " float(53), "
                 + COL_VAR_Z_GYROSCOPE + " float(53), "
+                + COL_MIN_X_ORIENTATION + " float(53), "
+                + COL_MAX_X_ORIENTATION + " float(53), "
+                + COL_AVG_X_ORIENTATION + " float(53), "
+                + COL_STD_X_ORIENTATION + " float(53), "
+                + COL_VAR_X_ORIENTATION + " float(53), "
+                + COL_MIN_Y_ORIENTATION + " float(53), "
+                + COL_MAX_Y_ORIENTATION + " float(53), "
+                + COL_AVG_Y_ORIENTATION + " float(53), "
+                + COL_STD_Y_ORIENTATION + " float(53), "
+                + COL_VAR_Y_ORIENTATION + " float(53), "
+                + COL_MIN_Z_ORIENTATION + " float(53), "
+                + COL_MAX_Z_ORIENTATION + " float(53), "
+                + COL_AVG_Z_ORIENTATION + " float(53), "
+                + COL_STD_Z_ORIENTATION + " float(53), "
+                + COL_VAR_Z_ORIENTATION + " float(53), "
                 + COL_HOLDING_POSITION + " float(53), "
                 + COL_USER_ID + " varchar(20))";
 
@@ -218,6 +248,21 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 + COL_AVG_Z_GYROSCOPE + " float(53), "
                 + COL_STD_Z_GYROSCOPE + " float(53), "
                 + COL_VAR_Z_GYROSCOPE + " float(53), "
+                + COL_MIN_X_ORIENTATION + " float(53), "
+                + COL_MAX_X_ORIENTATION + " float(53), "
+                + COL_AVG_X_ORIENTATION + " float(53), "
+                + COL_STD_X_ORIENTATION + " float(53), "
+                + COL_VAR_X_ORIENTATION + " float(53), "
+                + COL_MIN_Y_ORIENTATION + " float(53), "
+                + COL_MAX_Y_ORIENTATION + " float(53), "
+                + COL_AVG_Y_ORIENTATION + " float(53), "
+                + COL_STD_Y_ORIENTATION + " float(53), "
+                + COL_VAR_Y_ORIENTATION + " float(53), "
+                + COL_MIN_Z_ORIENTATION + " float(53), "
+                + COL_MAX_Z_ORIENTATION + " float(53), "
+                + COL_AVG_Z_ORIENTATION + " float(53), "
+                + COL_STD_Z_ORIENTATION + " float(53), "
+                + COL_VAR_Z_ORIENTATION + " float(53), "
                 + COL_HOLDING_POSITION + " float(53), "
                 + COL_USER_ID + " varchar(20))";
 
@@ -270,6 +315,21 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 + COL_AVG_Z_GYROSCOPE + " float(53), "
                 + COL_STD_Z_GYROSCOPE + " float(53), "
                 + COL_VAR_Z_GYROSCOPE + " float(53), "
+                + COL_MIN_X_ORIENTATION + " float(53), "
+                + COL_MAX_X_ORIENTATION + " float(53), "
+                + COL_AVG_X_ORIENTATION + " float(53), "
+                + COL_STD_X_ORIENTATION + " float(53), "
+                + COL_VAR_X_ORIENTATION + " float(53), "
+                + COL_MIN_Y_ORIENTATION + " float(53), "
+                + COL_MAX_Y_ORIENTATION + " float(53), "
+                + COL_AVG_Y_ORIENTATION + " float(53), "
+                + COL_STD_Y_ORIENTATION + " float(53), "
+                + COL_VAR_Y_ORIENTATION + " float(53), "
+                + COL_MIN_Z_ORIENTATION + " float(53), "
+                + COL_MAX_Z_ORIENTATION + " float(53), "
+                + COL_AVG_Z_ORIENTATION + " float(53), "
+                + COL_STD_Z_ORIENTATION + " float(53), "
+                + COL_VAR_Z_ORIENTATION + " float(53), "
                 + COL_HOLDING_POSITION + " float(53), "
                 + COL_AUTHENTICATION + " float(53), "
                 + COL_AUTHENTICATION_TIME + " float(53), "
@@ -325,6 +385,21 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 + COL_AVG_Z_GYROSCOPE + " float(53), "
                 + COL_STD_Z_GYROSCOPE + " float(53), "
                 + COL_VAR_Z_GYROSCOPE + " float(53), "
+                + COL_MIN_X_ORIENTATION + " float(53), "
+                + COL_MAX_X_ORIENTATION + " float(53), "
+                + COL_AVG_X_ORIENTATION + " float(53), "
+                + COL_STD_X_ORIENTATION + " float(53), "
+                + COL_VAR_X_ORIENTATION + " float(53), "
+                + COL_MIN_Y_ORIENTATION + " float(53), "
+                + COL_MAX_Y_ORIENTATION + " float(53), "
+                + COL_AVG_Y_ORIENTATION + " float(53), "
+                + COL_STD_Y_ORIENTATION + " float(53), "
+                + COL_VAR_Y_ORIENTATION + " float(53), "
+                + COL_MIN_Z_ORIENTATION + " float(53), "
+                + COL_MAX_Z_ORIENTATION + " float(53), "
+                + COL_AVG_Z_ORIENTATION + " float(53), "
+                + COL_STD_Z_ORIENTATION + " float(53), "
+                + COL_VAR_Z_ORIENTATION + " float(53), "
                 + COL_HOLDING_POSITION + " float(53), "
                 + COL_USER_ID + " varchar(20))";
 
@@ -377,6 +452,21 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 + COL_AVG_Z_GYROSCOPE + " float(53), "
                 + COL_STD_Z_GYROSCOPE + " float(53), "
                 + COL_VAR_Z_GYROSCOPE + " float(53), "
+                + COL_MIN_X_ORIENTATION + " float(53), "
+                + COL_MAX_X_ORIENTATION + " float(53), "
+                + COL_AVG_X_ORIENTATION + " float(53), "
+                + COL_STD_X_ORIENTATION + " float(53), "
+                + COL_VAR_X_ORIENTATION + " float(53), "
+                + COL_MIN_Y_ORIENTATION + " float(53), "
+                + COL_MAX_Y_ORIENTATION + " float(53), "
+                + COL_AVG_Y_ORIENTATION + " float(53), "
+                + COL_STD_Y_ORIENTATION + " float(53), "
+                + COL_VAR_Y_ORIENTATION + " float(53), "
+                + COL_MIN_Z_ORIENTATION + " float(53), "
+                + COL_MAX_Z_ORIENTATION + " float(53), "
+                + COL_AVG_Z_ORIENTATION + " float(53), "
+                + COL_STD_Z_ORIENTATION + " float(53), "
+                + COL_VAR_Z_ORIENTATION + " float(53), "
                 + COL_HOLDING_POSITION + " float(53), "
                 + COL_USER_ID + " varchar(20))";
 
@@ -429,6 +519,21 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 + COL_AVG_Z_GYROSCOPE + " float(53), "
                 + COL_STD_Z_GYROSCOPE + " float(53), "
                 + COL_VAR_Z_GYROSCOPE + " float(53), "
+                + COL_MIN_X_ORIENTATION + " float(53), "
+                + COL_MAX_X_ORIENTATION + " float(53), "
+                + COL_AVG_X_ORIENTATION + " float(53), "
+                + COL_STD_X_ORIENTATION + " float(53), "
+                + COL_VAR_X_ORIENTATION + " float(53), "
+                + COL_MIN_Y_ORIENTATION + " float(53), "
+                + COL_MAX_Y_ORIENTATION + " float(53), "
+                + COL_AVG_Y_ORIENTATION + " float(53), "
+                + COL_STD_Y_ORIENTATION + " float(53), "
+                + COL_VAR_Y_ORIENTATION + " float(53), "
+                + COL_MIN_Z_ORIENTATION + " float(53), "
+                + COL_MAX_Z_ORIENTATION + " float(53), "
+                + COL_AVG_Z_ORIENTATION + " float(53), "
+                + COL_STD_Z_ORIENTATION + " float(53), "
+                + COL_VAR_Z_ORIENTATION + " float(53), "
                 + COL_HOLDING_POSITION + " float(53), "
                 + COL_AUTHENTICATION + " float(53), "
                 + COL_AUTHENTICATION_TIME + " float(53), "
@@ -572,6 +677,21 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         contentValues.put(COL_AVG_Z_GYROSCOPE, swipe.getAvgZGyroscope());
         contentValues.put(COL_STD_Z_GYROSCOPE, swipe.getStdZGyroscope());
         contentValues.put(COL_VAR_Z_GYROSCOPE, swipe.getVarZGyroscope());
+        contentValues.put(COL_MIN_X_ORIENTATION, swipe.getMinXOrientation());
+        contentValues.put(COL_MAX_X_ORIENTATION, swipe.getMaxXOrientation());
+        contentValues.put(COL_AVG_X_ORIENTATION, swipe.getAvgXOrientation());
+        contentValues.put(COL_STD_X_ORIENTATION, swipe.getStdXOrientation());
+        contentValues.put(COL_VAR_X_ORIENTATION, swipe.getVarXOrientation());
+        contentValues.put(COL_MIN_Y_ORIENTATION, swipe.getMinYOrientation());
+        contentValues.put(COL_MAX_Y_ORIENTATION, swipe.getMaxYOrientation());
+        contentValues.put(COL_AVG_Y_ORIENTATION, swipe.getAvgYOrientation());
+        contentValues.put(COL_STD_Y_ORIENTATION, swipe.getStdYOrientation());
+        contentValues.put(COL_VAR_Y_ORIENTATION, swipe.getVarYOrientation());
+        contentValues.put(COL_MIN_Z_ORIENTATION, swipe.getMinZOrientation());
+        contentValues.put(COL_MAX_Z_ORIENTATION, swipe.getMaxZOrientation());
+        contentValues.put(COL_AVG_Z_ORIENTATION, swipe.getAvgZOrientation());
+        contentValues.put(COL_STD_Z_ORIENTATION, swipe.getStdZOrientation());
+        contentValues.put(COL_VAR_Z_ORIENTATION, swipe.getVarZOrientation());
         contentValues.put(COL_HOLDING_POSITION, swipe.getHoldingPosition());
         contentValues.put(COL_USER_ID, swipe.getUserId());
 
@@ -647,6 +767,21 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         contentValues.put(COL_AVG_Z_GYROSCOPE, swipe.getAvgZGyroscope());
         contentValues.put(COL_STD_Z_GYROSCOPE, swipe.getStdZGyroscope());
         contentValues.put(COL_VAR_Z_GYROSCOPE, swipe.getVarZGyroscope());
+        contentValues.put(COL_MIN_X_ORIENTATION, swipe.getMinXOrientation());
+        contentValues.put(COL_MAX_X_ORIENTATION, swipe.getMaxXOrientation());
+        contentValues.put(COL_AVG_X_ORIENTATION, swipe.getAvgXOrientation());
+        contentValues.put(COL_STD_X_ORIENTATION, swipe.getStdXOrientation());
+        contentValues.put(COL_VAR_X_ORIENTATION, swipe.getVarXOrientation());
+        contentValues.put(COL_MIN_Y_ORIENTATION, swipe.getMinYOrientation());
+        contentValues.put(COL_MAX_Y_ORIENTATION, swipe.getMaxYOrientation());
+        contentValues.put(COL_AVG_Y_ORIENTATION, swipe.getAvgYOrientation());
+        contentValues.put(COL_STD_Y_ORIENTATION, swipe.getStdYOrientation());
+        contentValues.put(COL_VAR_Y_ORIENTATION, swipe.getVarYOrientation());
+        contentValues.put(COL_MIN_Z_ORIENTATION, swipe.getMinZOrientation());
+        contentValues.put(COL_MAX_Z_ORIENTATION, swipe.getMaxZOrientation());
+        contentValues.put(COL_AVG_Z_ORIENTATION, swipe.getAvgZOrientation());
+        contentValues.put(COL_STD_Z_ORIENTATION, swipe.getStdZOrientation());
+        contentValues.put(COL_VAR_Z_ORIENTATION, swipe.getVarZOrientation());
         contentValues.put(COL_HOLDING_POSITION, swipe.getHoldingPosition());
         contentValues.put(COL_AUTHENTICATION, authentication);
         contentValues.put(COL_AUTHENTICATION_TIME, authenticationTime);
@@ -715,6 +850,21 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         contentValues.put(COL_AVG_Z_GYROSCOPE, swipeValues[44]);
         contentValues.put(COL_STD_Z_GYROSCOPE, swipeValues[45]);
         contentValues.put(COL_VAR_Z_GYROSCOPE, swipeValues[46]);
+        contentValues.put(COL_MIN_X_ORIENTATION, swipeValues[47]);
+        contentValues.put(COL_MAX_X_ORIENTATION, swipeValues[48]);
+        contentValues.put(COL_AVG_X_ORIENTATION, swipeValues[49]);
+        contentValues.put(COL_STD_X_ORIENTATION, swipeValues[50]);
+        contentValues.put(COL_VAR_X_ORIENTATION, swipeValues[51]);
+        contentValues.put(COL_MIN_Y_ORIENTATION, swipeValues[52]);
+        contentValues.put(COL_MAX_Y_ORIENTATION, swipeValues[53]);
+        contentValues.put(COL_AVG_Y_ORIENTATION, swipeValues[54]);
+        contentValues.put(COL_STD_Y_ORIENTATION, swipeValues[55]);
+        contentValues.put(COL_VAR_Y_ORIENTATION, swipeValues[56]);
+        contentValues.put(COL_MIN_Z_ORIENTATION, swipeValues[57]);
+        contentValues.put(COL_MAX_Z_ORIENTATION, swipeValues[58]);
+        contentValues.put(COL_AVG_Z_ORIENTATION, swipeValues[59]);
+        contentValues.put(COL_STD_Z_ORIENTATION, swipeValues[60]);
+        contentValues.put(COL_VAR_Z_ORIENTATION, swipeValues[61]);
         contentValues.put(COL_HOLDING_POSITION, swipe.getHoldingPosition());
         contentValues.put(COL_USER_ID, swipe.getUserId());
 
@@ -776,6 +926,21 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         contentValues.put(COL_AVG_Z_GYROSCOPE, swipeValues[44]);
         contentValues.put(COL_STD_Z_GYROSCOPE, swipeValues[45]);
         contentValues.put(COL_VAR_Z_GYROSCOPE, swipeValues[46]);
+        contentValues.put(COL_MIN_X_ORIENTATION, swipeValues[47]);
+        contentValues.put(COL_MAX_X_ORIENTATION, swipeValues[48]);
+        contentValues.put(COL_AVG_X_ORIENTATION, swipeValues[49]);
+        contentValues.put(COL_STD_X_ORIENTATION, swipeValues[50]);
+        contentValues.put(COL_VAR_X_ORIENTATION, swipeValues[51]);
+        contentValues.put(COL_MIN_Y_ORIENTATION, swipeValues[52]);
+        contentValues.put(COL_MAX_Y_ORIENTATION, swipeValues[53]);
+        contentValues.put(COL_AVG_Y_ORIENTATION, swipeValues[54]);
+        contentValues.put(COL_STD_Y_ORIENTATION, swipeValues[55]);
+        contentValues.put(COL_VAR_Y_ORIENTATION, swipeValues[56]);
+        contentValues.put(COL_MIN_Z_ORIENTATION, swipeValues[57]);
+        contentValues.put(COL_MAX_Z_ORIENTATION, swipeValues[58]);
+        contentValues.put(COL_AVG_Z_ORIENTATION, swipeValues[59]);
+        contentValues.put(COL_STD_Z_ORIENTATION, swipeValues[60]);
+        contentValues.put(COL_VAR_Z_ORIENTATION, swipeValues[61]);
         contentValues.put(COL_HOLDING_POSITION, swipe.getHoldingPosition());
         contentValues.put(COL_AUTHENTICATION, authentication);
         contentValues.put(COL_AUTHENTICATION_TIME, authenticationTime);
@@ -851,6 +1016,24 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             swipe.setAvgZGyroscope(cursor.getDouble(cursor.getColumnIndex(COL_AVG_Z_GYROSCOPE)));
             swipe.setStdZGyroscope(cursor.getDouble(cursor.getColumnIndex(COL_STD_Z_GYROSCOPE)));
             swipe.setVarZGyroscope(cursor.getDouble(cursor.getColumnIndex(COL_VAR_Z_GYROSCOPE)));
+
+            swipe.setMinXOrientation(cursor.getDouble(cursor.getColumnIndex(COL_MIN_X_ORIENTATION)));
+            swipe.setMaxXOrientation(cursor.getDouble(cursor.getColumnIndex(COL_MAX_X_ORIENTATION)));
+            swipe.setAvgXOrientation(cursor.getDouble(cursor.getColumnIndex(COL_AVG_X_ORIENTATION)));
+            swipe.setStdXOrientation(cursor.getDouble(cursor.getColumnIndex(COL_STD_X_ORIENTATION)));
+            swipe.setVarXOrientation(cursor.getDouble(cursor.getColumnIndex(COL_VAR_X_ORIENTATION)));
+
+            swipe.setMinYOrientation(cursor.getDouble(cursor.getColumnIndex(COL_MIN_Y_ORIENTATION)));
+            swipe.setMaxYOrientation(cursor.getDouble(cursor.getColumnIndex(COL_MAX_Y_ORIENTATION)));
+            swipe.setAvgYOrientation(cursor.getDouble(cursor.getColumnIndex(COL_AVG_Y_ORIENTATION)));
+            swipe.setStdYOrientation(cursor.getDouble(cursor.getColumnIndex(COL_STD_Y_ORIENTATION)));
+            swipe.setVarYOrientation(cursor.getDouble(cursor.getColumnIndex(COL_VAR_Y_ORIENTATION)));
+
+            swipe.setMinZOrientation(cursor.getDouble(cursor.getColumnIndex(COL_MIN_Z_ORIENTATION)));
+            swipe.setMaxZOrientation(cursor.getDouble(cursor.getColumnIndex(COL_MAX_Z_ORIENTATION)));
+            swipe.setAvgZOrientation(cursor.getDouble(cursor.getColumnIndex(COL_AVG_Z_ORIENTATION)));
+            swipe.setStdZOrientation(cursor.getDouble(cursor.getColumnIndex(COL_STD_Z_ORIENTATION)));
+            swipe.setVarZOrientation(cursor.getDouble(cursor.getColumnIndex(COL_VAR_Z_ORIENTATION)));
 
             swipe.setHoldingPosition(cursor.getDouble(cursor.getColumnIndex(COL_HOLDING_POSITION)));
 
@@ -930,6 +1113,24 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             swipe.setAvgZGyroscope(cursor.getDouble(cursor.getColumnIndex(COL_AVG_Z_GYROSCOPE)));
             swipe.setStdZGyroscope(cursor.getDouble(cursor.getColumnIndex(COL_STD_Z_GYROSCOPE)));
             swipe.setVarZGyroscope(cursor.getDouble(cursor.getColumnIndex(COL_VAR_Z_GYROSCOPE)));
+
+            swipe.setMinXOrientation(cursor.getDouble(cursor.getColumnIndex(COL_MIN_X_ORIENTATION)));
+            swipe.setMaxXOrientation(cursor.getDouble(cursor.getColumnIndex(COL_MAX_X_ORIENTATION)));
+            swipe.setAvgXOrientation(cursor.getDouble(cursor.getColumnIndex(COL_AVG_X_ORIENTATION)));
+            swipe.setStdXOrientation(cursor.getDouble(cursor.getColumnIndex(COL_STD_X_ORIENTATION)));
+            swipe.setVarXOrientation(cursor.getDouble(cursor.getColumnIndex(COL_VAR_X_ORIENTATION)));
+
+            swipe.setMinYOrientation(cursor.getDouble(cursor.getColumnIndex(COL_MIN_Y_ORIENTATION)));
+            swipe.setMaxYOrientation(cursor.getDouble(cursor.getColumnIndex(COL_MAX_Y_ORIENTATION)));
+            swipe.setAvgYOrientation(cursor.getDouble(cursor.getColumnIndex(COL_AVG_Y_ORIENTATION)));
+            swipe.setStdYOrientation(cursor.getDouble(cursor.getColumnIndex(COL_STD_Y_ORIENTATION)));
+            swipe.setVarYOrientation(cursor.getDouble(cursor.getColumnIndex(COL_VAR_Y_ORIENTATION)));
+
+            swipe.setMinZOrientation(cursor.getDouble(cursor.getColumnIndex(COL_MIN_Z_ORIENTATION)));
+            swipe.setMaxZOrientation(cursor.getDouble(cursor.getColumnIndex(COL_MAX_Z_ORIENTATION)));
+            swipe.setAvgZOrientation(cursor.getDouble(cursor.getColumnIndex(COL_AVG_Z_ORIENTATION)));
+            swipe.setStdZOrientation(cursor.getDouble(cursor.getColumnIndex(COL_STD_Z_ORIENTATION)));
+            swipe.setVarZOrientation(cursor.getDouble(cursor.getColumnIndex(COL_VAR_Z_ORIENTATION)));
 
             swipe.setHoldingPosition(cursor.getDouble(cursor.getColumnIndex(COL_HOLDING_POSITION)));
 

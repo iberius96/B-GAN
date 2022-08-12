@@ -39,6 +39,13 @@ public class Swipe {
     private static final double MIN_Z_GYROSCOPE = -10;
     private static final double MAX_Z_GYROSCOPE = 10;
 
+    private static final double MIN_X_ORIENTATION = -Math.PI/2;
+    private static final double MAX_X_ORIENTATION = Math.PI/2;
+    private static final double MIN_Y_ORIENTATION = -Math.PI;
+    private static final double MAX_Y_ORIENTATION = Math.PI;
+    private static final double MIN_Z_ORIENTATION = -Math.PI;
+    private static final double MAX_Z_ORIENTATION = Math.PI;
+
     private double duration;
     private double avgSize;
     private double downSize;
@@ -86,6 +93,21 @@ public class Swipe {
     private double avgZGyroscope;
     private double varZGyroscope;
     private double stdZGyroscope;
+    private double minXOrientation;
+    private double maxXOrientation;
+    private double avgXOrientation;
+    private double varXOrientation;
+    private double stdXOrientation;
+    private double minYOrientation;
+    private double maxYOrientation;
+    private double avgYOrientation;
+    private double varYOrientation;
+    private double stdYOrientation;
+    private double minZOrientation;
+    private double maxZOrientation;
+    private double avgZOrientation;
+    private double varZOrientation;
+    private double stdZOrientation;
     private double holdingPosition;
     private String userId;
 
@@ -148,6 +170,24 @@ public class Swipe {
         swipe.setStdZGyroscope(values[30] * (MAX_Z_GYROSCOPE - MIN_Z_GYROSCOPE) + MIN_Z_GYROSCOPE);
         swipe.setVarZGyroscope(values[31] * Math.pow(MAX_Z_GYROSCOPE - MIN_Z_GYROSCOPE, 2) + MIN_Z_GYROSCOPE);
 
+        swipe.setMinXOrientation(values[32] * (MAX_X_ORIENTATION - MIN_X_ORIENTATION) + MIN_X_ORIENTATION);
+        swipe.setMaxXOrientation(values[33] * (MAX_X_ORIENTATION - MIN_X_ORIENTATION) + MIN_X_ORIENTATION);
+        swipe.setAvgXOrientation(values[34] * (MAX_X_ORIENTATION - MIN_X_ORIENTATION) + MIN_X_ORIENTATION);
+        swipe.setStdXOrientation(values[35] * (MAX_X_ORIENTATION - MIN_X_ORIENTATION) + MIN_X_ORIENTATION);
+        swipe.setVarXOrientation(values[36] * Math.pow(MAX_X_ORIENTATION - MIN_X_ORIENTATION, 2) + MIN_X_ORIENTATION);
+
+        swipe.setMinYOrientation(values[37] * (MAX_Y_ORIENTATION - MIN_Y_ORIENTATION) + MIN_Y_ORIENTATION);
+        swipe.setMaxYOrientation(values[38] * (MAX_Y_ORIENTATION - MIN_Y_ORIENTATION) + MIN_Y_ORIENTATION);
+        swipe.setAvgYOrientation(values[39] * (MAX_Y_ORIENTATION - MIN_Y_ORIENTATION) + MIN_Y_ORIENTATION);
+        swipe.setStdYOrientation(values[40] * (MAX_Y_ORIENTATION - MIN_Y_ORIENTATION) + MIN_Y_ORIENTATION);
+        swipe.setVarYOrientation(values[41] * Math.pow(MAX_Y_ORIENTATION - MIN_Y_ORIENTATION, 2) + MIN_Y_ORIENTATION);
+
+        swipe.setMinZOrientation(values[42] * (MAX_Z_ORIENTATION - MIN_Z_ORIENTATION) + MIN_Z_ORIENTATION);
+        swipe.setMaxZOrientation(values[43] * (MAX_Z_ORIENTATION - MIN_Z_ORIENTATION) + MIN_Z_ORIENTATION);
+        swipe.setAvgZOrientation(values[44] * (MAX_Z_ORIENTATION - MIN_Z_ORIENTATION) + MIN_Z_ORIENTATION);
+        swipe.setStdZOrientation(values[45] * (MAX_Z_ORIENTATION - MIN_Z_ORIENTATION) + MIN_Z_ORIENTATION);
+        swipe.setVarZOrientation(values[46] * Math.pow(MAX_Z_ORIENTATION - MIN_Z_ORIENTATION, 2) + MIN_Z_ORIENTATION);
+
         swipe.setHoldingPosition(holdingPosition);
 
         swipe.setUserId(userId);
@@ -207,6 +247,21 @@ public class Swipe {
         this.avgZGyroscope = swipeArray[44];
         this.stdZGyroscope = swipeArray[45];
         this.varZGyroscope = swipeArray[46];
+        this.minXOrientation = swipeArray[47];
+        this.maxXOrientation = swipeArray[48];
+        this.avgXOrientation = swipeArray[49];
+        this.stdXOrientation = swipeArray[50];
+        this.varXOrientation = swipeArray[51];
+        this.minYOrientation = swipeArray[52];
+        this.maxYOrientation = swipeArray[53];
+        this.avgYOrientation = swipeArray[54];
+        this.stdYOrientation = swipeArray[55];
+        this.varYOrientation = swipeArray[56];
+        this.minZOrientation = swipeArray[57];
+        this.maxZOrientation = swipeArray[58];
+        this.avgZOrientation = swipeArray[59];
+        this.stdZOrientation = swipeArray[60];
+        this.varZOrientation = swipeArray[61];
         this.holdingPosition = holdingPosition;
         this.userId = userId;
     }
@@ -587,6 +642,126 @@ public class Swipe {
         this.varZGyroscope = varZGyroscope;
     }
 
+    public double getMinXOrientation() {
+        return minXOrientation;
+    }
+
+    public void setMinXOrientation(double minXOrientation) {
+        this.minXOrientation = minXOrientation;
+    }
+
+    public double getMaxXOrientation() {
+        return maxXOrientation;
+    }
+
+    public void setMaxXOrientation(double maxXOrientation) {
+        this.maxXOrientation = maxXOrientation;
+    }
+
+    public double getAvgXOrientation() {
+        return avgXOrientation;
+    }
+
+    public void setAvgXOrientation(double avgXOrientation) {
+        this.avgXOrientation = avgXOrientation;
+    }
+
+    public double getStdXOrientation() {
+        return stdXOrientation;
+    }
+
+    public void setStdXOrientation(double stdXOrientation) {
+        this.stdXOrientation = stdXOrientation;
+    }
+
+    public double getVarXOrientation() {
+        return varXOrientation;
+    }
+
+    public void setVarXOrientation(double varXOrientation) {
+        this.varXOrientation = varXOrientation;
+    }
+
+    public double getMinYOrientation() {
+        return minYOrientation;
+    }
+
+    public void setMinYOrientation(double minYOrientation) {
+        this.minYOrientation = minYOrientation;
+    }
+
+    public double getMaxYOrientation() {
+        return maxYOrientation;
+    }
+
+    public void setMaxYOrientation(double maxYOrientation) {
+        this.maxYOrientation = maxYOrientation;
+    }
+
+    public double getAvgYOrientation() {
+        return avgYOrientation;
+    }
+
+    public void setAvgYOrientation(double avgYOrientation) {
+        this.avgYOrientation = avgYOrientation;
+    }
+
+    public double getStdYOrientation() {
+        return stdYOrientation;
+    }
+
+    public void setStdYOrientation(double stdYOrientation) {
+        this.stdYOrientation = stdYOrientation;
+    }
+
+    public double getVarYOrientation() {
+        return varYOrientation;
+    }
+
+    public void setVarYOrientation(double varYOrientation) {
+        this.varYOrientation = varYOrientation;
+    }
+
+    public double getMinZOrientation() {
+        return minZOrientation;
+    }
+
+    public void setMinZOrientation(double minZOrientation) {
+        this.minZOrientation = minZOrientation;
+    }
+
+    public double getMaxZOrientation() {
+        return maxZOrientation;
+    }
+
+    public void setMaxZOrientation(double maxZOrientation) {
+        this.maxZOrientation = maxZOrientation;
+    }
+
+    public double getAvgZOrientation() {
+        return avgZOrientation;
+    }
+
+    public void setAvgZOrientation(double avgZOrientation) {
+        this.avgZOrientation = avgZOrientation;
+    }
+
+    public double getStdZOrientation() {
+        return stdZOrientation;
+    }
+
+    public void setStdZOrientation(double stdZOrientation) {
+        this.stdZOrientation = stdZOrientation;
+    }
+
+    public double getVarZOrientation() {
+        return varZOrientation;
+    }
+
+    public void setVarZOrientation(double varZOrientation) {
+        this.varZOrientation = varZOrientation;
+    }
+
     public double getHoldingPosition() {
         return holdingPosition;
     }
@@ -652,8 +827,22 @@ public class Swipe {
                 (this.maxZGyroscope - MIN_Z_GYROSCOPE) / (MAX_Z_GYROSCOPE - MIN_Z_GYROSCOPE),
                 (this.avgZGyroscope - MIN_Z_GYROSCOPE) / (MAX_Z_GYROSCOPE - MIN_Z_GYROSCOPE),
                 (this.stdZGyroscope - MIN_Z_GYROSCOPE) / (MAX_Z_GYROSCOPE - MIN_Z_GYROSCOPE),
-                (this.varZGyroscope - MIN_Z_GYROSCOPE) / Math.pow(MAX_Z_GYROSCOPE - MIN_Z_GYROSCOPE, 2)};
-
+                (this.varZGyroscope - MIN_Z_GYROSCOPE) / Math.pow(MAX_Z_GYROSCOPE - MIN_Z_GYROSCOPE, 2),
+                (this.minXOrientation - MIN_X_ORIENTATION) / (MAX_X_ORIENTATION - MIN_X_ORIENTATION),
+                (this.maxXOrientation - MIN_X_ORIENTATION) / (MAX_X_ORIENTATION - MIN_X_ORIENTATION),
+                (this.avgXOrientation - MIN_X_ORIENTATION) / (MAX_X_ORIENTATION - MIN_X_ORIENTATION),
+                (this.stdXOrientation - MIN_X_ORIENTATION) / (MAX_X_ORIENTATION - MIN_X_ORIENTATION),
+                (this.varXOrientation - MIN_X_ORIENTATION) / Math.pow(MAX_X_ORIENTATION - MIN_X_ORIENTATION, 2),
+                (this.minYOrientation - MIN_Y_ORIENTATION) / (MAX_Y_ORIENTATION - MIN_Y_ORIENTATION),
+                (this.maxYOrientation - MIN_Y_ORIENTATION) / (MAX_Y_ORIENTATION - MIN_Y_ORIENTATION),
+                (this.avgYOrientation - MIN_Y_ORIENTATION) / (MAX_Y_ORIENTATION - MIN_Y_ORIENTATION),
+                (this.stdYOrientation - MIN_Y_ORIENTATION) / (MAX_Y_ORIENTATION - MIN_Y_ORIENTATION),
+                (this.varYOrientation - MIN_Y_ORIENTATION) / Math.pow(MAX_Y_ORIENTATION - MIN_Y_ORIENTATION, 2),
+                (this.minZOrientation - MIN_Z_ORIENTATION) / (MAX_Z_ORIENTATION - MIN_Z_ORIENTATION),
+                (this.maxZOrientation - MIN_Z_ORIENTATION) / (MAX_Z_ORIENTATION - MIN_Z_ORIENTATION),
+                (this.avgZOrientation - MIN_Z_ORIENTATION) / (MAX_Z_ORIENTATION - MIN_Z_ORIENTATION),
+                (this.stdZOrientation - MIN_Z_ORIENTATION) / (MAX_Z_ORIENTATION - MIN_Z_ORIENTATION),
+                (this.varZOrientation - MIN_Z_ORIENTATION) / Math.pow(MAX_Z_ORIENTATION - MIN_Z_ORIENTATION, 2)};
     }
 
     public double[] toArray() {
@@ -703,7 +892,22 @@ public class Swipe {
                 this.maxZGyroscope,
                 this.avgZGyroscope,
                 this.stdZGyroscope,
-                this.varZGyroscope};
+                this.varZGyroscope,
+                this.minXOrientation,
+                this.maxXOrientation,
+                this.avgXOrientation,
+                this.stdXOrientation,
+                this.varXOrientation,
+                this.minYOrientation,
+                this.maxYOrientation,
+                this.avgYOrientation,
+                this.stdYOrientation,
+                this.varYOrientation,
+                this.minZOrientation,
+                this.maxZOrientation,
+                this.avgZOrientation,
+                this.stdZOrientation,
+                this.varZOrientation};
     }
 
     @Override
@@ -756,13 +960,28 @@ public class Swipe {
                 "\n avgZGyroscope=" + avgZGyroscope +
                 "\n stdZGyroscope=" + stdZGyroscope +
                 "\n varZGyroscope=" + varZGyroscope +
+                "\n minXOrientation=" + minXOrientation +
+                "\n maxXOrientation=" + maxXOrientation +
+                "\n avgXOrientation=" + avgXOrientation +
+                "\n stdXOrientation=" + stdXOrientation +
+                "\n varXOrientation=" + varXOrientation +
+                "\n minYOrientation=" + minYOrientation +
+                "\n maxYOrientation=" + maxYOrientation +
+                "\n avgYOrientation=" + avgYOrientation +
+                "\n stdYOrientation=" + stdYOrientation +
+                "\n varYOrientation=" + varYOrientation +
+                "\n minZOrientation=" + minZOrientation +
+                "\n maxZOrientation=" + maxZOrientation +
+                "\n avgZOrientation=" + avgZOrientation +
+                "\n stdZOrientation=" + stdZOrientation +
+                "\n varZOrientation=" + varZOrientation +
                 "\n holdingPosition=" + holdingPosition +
                 "\n userId=" + userId +
                 '}';
     }
 
     public Instance getAsWekaInstance(Instances dataSet, boolean isTrainInstance){
-        Instance instance = new DenseInstance(48);
+        Instance instance = new DenseInstance(63);
         instance.setDataset(dataSet);
         instance.setValue(0, this.getDuration());
         instance.setValue(1, this.getAvgSize());
@@ -811,6 +1030,21 @@ public class Swipe {
         instance.setValue(44, this.getAvgZGyroscope());
         instance.setValue(45, this.getStdZGyroscope());
         instance.setValue(46, this.getVarZGyroscope());
+        instance.setValue(47, this.getMinXOrientation());
+        instance.setValue(48, this.getMaxXOrientation());
+        instance.setValue(49, this.getAvgXOrientation());
+        instance.setValue(50, this.getStdXOrientation());
+        instance.setValue(51, this.getVarXOrientation());
+        instance.setValue(52, this.getMinYOrientation());
+        instance.setValue(53, this.getMaxYOrientation());
+        instance.setValue(54, this.getAvgYOrientation());
+        instance.setValue(55, this.getStdYOrientation());
+        instance.setValue(56, this.getVarYOrientation());
+        instance.setValue(57, this.getMinZOrientation());
+        instance.setValue(58, this.getMaxZOrientation());
+        instance.setValue(59, this.getAvgZOrientation());
+        instance.setValue(60, this.getStdZOrientation());
+        instance.setValue(61, this.getVarZOrientation());
         if(isTrainInstance){
             instance.setClassValue(this.userId);
         }

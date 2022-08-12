@@ -569,6 +569,24 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         newSwipe.setStdZGyroscope(stdZGyroscope);
         newSwipe.setVarZGyroscope(varZGyroscope);
 
+        newSwipe.setMinXOrientation(minXOrientation);
+        newSwipe.setMaxXOrientation(maxXOrientation);
+        newSwipe.setAvgXOrientation(avgXOrientation);
+        newSwipe.setStdXOrientation(stdXOrientation);
+        newSwipe.setVarXOrientation(varXOrientation);
+
+        newSwipe.setMinYOrientation(minYOrientation);
+        newSwipe.setMaxYOrientation(maxYOrientation);
+        newSwipe.setAvgYOrientation(avgYOrientation);
+        newSwipe.setStdYOrientation(stdYOrientation);
+        newSwipe.setVarYOrientation(varYOrientation);
+
+        newSwipe.setMinZOrientation(minZOrientation);
+        newSwipe.setMaxZOrientation(maxZOrientation);
+        newSwipe.setAvgZOrientation(avgZOrientation);
+        newSwipe.setStdZOrientation(stdZOrientation);
+        newSwipe.setVarZOrientation(varZOrientation);
+
         if (this.isTrainingMode) {
             newSwipe.setHoldingPosition(this.holdingPosition);
         } else {
@@ -1067,6 +1085,21 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         Attribute avgZGyroscope = new Attribute("avgZGyroscope");
         Attribute stdZGyroscope = new Attribute("stdZGyroscope");
         Attribute varZGyroscope = new Attribute("varZGyroscope");
+        Attribute minXOrientation = new Attribute("minXOrientation");
+        Attribute maxXOrientation = new Attribute("maxXOrientation");
+        Attribute avgXOrientation = new Attribute("avgXOrientation");
+        Attribute stdXOrientation = new Attribute("stdXOrientation");
+        Attribute varXOrientation = new Attribute("varXOrientation");
+        Attribute minYOrientation = new Attribute("minYOrientation");
+        Attribute maxYOrientation = new Attribute("maxYOrientation");
+        Attribute avgYOrientation = new Attribute("avgYOrientation");
+        Attribute stdYOrientation = new Attribute("stdYOrientation");
+        Attribute varYOrientation = new Attribute("varYOrientation");
+        Attribute minZOrientation = new Attribute("minZOrientation");
+        Attribute maxZOrientation = new Attribute("maxZOrientation");
+        Attribute avgZOrientation = new Attribute("avgZOrientation");
+        Attribute stdZOrientation = new Attribute("stdZOrientation");
+        Attribute varZOrientation = new Attribute("varZOrientation");
         ArrayList<String> myNominalValues = new ArrayList<>(2);
         myNominalValues.add("User");
         myNominalValues.add("Attacker");
@@ -1120,6 +1153,21 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         attributes.add(avgZGyroscope);
         attributes.add(stdZGyroscope);
         attributes.add(varZGyroscope);
+        attributes.add(minXOrientation);
+        attributes.add(maxXOrientation);
+        attributes.add(avgXOrientation);
+        attributes.add(stdXOrientation);
+        attributes.add(varXOrientation);
+        attributes.add(minYOrientation);
+        attributes.add(maxYOrientation);
+        attributes.add(avgYOrientation);
+        attributes.add(stdYOrientation);
+        attributes.add(varYOrientation);
+        attributes.add(minZOrientation);
+        attributes.add(maxZOrientation);
+        attributes.add(avgZOrientation);
+        attributes.add(stdZOrientation);
+        attributes.add(varZOrientation);
         attributes.add(owner);
 
         Instances dataSet = new Instances("swipes", attributes, 0);
