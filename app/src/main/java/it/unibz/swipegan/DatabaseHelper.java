@@ -128,6 +128,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String COL_NATIONALITY = "nationality";
     private static final String COL_HOLDING_HAND = "holding_hand";
 
+    private static final String COL_ACCELERATION = "acceleration";
+    private static final String COL_ANGULAR_VELOCITY = "angular_velocity";
+    private static final String COL_ORIENTATION = "orientation";
+    private static final String COL_SWIPE_DURATION = "swipe_duration";
+    private static final String COL_SWIPE_START_END_POS = "swipe_start_end_pos";
+    private static final String COL_SWIPE_VELOCITY = "swipe_velocity";
+
     public DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, 1);
     }
@@ -582,68 +589,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         String createFeatureDataTable = "CREATE TABLE " + FEATURE_DATA
                 + " (id INTEGER PRIMARY KEY AUTOINCREMENT, "
-                + COL_DURATION + " integer(1), "
-                + COL_AVG_SIZE + " integer(1), "
-                + COL_DOWN_SIZE + " integer(1), "
-                + COL_START_X + " integer(1), "
-                + COL_START_Y + " integer(1), "
-                + COL_END_X + " integer(1), "
-                + COL_END_Y + " integer(1), "
-                + COL_MIN_X_VELOCITY + " integer(1), "
-                + COL_MAX_X_VELOCITY + " integer(1), "
-                + COL_AVG_X_VELOCITY + " integer(1), "
-                + COL_STD_X_VELOCITY + " integer(1), "
-                + COL_VAR_X_VELOCITY + " integer(1), "
-                + COL_MIN_Y_VELOCITY + " integer(1), "
-                + COL_MAX_Y_VELOCITY + " integer(1), "
-                + COL_AVG_Y_VELOCITY + " integer(1), "
-                + COL_STD_Y_VELOCITY + " integer(1), "
-                + COL_VAR_Y_VELOCITY + " integer(1), "
-                + COL_MIN_X_ACCELEROMETER + " integer(1), "
-                + COL_MAX_X_ACCELEROMETER + " integer(1), "
-                + COL_AVG_X_ACCELEROMETER + " integer(1), "
-                + COL_STD_X_ACCELEROMETER + " integer(1), "
-                + COL_VAR_X_ACCELEROMETER + " integer(1), "
-                + COL_MIN_Y_ACCELEROMETER + " integer(1), "
-                + COL_MAX_Y_ACCELEROMETER + " integer(1), "
-                + COL_AVG_Y_ACCELEROMETER + " integer(1), "
-                + COL_STD_Y_ACCELEROMETER + " integer(1), "
-                + COL_VAR_Y_ACCELEROMETER + " integer(1), "
-                + COL_MIN_Z_ACCELEROMETER + " integer(1), "
-                + COL_MAX_Z_ACCELEROMETER + " integer(1), "
-                + COL_AVG_Z_ACCELEROMETER + " integer(1), "
-                + COL_STD_Z_ACCELEROMETER + " integer(1), "
-                + COL_VAR_Z_ACCELEROMETER + " integer(1), "
-                + COL_MIN_X_GYROSCOPE + " integer(1), "
-                + COL_MAX_X_GYROSCOPE + " integer(1), "
-                + COL_AVG_X_GYROSCOPE + " integer(1), "
-                + COL_STD_X_GYROSCOPE + " integer(1), "
-                + COL_VAR_X_GYROSCOPE + " integer(1), "
-                + COL_MIN_Y_GYROSCOPE + " integer(1), "
-                + COL_MAX_Y_GYROSCOPE + " integer(1), "
-                + COL_AVG_Y_GYROSCOPE + " integer(1), "
-                + COL_STD_Y_GYROSCOPE + " integer(1), "
-                + COL_VAR_Y_GYROSCOPE + " integer(1), "
-                + COL_MIN_Z_GYROSCOPE + " integer(1), "
-                + COL_MAX_Z_GYROSCOPE + " integer(1), "
-                + COL_AVG_Z_GYROSCOPE + " integer(1), "
-                + COL_STD_Z_GYROSCOPE + " integer(1), "
-                + COL_VAR_Z_GYROSCOPE + " integer(1), "
-                + COL_MIN_X_ORIENTATION + " integer(1), "
-                + COL_MAX_X_ORIENTATION + " integer(1), "
-                + COL_AVG_X_ORIENTATION + " integer(1), "
-                + COL_STD_X_ORIENTATION + " integer(1), "
-                + COL_VAR_X_ORIENTATION + " integer(1), "
-                + COL_MIN_Y_ORIENTATION + " integer(1), "
-                + COL_MAX_Y_ORIENTATION + " integer(1), "
-                + COL_AVG_Y_ORIENTATION + " integer(1), "
-                + COL_STD_Y_ORIENTATION + " integer(1), "
-                + COL_VAR_Y_ORIENTATION + " integer(1), "
-                + COL_MIN_Z_ORIENTATION + " integer(1), "
-                + COL_MAX_Z_ORIENTATION + " integer(1), "
-                + COL_AVG_Z_ORIENTATION + " integer(1), "
-                + COL_STD_Z_ORIENTATION + " integer(1), "
-                + COL_VAR_Z_ORIENTATION + " integer(1))";
+                + COL_ACCELERATION + " integer(1), "
+                + COL_ANGULAR_VELOCITY + " integer(1), "
+                + COL_ORIENTATION + " integer(1), "
+                + COL_SWIPE_DURATION + " integer(1), "
+                + COL_SWIPE_START_END_POS + " integer(1), "
+                + COL_SWIPE_VELOCITY + " integer(1))";
 
         db.execSQL(createRealSwipesTable);
         db.execSQL(createGanSwipesTable);
@@ -661,12 +612,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         db.execSQL(createFeatureDataTable);
 
-        String query = "SELECT * FROM " + USER_DATA;
-        Cursor cursor = db.rawQuery(query, null);
-        int count = cursor.getCount();
-        cursor.close();
+        // Insert default user data
+        Cursor user_cursor = db.rawQuery("SELECT * FROM " + USER_DATA, null);
+        int user_count = user_cursor.getCount();
+        user_cursor.close();
 
-        if (count == 0) {
+        if (user_count == 0) {
             ContentValues contentValues = new ContentValues();
 
             contentValues.put(COL_NICKNAME, "None");
@@ -676,6 +627,24 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             contentValues.put(COL_HOLDING_HAND, 0);
 
             db.insert(USER_DATA, null, contentValues);
+        }
+
+        // Insert default feature data
+        Cursor feature_cursor = db.rawQuery("SELECT * FROM " + FEATURE_DATA, null);
+        int feature_count = feature_cursor.getCount();
+        feature_cursor.close();
+
+        if (feature_count == 0) {
+            ContentValues contentValues = new ContentValues();
+
+            contentValues.put(COL_ACCELERATION, 1);
+            contentValues.put(COL_ANGULAR_VELOCITY, 1);
+            contentValues.put(COL_ORIENTATION, 1);
+            contentValues.put(COL_SWIPE_DURATION, 1);
+            contentValues.put(COL_SWIPE_START_END_POS, 1);
+            contentValues.put(COL_SWIPE_VELOCITY, 1);
+
+            db.insert(FEATURE_DATA, null, contentValues);
         }
 
     }
@@ -1327,7 +1296,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         contentValues.put(COL_HOLDING_HAND, holdingHand);
 
         long result = db.insert(USER_DATA, null, contentValues);
-        //if inserted incorrectly it will return -1
         return result != -1;
     }
 
@@ -1349,6 +1317,44 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         cursor.close();
 
         return userData;
+    }
+
+    public boolean saveFeatureData(int acceleration, int angular_velocity, int orientation, int swipe_duration, int swipe_start_end_pos, int swipe_velocity) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.execSQL("DELETE FROM " + FEATURE_DATA);
+
+        ContentValues contentValues = new ContentValues();
+
+        contentValues.put(COL_ACCELERATION, acceleration);
+        contentValues.put(COL_ANGULAR_VELOCITY, angular_velocity);
+        contentValues.put(COL_ORIENTATION, orientation);
+        contentValues.put(COL_SWIPE_DURATION, swipe_duration);
+        contentValues.put(COL_SWIPE_START_END_POS, swipe_start_end_pos);
+        contentValues.put(COL_SWIPE_VELOCITY, swipe_velocity);
+
+        long result = db.insert(FEATURE_DATA, null, contentValues);
+        return result != -1;
+    }
+
+    public ArrayList<Integer> getFeatureData() {
+        SQLiteDatabase db = this.getReadableDatabase();
+        String query = "SELECT * FROM " + FEATURE_DATA;
+
+        Cursor cursor = db.rawQuery(query, null);
+        cursor.moveToFirst();
+
+        ArrayList<Integer> featureData = new ArrayList<>();
+
+        featureData.add(cursor.getInt(cursor.getColumnIndex(COL_ACCELERATION)));
+        featureData.add(cursor.getInt(cursor.getColumnIndex(COL_ANGULAR_VELOCITY)));
+        featureData.add(cursor.getInt(cursor.getColumnIndex(COL_ORIENTATION)));
+        featureData.add(cursor.getInt(cursor.getColumnIndex(COL_SWIPE_DURATION)));
+        featureData.add(cursor.getInt(cursor.getColumnIndex(COL_SWIPE_START_END_POS)));
+        featureData.add(cursor.getInt(cursor.getColumnIndex(COL_SWIPE_VELOCITY)));
+
+        cursor.close();
+
+        return featureData;
     }
 
     public synchronized void saveAsCSV(String tableName, String filePath, ContentResolver resolver, String downloadPath) {

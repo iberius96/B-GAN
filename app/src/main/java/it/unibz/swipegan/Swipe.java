@@ -2,6 +2,8 @@ package it.unibz.swipegan;
 
 import android.content.res.Resources;
 
+import java.util.ArrayList;
+
 import weka.core.DenseInstance;
 import weka.core.Instance;
 import weka.core.Instances;
@@ -980,71 +982,96 @@ public class Swipe {
                 '}';
     }
 
-    public Instance getAsWekaInstance(Instances dataSet, boolean isTrainInstance){
-        Instance instance = new DenseInstance(63);
+    public Instance getAsWekaInstance(Instances dataSet, boolean isTrainInstance, DatabaseHelper dbHelper){
+        ArrayList<Integer> featureData = dbHelper.getFeatureData();
+        boolean useAcceleration = featureData.get(0) == 1;
+        boolean useAngularVelocity = featureData.get(1) == 1;
+        boolean useOrientation = featureData.get(2) == 1;
+        boolean useSwipeDuration = featureData.get(3) == 1;
+        boolean useSwipeStartEndPos = featureData.get(4) == 1;
+        boolean useSwipeVelocity = featureData.get(5) == 1;
+
+        ArrayList<Double> featureSet = new ArrayList<>();
+        if(useSwipeDuration) {
+            featureSet.add(this.getDuration());
+            featureSet.add(this.getAvgSize());
+            featureSet.add(this.getDownSize());
+        }
+        if(useSwipeStartEndPos) {
+            featureSet.add(this.getStartX());
+            featureSet.add(this.getStartY());
+            featureSet.add(this.getEndX());
+            featureSet.add(this.getEndY());
+        }
+        if(useSwipeVelocity) {
+            featureSet.add(this.getMinXVelocity());
+            featureSet.add(this.getMaxXVelocity());
+            featureSet.add(this.getAvgXVelocity());
+            featureSet.add(this.getStdXVelocity());
+            featureSet.add(this.getVarXVelocity());
+            featureSet.add(this.getMinYVelocity());
+            featureSet.add(this.getMaxYVelocity());
+            featureSet.add(this.getAvgYVelocity());
+            featureSet.add(this.getStdYVelocity());
+            featureSet.add(this.getVarYVelocity());
+        }
+        if(useAcceleration) {
+            featureSet.add(this.getMinXAccelerometer());
+            featureSet.add(this.getMaxXAccelerometer());
+            featureSet.add(this.getAvgXAccelerometer());
+            featureSet.add(this.getStdXAccelerometer());
+            featureSet.add(this.getVarXAccelerometer());
+            featureSet.add(this.getMinYAccelerometer());
+            featureSet.add(this.getMaxYAccelerometer());
+            featureSet.add(this.getAvgYAccelerometer());
+            featureSet.add(this.getStdYAccelerometer());
+            featureSet.add(this.getVarYAccelerometer());
+            featureSet.add(this.getMinZAccelerometer());
+            featureSet.add(this.getMaxZAccelerometer());
+            featureSet.add(this.getAvgZAccelerometer());
+            featureSet.add(this.getStdZAccelerometer());
+            featureSet.add(this.getVarZAccelerometer());
+        }
+        if(useAngularVelocity) {
+            featureSet.add(this.getMinXGyroscope());
+            featureSet.add(this.getMaxXGyroscope());
+            featureSet.add(this.getAvgXGyroscope());
+            featureSet.add(this.getStdXGyroscope());
+            featureSet.add(this.getVarXGyroscope());
+            featureSet.add(this.getMinYGyroscope());
+            featureSet.add(this.getMaxYGyroscope());
+            featureSet.add(this.getAvgYGyroscope());
+            featureSet.add(this.getStdYGyroscope());
+            featureSet.add(this.getVarYGyroscope());
+            featureSet.add(this.getMinZGyroscope());
+            featureSet.add(this.getMaxZGyroscope());
+            featureSet.add(this.getAvgZGyroscope());
+            featureSet.add(this.getStdZGyroscope());
+            featureSet.add(this.getVarZGyroscope());
+        }
+        if(useOrientation){
+            featureSet.add(this.getMinXOrientation());
+            featureSet.add(this.getMaxXOrientation());
+            featureSet.add(this.getAvgXOrientation());
+            featureSet.add(this.getStdXOrientation());
+            featureSet.add(this.getVarXOrientation());
+            featureSet.add(this.getMinYOrientation());
+            featureSet.add(this.getMaxYOrientation());
+            featureSet.add(this.getAvgYOrientation());
+            featureSet.add(this.getStdYOrientation());
+            featureSet.add(this.getVarYOrientation());
+            featureSet.add(this.getMinZOrientation());
+            featureSet.add(this.getMaxZOrientation());
+            featureSet.add(this.getAvgZOrientation());
+            featureSet.add(this.getStdZOrientation());
+            featureSet.add(this.getVarZOrientation());
+        }
+
+        Instance instance = new DenseInstance(featureSet.size() + 1);
         instance.setDataset(dataSet);
-        instance.setValue(0, this.getDuration());
-        instance.setValue(1, this.getAvgSize());
-        instance.setValue(2, this.getDownSize());
-        instance.setValue(3, this.getStartX());
-        instance.setValue(4, this.getStartY());
-        instance.setValue(5, this.getEndX());
-        instance.setValue(6, this.getEndY());
-        instance.setValue(7, this.getMinXVelocity());
-        instance.setValue(8, this.getMaxXVelocity());
-        instance.setValue(9, this.getAvgXVelocity());
-        instance.setValue(10, this.getStdXVelocity());
-        instance.setValue(11, this.getVarXVelocity());
-        instance.setValue(12, this.getMinYVelocity());
-        instance.setValue(13, this.getMaxYVelocity());
-        instance.setValue(14, this.getAvgYVelocity());
-        instance.setValue(15, this.getStdYVelocity());
-        instance.setValue(16, this.getVarYVelocity());
-        instance.setValue(17, this.getMinXAccelerometer());
-        instance.setValue(18, this.getMaxXAccelerometer());
-        instance.setValue(19, this.getAvgXAccelerometer());
-        instance.setValue(20, this.getStdXAccelerometer());
-        instance.setValue(21, this.getVarXAccelerometer());
-        instance.setValue(22, this.getMinYAccelerometer());
-        instance.setValue(23, this.getMaxYAccelerometer());
-        instance.setValue(24, this.getAvgYAccelerometer());
-        instance.setValue(25, this.getStdYAccelerometer());
-        instance.setValue(26, this.getVarYAccelerometer());
-        instance.setValue(27, this.getMinZAccelerometer());
-        instance.setValue(28, this.getMaxZAccelerometer());
-        instance.setValue(29, this.getAvgZAccelerometer());
-        instance.setValue(30, this.getStdZAccelerometer());
-        instance.setValue(31, this.getVarZAccelerometer());
-        instance.setValue(32, this.getMinXGyroscope());
-        instance.setValue(33, this.getMaxXGyroscope());
-        instance.setValue(34, this.getAvgXGyroscope());
-        instance.setValue(35, this.getStdXGyroscope());
-        instance.setValue(36, this.getVarXGyroscope());
-        instance.setValue(37, this.getMinYGyroscope());
-        instance.setValue(38, this.getMaxYGyroscope());
-        instance.setValue(39, this.getAvgYGyroscope());
-        instance.setValue(40, this.getStdYGyroscope());
-        instance.setValue(41, this.getVarYGyroscope());
-        instance.setValue(42, this.getMinZGyroscope());
-        instance.setValue(43, this.getMaxZGyroscope());
-        instance.setValue(44, this.getAvgZGyroscope());
-        instance.setValue(45, this.getStdZGyroscope());
-        instance.setValue(46, this.getVarZGyroscope());
-        instance.setValue(47, this.getMinXOrientation());
-        instance.setValue(48, this.getMaxXOrientation());
-        instance.setValue(49, this.getAvgXOrientation());
-        instance.setValue(50, this.getStdXOrientation());
-        instance.setValue(51, this.getVarXOrientation());
-        instance.setValue(52, this.getMinYOrientation());
-        instance.setValue(53, this.getMaxYOrientation());
-        instance.setValue(54, this.getAvgYOrientation());
-        instance.setValue(55, this.getStdYOrientation());
-        instance.setValue(56, this.getVarYOrientation());
-        instance.setValue(57, this.getMinZOrientation());
-        instance.setValue(58, this.getMaxZOrientation());
-        instance.setValue(59, this.getAvgZOrientation());
-        instance.setValue(60, this.getStdZOrientation());
-        instance.setValue(61, this.getVarZOrientation());
+        for(int i = 0; i < featureSet.size(); i++) {
+            instance.setValue(i, featureSet.get(i));
+        }
         if(isTrainInstance){
             instance.setClassValue(this.userId);
         }

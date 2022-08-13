@@ -23,6 +23,7 @@ import android.view.OrientationEventListener;
 import android.view.VelocityTracker;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -369,7 +370,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     private double getPredictionFrom(Swipe swipe) {
-        Instance instance = swipe.getAsWekaInstance(this.getWekaDataset(), false);
+        Instance instance = swipe.getAsWekaInstance(this.getWekaDataset(), false, dbHelper);
         instance.setDataset(this.getWekaDataset());
 
         double prediction = 0.0;
@@ -387,7 +388,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private double[] getDistributionFrom(Swipe swipe) {
         double[] distribution = new double[1];
 
-        Instance instance = swipe.getAsWekaInstance(this.getWekaDataset(), false);
+        Instance instance = swipe.getAsWekaInstance(this.getWekaDataset(), false, dbHelper);
         instance.setDataset(this.getWekaDataset());
         try {
             distribution = this.oneClassClassifier.distributionForInstance(instance);
@@ -658,8 +659,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         int width = LinearLayout.LayoutParams.WRAP_CONTENT;
         int height = LinearLayout.LayoutParams.WRAP_CONTENT;
-        boolean focusable = true; // lets taps outside the popup also dismiss it
-        final PopupWindow popupWindow = new PopupWindow(popupView, width, height, focusable);
+        final PopupWindow popupWindow = new PopupWindow(popupView, width, height, false);
 
         popupWindow.showAtLocation(view, Gravity.CENTER, 0, 0);
         hideMainActivity(popupWindow);
@@ -712,7 +712,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 dbHelper.resetDB();
                 dbHelper.saveUserData(nickname, genderIndex, ageIndex, nationality, holdingIndex);
 
-                inputTextView.setText("Inputs 0 (min 5)");
+                inputTextView.setText("Inputs 0 (min 5)"); // Forces UI refresh on main activity
 
                 popupWindow.dismiss();
             }
@@ -733,16 +733,44 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         int width = LinearLayout.LayoutParams.WRAP_CONTENT;
         int height = LinearLayout.LayoutParams.WRAP_CONTENT;
-        boolean focusable = true; // lets taps outside the popup also dismiss it
-        final PopupWindow popupWindow = new PopupWindow(popupView, width, height, focusable);
+        final PopupWindow popupWindow = new PopupWindow(popupView, width, height, false);
 
         popupWindow.showAtLocation(view, Gravity.CENTER, 0, 0);
         hideMainActivity(popupWindow);
+
+        ArrayList<Integer> featureData = dbHelper.getFeatureData();
+
+        CheckBox accelerationCheckBox = popupView.findViewById(R.id.accelerationCheckBox);
+        accelerationCheckBox.setChecked(featureData.get(0) == 1);
+
+        CheckBox angularVelocityCheckBox = popupView.findViewById(R.id.angularVelocityCheckBox);
+        angularVelocityCheckBox.setChecked(featureData.get(1) == 1);
+
+        CheckBox orientationCheckBox = popupView.findViewById(R.id.orientationCheckBox);
+        orientationCheckBox.setChecked(featureData.get(2) == 1);
+
+        CheckBox swipeDurationCheckBox = popupView.findViewById(R.id.swipeDurationCheckBox);
+        swipeDurationCheckBox.setChecked(featureData.get(3) == 1);
+
+        CheckBox swipeStartEndPosCheckBox = popupView.findViewById(R.id.swipeStartEndPosCheckBox);
+        swipeStartEndPosCheckBox.setChecked(featureData.get(4) == 1);
+
+        CheckBox swipeVelocityCheckBox = popupView.findViewById(R.id.swipeVelocityCheckBox);
+        swipeVelocityCheckBox.setChecked(featureData.get(5) == 1);
 
         Button saveProfileButton = popupView.findViewById(R.id.saveProfileButton);
         saveProfileButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                dbHelper.saveFeatureData(
+                        accelerationCheckBox.isChecked() ? 1 : 0,
+                        angularVelocityCheckBox.isChecked() ? 1 : 0,
+                        orientationCheckBox.isChecked() ? 1 : 0,
+                        swipeDurationCheckBox.isChecked() ? 1 : 0,
+                        swipeStartEndPosCheckBox.isChecked() ? 1 : 0,
+                        swipeVelocityCheckBox.isChecked() ? 1 : 0
+                );
+
                 popupWindow.dismiss();
             }
         });
@@ -763,6 +791,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         this.trainButton.setVisibility(View.INVISIBLE);
         this.ganButton.setVisibility(View.INVISIBLE);
         this.swipeImageView.setVisibility(View.INVISIBLE);
+        this.holdingPositionRadioGroup.setVisibility(View.INVISIBLE);
 
         popupWindow.setOnDismissListener(new PopupWindow.OnDismissListener() {
             @Override
@@ -773,6 +802,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 trainButton.setVisibility(View.VISIBLE);
                 ganButton.setVisibility(View.VISIBLE);
                 swipeImageView.setVisibility(View.VISIBLE);
+                holdingPositionRadioGroup.setVisibility(View.VISIBLE);
             }
         });
     }
@@ -931,7 +961,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         for(int i=0 ; i < trainSwipes.size(); i++)
         {
-            Instance newInstance = trainSwipes.get(i).getAsWekaInstance(dataSet,true);
+            Instance newInstance = trainSwipes.get(i).getAsWekaInstance(dataSet,true, dbHelper);
             dataSet.add(newInstance);
         }
 
@@ -996,7 +1026,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         for(int i=0 ; i < trainSwipes.size(); i++)
         {
-            Instance newInstance = trainSwipes.get(i).getAsWekaInstance(dataSet,true);
+            Instance newInstance = trainSwipes.get(i).getAsWekaInstance(dataSet,true, dbHelper);
             dataSet.add(newInstance);
         }
 
@@ -1150,74 +1180,95 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         Attribute avgZOrientation = new Attribute("avgZOrientation");
         Attribute stdZOrientation = new Attribute("stdZOrientation");
         Attribute varZOrientation = new Attribute("varZOrientation");
+
         ArrayList<String> myNominalValues = new ArrayList<>(2);
         myNominalValues.add("User");
         myNominalValues.add("Attacker");
         Attribute owner = new Attribute("owner", myNominalValues);
 
+        ArrayList<Integer> featureData = dbHelper.getFeatureData();
+        boolean useAcceleration = featureData.get(0) == 1;
+        boolean useAngularVelocity = featureData.get(1) == 1;
+        boolean useOrientation = featureData.get(2) == 1;
+        boolean useSwipeDuration = featureData.get(3) == 1;
+        boolean useSwipeStartEndPos = featureData.get(4) == 1;
+        boolean useSwipeVelocity = featureData.get(5) == 1;
+
         ArrayList<Attribute> attributes = new ArrayList<>();
-        attributes.add(duration);
-        attributes.add(avgSize);
-        attributes.add(downSize);
-        attributes.add(startX);
-        attributes.add(startY);
-        attributes.add(endX);
-        attributes.add(endY);
-        attributes.add(minXVelocity);
-        attributes.add(maxXVelocity);
-        attributes.add(avgXVelocity);
-        attributes.add(stdXVelocity);
-        attributes.add(varXVelocity);
-        attributes.add(minYVelocity);
-        attributes.add(maxYVelocity);
-        attributes.add(avgYVelocity);
-        attributes.add(stdYVelocity);
-        attributes.add(varYVelocity);
-        attributes.add(minXAccelerometer);
-        attributes.add(maxXAccelerometer);
-        attributes.add(avgXAccelerometer);
-        attributes.add(stdXAccelerometer);
-        attributes.add(varXAccelerometer);
-        attributes.add(minYAccelerometer);
-        attributes.add(maxYAccelerometer);
-        attributes.add(avgYAccelerometer);
-        attributes.add(stdYAccelerometer);
-        attributes.add(varYAccelerometer);
-        attributes.add(minZAccelerometer);
-        attributes.add(maxZAccelerometer);
-        attributes.add(avgZAccelerometer);
-        attributes.add(stdZAccelerometer);
-        attributes.add(varZAccelerometer);
-        attributes.add(minXGyroscope);
-        attributes.add(maxXGyroscope);
-        attributes.add(avgXGyroscope);
-        attributes.add(stdXGyroscope);
-        attributes.add(varXGyroscope);
-        attributes.add(minYGyroscope);
-        attributes.add(maxYGyroscope);
-        attributes.add(avgYGyroscope);
-        attributes.add(stdYGyroscope);
-        attributes.add(varYGyroscope);
-        attributes.add(minZGyroscope);
-        attributes.add(maxZGyroscope);
-        attributes.add(avgZGyroscope);
-        attributes.add(stdZGyroscope);
-        attributes.add(varZGyroscope);
-        attributes.add(minXOrientation);
-        attributes.add(maxXOrientation);
-        attributes.add(avgXOrientation);
-        attributes.add(stdXOrientation);
-        attributes.add(varXOrientation);
-        attributes.add(minYOrientation);
-        attributes.add(maxYOrientation);
-        attributes.add(avgYOrientation);
-        attributes.add(stdYOrientation);
-        attributes.add(varYOrientation);
-        attributes.add(minZOrientation);
-        attributes.add(maxZOrientation);
-        attributes.add(avgZOrientation);
-        attributes.add(stdZOrientation);
-        attributes.add(varZOrientation);
+        if(useSwipeDuration) {
+            attributes.add(duration);
+            attributes.add(avgSize);
+            attributes.add(downSize);
+        }
+        if(useSwipeStartEndPos) {
+            attributes.add(startX);
+            attributes.add(startY);
+            attributes.add(endX);
+            attributes.add(endY);
+        }
+        if(useSwipeVelocity) {
+            attributes.add(minXVelocity);
+            attributes.add(maxXVelocity);
+            attributes.add(avgXVelocity);
+            attributes.add(stdXVelocity);
+            attributes.add(varXVelocity);
+            attributes.add(minYVelocity);
+            attributes.add(maxYVelocity);
+            attributes.add(avgYVelocity);
+            attributes.add(stdYVelocity);
+            attributes.add(varYVelocity);
+        }
+        if(useAcceleration) {
+            attributes.add(minXAccelerometer);
+            attributes.add(maxXAccelerometer);
+            attributes.add(avgXAccelerometer);
+            attributes.add(stdXAccelerometer);
+            attributes.add(varXAccelerometer);
+            attributes.add(minYAccelerometer);
+            attributes.add(maxYAccelerometer);
+            attributes.add(avgYAccelerometer);
+            attributes.add(stdYAccelerometer);
+            attributes.add(varYAccelerometer);
+            attributes.add(minZAccelerometer);
+            attributes.add(maxZAccelerometer);
+            attributes.add(avgZAccelerometer);
+            attributes.add(stdZAccelerometer);
+            attributes.add(varZAccelerometer);
+        }
+        if(useAngularVelocity) {
+            attributes.add(minXGyroscope);
+            attributes.add(maxXGyroscope);
+            attributes.add(avgXGyroscope);
+            attributes.add(stdXGyroscope);
+            attributes.add(varXGyroscope);
+            attributes.add(minYGyroscope);
+            attributes.add(maxYGyroscope);
+            attributes.add(avgYGyroscope);
+            attributes.add(stdYGyroscope);
+            attributes.add(varYGyroscope);
+            attributes.add(minZGyroscope);
+            attributes.add(maxZGyroscope);
+            attributes.add(avgZGyroscope);
+            attributes.add(stdZGyroscope);
+            attributes.add(varZGyroscope);
+        }
+        if(useOrientation) {
+            attributes.add(minXOrientation);
+            attributes.add(maxXOrientation);
+            attributes.add(avgXOrientation);
+            attributes.add(stdXOrientation);
+            attributes.add(varXOrientation);
+            attributes.add(minYOrientation);
+            attributes.add(maxYOrientation);
+            attributes.add(avgYOrientation);
+            attributes.add(stdYOrientation);
+            attributes.add(varYOrientation);
+            attributes.add(minZOrientation);
+            attributes.add(maxZOrientation);
+            attributes.add(avgZOrientation);
+            attributes.add(stdZOrientation);
+            attributes.add(varZOrientation);
+        }
         attributes.add(owner);
 
         Instances dataSet = new Instances("swipes", attributes, 0);

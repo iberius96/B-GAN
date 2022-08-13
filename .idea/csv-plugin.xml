@@ -24,6 +24,34 @@
             </Attribute>
           </value>
         </entry>
+        <entry key="$USER_HOME$/Library/Caches/Google/AndroidStudio2021.2/device-explorer/Pixel_5_API_30 [emulator-5554]/storage/emulated/0/Download/SwipeGAN/2022-08-13_11-27_featureData.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="$USER_HOME$/Library/Caches/Google/AndroidStudio2021.2/device-explorer/Pixel_5_API_30 [emulator-5554]/storage/emulated/0/Download/SwipeGAN/2022-08-13_12-43_featureData.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="$USER_HOME$/Library/Caches/Google/AndroidStudio2021.2/device-explorer/Pixel_5_API_30 [emulator-5554]/storage/emulated/0/Download/SwipeGAN/2022-08-13_12-43_realSwipes.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="$USER_HOME$/Library/Caches/Google/AndroidStudio2021.2/device-explorer/Pixel_5_API_30 [emulator-5554]/storage/emulated/0/Download/SwipeGAN/2022-08-13_15-50_featureData.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
       </map>
     </option>
   </component>

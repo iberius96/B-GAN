@@ -44,6 +44,19 @@
         app:layout_constraintTop_toBottomOf="@+id/descTextView" />
 
     <TextView
+        android:id="@+id/swipeTitleTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="24dp"
+        android:text="Swipe"
+        android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/orientationCheckBox" />
+
+    <TextView
         android:id="@+id/holdDescTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -52,6 +65,16 @@
         android:text="Features gathered from accelerometer and gyroscope"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/holdTitleTextView" />
+
+    <TextView
+        android:id="@+id/swipeDescTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="14dp"
+        android:text="Features gathered from swiping gesture"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/swipeTitleTextView" />
 
     <CheckBox
         android:id="@+id/accelerationCheckBox"
@@ -62,6 +85,34 @@
         android:text="Acceleration (m/s^2)"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/holdDescTextView" />
+
+    <CheckBox
+        android:id="@+id/swipeDurationCheckBox"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="14dp"
+        android:text="Duration"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/swipeDescTextView" />
+
+    <CheckBox
+        android:id="@+id/swipeStartEndPosCheckBox"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:text="Start/End position"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/swipeDurationCheckBox" />
+
+    <CheckBox
+        android:id="@+id/swipeVelocityCheckBox"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:text="Velocity"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/swipeStartEndPosCheckBox" />
 
     <CheckBox
         android:id="@+id/angularVelocityCheckBox"
@@ -103,6 +154,6 @@
         android:text="Cancel"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/orientationCheckBox" />
+        app:layout_constraintTop_toBottomOf="@+id/swipeVelocityCheckBox" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
