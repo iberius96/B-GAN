@@ -762,16 +762,31 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         saveProfileButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                dbHelper.saveFeatureData(
-                        accelerationCheckBox.isChecked() ? 1 : 0,
-                        angularVelocityCheckBox.isChecked() ? 1 : 0,
-                        orientationCheckBox.isChecked() ? 1 : 0,
-                        swipeDurationCheckBox.isChecked() ? 1 : 0,
-                        swipeStartEndPosCheckBox.isChecked() ? 1 : 0,
-                        swipeVelocityCheckBox.isChecked() ? 1 : 0
-                );
+                if( accelerationCheckBox.isChecked() ||
+                    angularVelocityCheckBox.isChecked() ||
+                    orientationCheckBox.isChecked() ||
+                    swipeDurationCheckBox.isChecked() ||
+                    swipeStartEndPosCheckBox.isChecked() ||
+                    swipeVelocityCheckBox.isChecked()
+                ) {
+                    dbHelper.saveFeatureData(
+                            accelerationCheckBox.isChecked() ? 1 : 0,
+                            angularVelocityCheckBox.isChecked() ? 1 : 0,
+                            orientationCheckBox.isChecked() ? 1 : 0,
+                            swipeDurationCheckBox.isChecked() ? 1 : 0,
+                            swipeStartEndPosCheckBox.isChecked() ? 1 : 0,
+                            swipeVelocityCheckBox.isChecked() ? 1 : 0
+                    );
 
-                popupWindow.dismiss();
+                    popupWindow.dismiss();
+                } else {
+                    AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                    builder.setMessage("Please select at least one feature type").setTitle("No feature selected");
+                    builder.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {}
+                    });
+                    builder.show();
+                }
             }
         });
 
