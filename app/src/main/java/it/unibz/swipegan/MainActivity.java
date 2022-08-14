@@ -602,7 +602,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         String debugMessage = "";
         for (int i=0; i<normalizedSwipeValues.length; i++) {
             if ((normalizedSwipeValues[i] < 0) || (normalizedSwipeValues[i] > 1)) {
-                debugMessage += "Issue for feature -> (" + i + "). Sample value: " + normalizedSwipeValues[i] + " (out of bounds)\n";
+                debugMessage += "Issue for feature -> (" + dbHelper.FEATURE_SET[i] + "). Sample value: " + normalizedSwipeValues[i] + " (out of bounds)\n";
             }
         }
 
