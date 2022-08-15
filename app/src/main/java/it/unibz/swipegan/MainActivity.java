@@ -597,19 +597,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         newSwipe.setUserId(this.attackSwitch.isChecked() ? "Attacker" : "User");
 
-        double[] normalizedSwipeValues = newSwipe.getNormalizedValues();
-
-        String debugMessage = "";
-        for (int i=0; i<normalizedSwipeValues.length; i++) {
-            if ((normalizedSwipeValues[i] < 0) || (normalizedSwipeValues[i] > 1)) {
-                debugMessage += "Issue for feature -> (" + dbHelper.FEATURE_SET[i] + "). Sample value: " + normalizedSwipeValues[i] + " (out of bounds)\n";
-            }
-        }
-
-        if (!debugMessage.isEmpty()) {
-            this.showAlertDialog("DEBUG ALERT", debugMessage);
-        }
-
         System.out.println("--------------------------------------------New Swipe---------------------------------------------------------------");
         System.out.println(newSwipe);
         return newSwipe;
@@ -629,7 +616,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         this.resetButton.setEnabled(true);
     }
 
-    // TODO: Refactor this to avoid Dialog
     public void editProfile(View view) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setMessage("Choose the profile you want to edit").setTitle("Choose profile");
@@ -709,7 +695,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 String nationality = nationalityEditText.getText().toString();
                 int holdingIndex = holdingRadioGroupIndices.lastIndexOf(new Integer(holdingRadioGroup.getCheckedRadioButtonId()));
 
-                dbHelper.resetDB();
+                dbHelper.resetDB(false);
                 dbHelper.saveUserData(nickname, genderIndex, ageIndex, nationality, holdingIndex);
 
                 inputTextView.setText("Inputs 0 (min 5)"); // Forces UI refresh on main activity
@@ -824,7 +810,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     public void resetData(View view) {
         if(this.isTrainingMode) {
-            this.dbHelper.resetDB();
+            this.dbHelper.resetDB(false);
             this.inputTextView.setText("Inputs " + this.dbHelper.getRecordsCount("REAL_SWIPES") + " (min 5)");
         } else {
 
@@ -885,6 +871,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     public void train(View view) {
+        dbHelper.resetDB(true);
+
         this.isTrainingClassifier = true;
         this.disableUserInteraction();
 
@@ -948,6 +936,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 if (isGanMode) {
                     long ganStartTime = System.nanoTime();
                     ArrayList<Swipe> fakeSwipes = gan.getFakeSwipeSamples(swipes, swipes.size(), progressTextView);
+                    dbHelper.addSwipesNormalized(swipes, "REAL_SWIPES_NORMALIZED");
                     dbHelper.addGANRecords(fakeSwipes);
 
                     swipes.addAll(fakeSwipes);

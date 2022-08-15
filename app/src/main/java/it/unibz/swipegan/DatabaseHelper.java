@@ -16,6 +16,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.OutputStreamWriter;
+import java.lang.reflect.InvocationTargetException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -134,72 +135,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String COL_SWIPE_DURATION = "swipe_duration";
     private static final String COL_SWIPE_START_END_POS = "swipe_start_end_pos";
     private static final String COL_SWIPE_VELOCITY = "swipe_velocity";
-
-    public static final String[] FEATURE_SET = {
-        COL_DURATION,
-        COL_AVG_SIZE,
-        COL_DOWN_SIZE,
-        COL_START_X,
-        COL_START_Y,
-        COL_END_X,
-        COL_END_Y,
-        COL_MIN_X_VELOCITY,
-        COL_MAX_X_VELOCITY,
-        COL_AVG_X_VELOCITY,
-        COL_STD_X_VELOCITY,
-        COL_VAR_X_VELOCITY,
-        COL_MIN_Y_VELOCITY,
-        COL_MAX_Y_VELOCITY,
-        COL_AVG_Y_VELOCITY,
-        COL_STD_Y_VELOCITY,
-        COL_VAR_Y_VELOCITY,
-        COL_MIN_X_ACCELEROMETER,
-        COL_MAX_X_ACCELEROMETER,
-        COL_AVG_X_ACCELEROMETER,
-        COL_STD_X_ACCELEROMETER,
-        COL_VAR_X_ACCELEROMETER,
-        COL_MIN_Y_ACCELEROMETER,
-        COL_MAX_Y_ACCELEROMETER,
-        COL_AVG_Y_ACCELEROMETER,
-        COL_STD_Y_ACCELEROMETER,
-        COL_VAR_Y_ACCELEROMETER,
-        COL_MIN_Z_ACCELEROMETER,
-        COL_MAX_Z_ACCELEROMETER,
-        COL_AVG_Z_ACCELEROMETER,
-        COL_STD_Z_ACCELEROMETER,
-        COL_VAR_Z_ACCELEROMETER,
-        COL_MIN_X_GYROSCOPE,
-        COL_MAX_X_GYROSCOPE,
-        COL_AVG_X_GYROSCOPE,
-        COL_STD_X_GYROSCOPE,
-        COL_VAR_X_GYROSCOPE,
-        COL_MIN_Y_GYROSCOPE,
-        COL_MAX_Y_GYROSCOPE,
-        COL_AVG_Y_GYROSCOPE,
-        COL_STD_Y_GYROSCOPE,
-        COL_VAR_Y_GYROSCOPE,
-        COL_MIN_Z_GYROSCOPE,
-        COL_MAX_Z_GYROSCOPE,
-        COL_AVG_Z_GYROSCOPE,
-        COL_STD_Z_GYROSCOPE,
-        COL_VAR_Z_GYROSCOPE,
-        COL_MIN_X_ORIENTATION,
-        COL_MAX_X_ORIENTATION,
-        COL_AVG_X_ORIENTATION,
-        COL_STD_X_ORIENTATION,
-        COL_VAR_X_ORIENTATION,
-        COL_MIN_Y_ORIENTATION,
-        COL_MAX_Y_ORIENTATION,
-        COL_AVG_Y_ORIENTATION,
-        COL_STD_Y_ORIENTATION,
-        COL_VAR_Y_ORIENTATION,
-        COL_MIN_Z_ORIENTATION,
-        COL_MAX_Z_ORIENTATION,
-        COL_AVG_Z_ORIENTATION,
-        COL_STD_Z_ORIENTATION,
-        COL_VAR_Z_ORIENTATION,
-        COL_HOLDING_POSITION
-    };
 
     public DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, 1);
@@ -806,11 +741,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     public boolean addTrainRecord(Swipe swipe) {
-        return this.addSwipe(swipe, REAL_SWIPES) && this.addSwipeNormalized(swipe, REAL_SWIPES_NORMALIZED);
+        return this.addSwipe(swipe, REAL_SWIPES);
     }
 
     public boolean addGANRecord(Swipe swipe) {
-        return this.addSwipe(swipe, GAN_SWIPES) && this.addSwipeNormalized(swipe, GAN_SWIPES_NORMALIZED);
+        return this.addSwipe(swipe, GAN_SWIPES);
     }
 
     public boolean[] addGANRecords(ArrayList<Swipe> swipes) {
@@ -899,162 +834,83 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     public boolean addTestRecord(Swipe swipe, double authentication, double authenticationTime, int classifierSamples) {
-        return this.addTestSwipe(swipe, authentication, authenticationTime, TEST_SWIPES, classifierSamples)  && this.addTestSwipeNormalized(swipe, authentication, authenticationTime, TEST_SWIPES_NORMALIZED, classifierSamples);
+        return this.addTestSwipe(swipe, authentication, authenticationTime, TEST_SWIPES, classifierSamples);
     }
 
-    private boolean addSwipeNormalized(Swipe swipe, String tableName) {
+    public void addSwipesNormalized(ArrayList<Swipe> allSwipes, String tableName) throws NoSuchFieldException, InvocationTargetException, NoSuchMethodException, IllegalAccessException {
         SQLiteDatabase db = this.getWritableDatabase();
 
-        double[] swipeValues = swipe.getNormalizedValues();
-        ContentValues contentValues = new ContentValues();
+        for(Swipe swipe : allSwipes) {
+            double[] swipeValues = swipe.getNormalizedValues(allSwipes);
+            ContentValues contentValues = new ContentValues();
 
-        contentValues.put(COL_DURATION, swipeValues[0]);
-        contentValues.put(COL_AVG_SIZE, swipeValues[1]);
-        contentValues.put(COL_DOWN_SIZE, swipeValues[2]);
-        contentValues.put(COL_START_X, swipeValues[3]);
-        contentValues.put(COL_START_Y, swipeValues[4]);
-        contentValues.put(COL_END_X, swipeValues[5]);
-        contentValues.put(COL_END_Y, swipeValues[6]);
-        contentValues.put(COL_MIN_X_VELOCITY, swipeValues[7]);
-        contentValues.put(COL_MAX_X_VELOCITY, swipeValues[8]);
-        contentValues.put(COL_AVG_X_VELOCITY, swipeValues[9]);
-        contentValues.put(COL_STD_X_VELOCITY, swipeValues[10]);
-        contentValues.put(COL_VAR_X_VELOCITY, swipeValues[11]);
-        contentValues.put(COL_MIN_Y_VELOCITY, swipeValues[12]);
-        contentValues.put(COL_MAX_Y_VELOCITY, swipeValues[13]);
-        contentValues.put(COL_AVG_Y_VELOCITY, swipeValues[14]);
-        contentValues.put(COL_STD_Y_VELOCITY, swipeValues[15]);
-        contentValues.put(COL_VAR_Y_VELOCITY, swipeValues[16]);
-        contentValues.put(COL_MIN_X_ACCELEROMETER, swipeValues[17]);
-        contentValues.put(COL_MAX_X_ACCELEROMETER, swipeValues[18]);
-        contentValues.put(COL_AVG_X_ACCELEROMETER, swipeValues[19]);
-        contentValues.put(COL_STD_X_ACCELEROMETER, swipeValues[20]);
-        contentValues.put(COL_VAR_X_ACCELEROMETER, swipeValues[21]);
-        contentValues.put(COL_MIN_Y_ACCELEROMETER, swipeValues[22]);
-        contentValues.put(COL_MAX_Y_ACCELEROMETER, swipeValues[23]);
-        contentValues.put(COL_AVG_Y_ACCELEROMETER, swipeValues[24]);
-        contentValues.put(COL_STD_Y_ACCELEROMETER, swipeValues[25]);
-        contentValues.put(COL_VAR_Y_ACCELEROMETER, swipeValues[26]);
-        contentValues.put(COL_MIN_Z_ACCELEROMETER, swipeValues[27]);
-        contentValues.put(COL_MAX_Z_ACCELEROMETER, swipeValues[28]);
-        contentValues.put(COL_AVG_Z_ACCELEROMETER, swipeValues[29]);
-        contentValues.put(COL_STD_Z_ACCELEROMETER, swipeValues[30]);
-        contentValues.put(COL_VAR_Z_ACCELEROMETER, swipeValues[31]);
-        contentValues.put(COL_MIN_X_GYROSCOPE, swipeValues[32]);
-        contentValues.put(COL_MAX_X_GYROSCOPE, swipeValues[33]);
-        contentValues.put(COL_AVG_X_GYROSCOPE, swipeValues[34]);
-        contentValues.put(COL_STD_X_GYROSCOPE, swipeValues[35]);
-        contentValues.put(COL_VAR_X_GYROSCOPE, swipeValues[36]);
-        contentValues.put(COL_MIN_Y_GYROSCOPE, swipeValues[37]);
-        contentValues.put(COL_MAX_Y_GYROSCOPE, swipeValues[38]);
-        contentValues.put(COL_AVG_Y_GYROSCOPE, swipeValues[39]);
-        contentValues.put(COL_STD_Y_GYROSCOPE, swipeValues[40]);
-        contentValues.put(COL_VAR_Y_GYROSCOPE, swipeValues[41]);
-        contentValues.put(COL_MIN_Z_GYROSCOPE, swipeValues[42]);
-        contentValues.put(COL_MAX_Z_GYROSCOPE, swipeValues[43]);
-        contentValues.put(COL_AVG_Z_GYROSCOPE, swipeValues[44]);
-        contentValues.put(COL_STD_Z_GYROSCOPE, swipeValues[45]);
-        contentValues.put(COL_VAR_Z_GYROSCOPE, swipeValues[46]);
-        contentValues.put(COL_MIN_X_ORIENTATION, swipeValues[47]);
-        contentValues.put(COL_MAX_X_ORIENTATION, swipeValues[48]);
-        contentValues.put(COL_AVG_X_ORIENTATION, swipeValues[49]);
-        contentValues.put(COL_STD_X_ORIENTATION, swipeValues[50]);
-        contentValues.put(COL_VAR_X_ORIENTATION, swipeValues[51]);
-        contentValues.put(COL_MIN_Y_ORIENTATION, swipeValues[52]);
-        contentValues.put(COL_MAX_Y_ORIENTATION, swipeValues[53]);
-        contentValues.put(COL_AVG_Y_ORIENTATION, swipeValues[54]);
-        contentValues.put(COL_STD_Y_ORIENTATION, swipeValues[55]);
-        contentValues.put(COL_VAR_Y_ORIENTATION, swipeValues[56]);
-        contentValues.put(COL_MIN_Z_ORIENTATION, swipeValues[57]);
-        contentValues.put(COL_MAX_Z_ORIENTATION, swipeValues[58]);
-        contentValues.put(COL_AVG_Z_ORIENTATION, swipeValues[59]);
-        contentValues.put(COL_STD_Z_ORIENTATION, swipeValues[60]);
-        contentValues.put(COL_VAR_Z_ORIENTATION, swipeValues[61]);
-        contentValues.put(COL_HOLDING_POSITION, swipe.getHoldingPosition());
-        contentValues.put(COL_USER_ID, swipe.getUserId());
+            contentValues.put(COL_DURATION, swipeValues[0]);
+            contentValues.put(COL_AVG_SIZE, swipeValues[1]);
+            contentValues.put(COL_DOWN_SIZE, swipeValues[2]);
+            contentValues.put(COL_START_X, swipeValues[3]);
+            contentValues.put(COL_START_Y, swipeValues[4]);
+            contentValues.put(COL_END_X, swipeValues[5]);
+            contentValues.put(COL_END_Y, swipeValues[6]);
+            contentValues.put(COL_MIN_X_VELOCITY, swipeValues[7]);
+            contentValues.put(COL_MAX_X_VELOCITY, swipeValues[8]);
+            contentValues.put(COL_AVG_X_VELOCITY, swipeValues[9]);
+            contentValues.put(COL_STD_X_VELOCITY, swipeValues[10]);
+            contentValues.put(COL_VAR_X_VELOCITY, swipeValues[11]);
+            contentValues.put(COL_MIN_Y_VELOCITY, swipeValues[12]);
+            contentValues.put(COL_MAX_Y_VELOCITY, swipeValues[13]);
+            contentValues.put(COL_AVG_Y_VELOCITY, swipeValues[14]);
+            contentValues.put(COL_STD_Y_VELOCITY, swipeValues[15]);
+            contentValues.put(COL_VAR_Y_VELOCITY, swipeValues[16]);
+            contentValues.put(COL_MIN_X_ACCELEROMETER, swipeValues[17]);
+            contentValues.put(COL_MAX_X_ACCELEROMETER, swipeValues[18]);
+            contentValues.put(COL_AVG_X_ACCELEROMETER, swipeValues[19]);
+            contentValues.put(COL_STD_X_ACCELEROMETER, swipeValues[20]);
+            contentValues.put(COL_VAR_X_ACCELEROMETER, swipeValues[21]);
+            contentValues.put(COL_MIN_Y_ACCELEROMETER, swipeValues[22]);
+            contentValues.put(COL_MAX_Y_ACCELEROMETER, swipeValues[23]);
+            contentValues.put(COL_AVG_Y_ACCELEROMETER, swipeValues[24]);
+            contentValues.put(COL_STD_Y_ACCELEROMETER, swipeValues[25]);
+            contentValues.put(COL_VAR_Y_ACCELEROMETER, swipeValues[26]);
+            contentValues.put(COL_MIN_Z_ACCELEROMETER, swipeValues[27]);
+            contentValues.put(COL_MAX_Z_ACCELEROMETER, swipeValues[28]);
+            contentValues.put(COL_AVG_Z_ACCELEROMETER, swipeValues[29]);
+            contentValues.put(COL_STD_Z_ACCELEROMETER, swipeValues[30]);
+            contentValues.put(COL_VAR_Z_ACCELEROMETER, swipeValues[31]);
+            contentValues.put(COL_MIN_X_GYROSCOPE, swipeValues[32]);
+            contentValues.put(COL_MAX_X_GYROSCOPE, swipeValues[33]);
+            contentValues.put(COL_AVG_X_GYROSCOPE, swipeValues[34]);
+            contentValues.put(COL_STD_X_GYROSCOPE, swipeValues[35]);
+            contentValues.put(COL_VAR_X_GYROSCOPE, swipeValues[36]);
+            contentValues.put(COL_MIN_Y_GYROSCOPE, swipeValues[37]);
+            contentValues.put(COL_MAX_Y_GYROSCOPE, swipeValues[38]);
+            contentValues.put(COL_AVG_Y_GYROSCOPE, swipeValues[39]);
+            contentValues.put(COL_STD_Y_GYROSCOPE, swipeValues[40]);
+            contentValues.put(COL_VAR_Y_GYROSCOPE, swipeValues[41]);
+            contentValues.put(COL_MIN_Z_GYROSCOPE, swipeValues[42]);
+            contentValues.put(COL_MAX_Z_GYROSCOPE, swipeValues[43]);
+            contentValues.put(COL_AVG_Z_GYROSCOPE, swipeValues[44]);
+            contentValues.put(COL_STD_Z_GYROSCOPE, swipeValues[45]);
+            contentValues.put(COL_VAR_Z_GYROSCOPE, swipeValues[46]);
+            contentValues.put(COL_MIN_X_ORIENTATION, swipeValues[47]);
+            contentValues.put(COL_MAX_X_ORIENTATION, swipeValues[48]);
+            contentValues.put(COL_AVG_X_ORIENTATION, swipeValues[49]);
+            contentValues.put(COL_STD_X_ORIENTATION, swipeValues[50]);
+            contentValues.put(COL_VAR_X_ORIENTATION, swipeValues[51]);
+            contentValues.put(COL_MIN_Y_ORIENTATION, swipeValues[52]);
+            contentValues.put(COL_MAX_Y_ORIENTATION, swipeValues[53]);
+            contentValues.put(COL_AVG_Y_ORIENTATION, swipeValues[54]);
+            contentValues.put(COL_STD_Y_ORIENTATION, swipeValues[55]);
+            contentValues.put(COL_VAR_Y_ORIENTATION, swipeValues[56]);
+            contentValues.put(COL_MIN_Z_ORIENTATION, swipeValues[57]);
+            contentValues.put(COL_MAX_Z_ORIENTATION, swipeValues[58]);
+            contentValues.put(COL_AVG_Z_ORIENTATION, swipeValues[59]);
+            contentValues.put(COL_STD_Z_ORIENTATION, swipeValues[60]);
+            contentValues.put(COL_VAR_Z_ORIENTATION, swipeValues[61]);
+            contentValues.put(COL_HOLDING_POSITION, swipe.getHoldingPosition());
+            contentValues.put(COL_USER_ID, swipe.getUserId());
 
-        long result = db.insert(tableName, null, contentValues);
-        //if inserted incorrectly it will return -1
-        return result != -1;
-    }
-
-    public boolean addTestSwipeNormalized(Swipe swipe, double authentication, double authenticationTime, String tableName, int classifierSamples) {
-        SQLiteDatabase db = this.getWritableDatabase();
-
-        double[] swipeValues = swipe.getNormalizedValues();
-        ContentValues contentValues = new ContentValues();
-
-        contentValues.put(COL_DURATION, swipeValues[0]);
-        contentValues.put(COL_AVG_SIZE, swipeValues[1]);
-        contentValues.put(COL_DOWN_SIZE, swipeValues[2]);
-        contentValues.put(COL_START_X, swipeValues[3]);
-        contentValues.put(COL_START_Y, swipeValues[4]);
-        contentValues.put(COL_END_X, swipeValues[5]);
-        contentValues.put(COL_END_Y, swipeValues[6]);
-        contentValues.put(COL_MIN_X_VELOCITY, swipeValues[7]);
-        contentValues.put(COL_MAX_X_VELOCITY, swipeValues[8]);
-        contentValues.put(COL_AVG_X_VELOCITY, swipeValues[9]);
-        contentValues.put(COL_STD_X_VELOCITY, swipeValues[10]);
-        contentValues.put(COL_VAR_X_VELOCITY, swipeValues[11]);
-        contentValues.put(COL_MIN_Y_VELOCITY, swipeValues[12]);
-        contentValues.put(COL_MAX_Y_VELOCITY, swipeValues[13]);
-        contentValues.put(COL_AVG_Y_VELOCITY, swipeValues[14]);
-        contentValues.put(COL_STD_Y_VELOCITY, swipeValues[15]);
-        contentValues.put(COL_VAR_Y_VELOCITY, swipeValues[16]);
-        contentValues.put(COL_MIN_X_ACCELEROMETER, swipeValues[17]);
-        contentValues.put(COL_MAX_X_ACCELEROMETER, swipeValues[18]);
-        contentValues.put(COL_AVG_X_ACCELEROMETER, swipeValues[19]);
-        contentValues.put(COL_STD_X_ACCELEROMETER, swipeValues[20]);
-        contentValues.put(COL_VAR_X_ACCELEROMETER, swipeValues[21]);
-        contentValues.put(COL_MIN_Y_ACCELEROMETER, swipeValues[22]);
-        contentValues.put(COL_MAX_Y_ACCELEROMETER, swipeValues[23]);
-        contentValues.put(COL_AVG_Y_ACCELEROMETER, swipeValues[24]);
-        contentValues.put(COL_STD_Y_ACCELEROMETER, swipeValues[25]);
-        contentValues.put(COL_VAR_Y_ACCELEROMETER, swipeValues[26]);
-        contentValues.put(COL_MIN_Z_ACCELEROMETER, swipeValues[27]);
-        contentValues.put(COL_MAX_Z_ACCELEROMETER, swipeValues[28]);
-        contentValues.put(COL_AVG_Z_ACCELEROMETER, swipeValues[29]);
-        contentValues.put(COL_STD_Z_ACCELEROMETER, swipeValues[30]);
-        contentValues.put(COL_VAR_Z_ACCELEROMETER, swipeValues[31]);
-        contentValues.put(COL_MIN_X_GYROSCOPE, swipeValues[32]);
-        contentValues.put(COL_MAX_X_GYROSCOPE, swipeValues[33]);
-        contentValues.put(COL_AVG_X_GYROSCOPE, swipeValues[34]);
-        contentValues.put(COL_STD_X_GYROSCOPE, swipeValues[35]);
-        contentValues.put(COL_VAR_X_GYROSCOPE, swipeValues[36]);
-        contentValues.put(COL_MIN_Y_GYROSCOPE, swipeValues[37]);
-        contentValues.put(COL_MAX_Y_GYROSCOPE, swipeValues[38]);
-        contentValues.put(COL_AVG_Y_GYROSCOPE, swipeValues[39]);
-        contentValues.put(COL_STD_Y_GYROSCOPE, swipeValues[40]);
-        contentValues.put(COL_VAR_Y_GYROSCOPE, swipeValues[41]);
-        contentValues.put(COL_MIN_Z_GYROSCOPE, swipeValues[42]);
-        contentValues.put(COL_MAX_Z_GYROSCOPE, swipeValues[43]);
-        contentValues.put(COL_AVG_Z_GYROSCOPE, swipeValues[44]);
-        contentValues.put(COL_STD_Z_GYROSCOPE, swipeValues[45]);
-        contentValues.put(COL_VAR_Z_GYROSCOPE, swipeValues[46]);
-        contentValues.put(COL_MIN_X_ORIENTATION, swipeValues[47]);
-        contentValues.put(COL_MAX_X_ORIENTATION, swipeValues[48]);
-        contentValues.put(COL_AVG_X_ORIENTATION, swipeValues[49]);
-        contentValues.put(COL_STD_X_ORIENTATION, swipeValues[50]);
-        contentValues.put(COL_VAR_X_ORIENTATION, swipeValues[51]);
-        contentValues.put(COL_MIN_Y_ORIENTATION, swipeValues[52]);
-        contentValues.put(COL_MAX_Y_ORIENTATION, swipeValues[53]);
-        contentValues.put(COL_AVG_Y_ORIENTATION, swipeValues[54]);
-        contentValues.put(COL_STD_Y_ORIENTATION, swipeValues[55]);
-        contentValues.put(COL_VAR_Y_ORIENTATION, swipeValues[56]);
-        contentValues.put(COL_MIN_Z_ORIENTATION, swipeValues[57]);
-        contentValues.put(COL_MAX_Z_ORIENTATION, swipeValues[58]);
-        contentValues.put(COL_AVG_Z_ORIENTATION, swipeValues[59]);
-        contentValues.put(COL_STD_Z_ORIENTATION, swipeValues[60]);
-        contentValues.put(COL_VAR_Z_ORIENTATION, swipeValues[61]);
-        contentValues.put(COL_HOLDING_POSITION, swipe.getHoldingPosition());
-        contentValues.put(COL_AUTHENTICATION, authentication);
-        contentValues.put(COL_AUTHENTICATION_TIME, authenticationTime);
-        contentValues.put(COL_USER_ID, swipe.getUserId());
-        contentValues.put(COL_CLASSIFIER_SAMPLES, classifierSamples);
-
-        long result = db.insert(tableName, null, contentValues);
-        //if inserted incorrectly it will return -1
-        return result != -1;
+            long result = db.insert(tableName, null, contentValues);
+        }
     }
 
     public ArrayList<Swipe> getAllSwipes(String tableName) {
@@ -1520,17 +1376,21 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     }
 
-    public void resetDB() {
+    public void resetDB(boolean GANOnly) {
         SQLiteDatabase db = this.getWritableDatabase();
-        db.execSQL("DELETE FROM " + REAL_SWIPES);
+
         db.execSQL("DELETE FROM " + GAN_SWIPES);
-        db.execSQL("DELETE FROM " + TEST_SWIPES);
-        db.execSQL("DELETE FROM " + REAL_SWIPES_NORMALIZED);
         db.execSQL("DELETE FROM " + GAN_SWIPES_NORMALIZED);
-        db.execSQL("DELETE FROM " + TEST_SWIPES_NORMALIZED);
-        db.execSQL("DELETE FROM " + REAL_RESULTS);
         db.execSQL("DELETE FROM " + GAN_RESULTS);
-        db.execSQL("DELETE FROM " + TEST_RESULTS);
+        db.execSQL("DELETE FROM " + REAL_SWIPES_NORMALIZED);
+        db.execSQL("DELETE FROM " + TEST_SWIPES_NORMALIZED);
+
+        if(GANOnly == false) {
+            db.execSQL("DELETE FROM " + REAL_SWIPES);
+            db.execSQL("DELETE FROM " + TEST_SWIPES);
+            db.execSQL("DELETE FROM " + REAL_RESULTS);
+            db.execSQL("DELETE FROM " + TEST_RESULTS);
+        }
     }
 
 }

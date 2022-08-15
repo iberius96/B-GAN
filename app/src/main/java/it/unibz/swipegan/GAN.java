@@ -151,7 +151,7 @@ public class GAN {
 
         List<Pair<double[], double[]>> realSwipesPairs = new ArrayList<Pair<double[], double[]>>();
         for(Swipe swipe: realSwipes){
-            Pair<double[], double[]> record = new Pair<double[], double[]>(swipe.getNormalizedValues(), new double[]{0});
+            Pair<double[], double[]> record = new Pair<double[], double[]>(swipe.getNormalizedValues(realSwipes), new double[]{0});
             realSwipesPairs.add(record);
         }
 
@@ -201,7 +201,7 @@ public class GAN {
         for (int i = 0; i < numberFakeSamples; i++) {
             double[] fakeSwipeValues;
             fakeSwipeValues = this.generator.output(Nd4j.rand(1, LATENT_DIM)).toDoubleVector();
-            fakeSwipes.add(Swipe.fromNormalizedValues(fakeSwipeValues, 0, "User"));
+            fakeSwipes.add(Swipe.fromNormalizedValues(fakeSwipeValues, 0, "User", realSwipes));
             System.out.println(Arrays.toString(fakeSwipeValues));
         }
 
