@@ -48,8 +48,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final String COL_ID = "id";
     private static final String COL_DURATION = "duration";
+    private static final String COL_MIN_SIZE = "min_size";
+    private static final String COL_MAX_SIZE = "max_size";
     private static final String COL_AVG_SIZE = "avg_size";
     private static final String COL_DOWN_SIZE = "down_size";
+    private static final String COL_UP_SIZE = "up_size";
     private static final String COL_START_X = "start_x";
     private static final String COL_START_Y = "start_y";
     private static final String COL_END_X = "end_x";
@@ -133,6 +136,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String COL_ANGULAR_VELOCITY = "angular_velocity";
     private static final String COL_ORIENTATION = "orientation";
     private static final String COL_SWIPE_DURATION = "swipe_duration";
+    private static final String COL_SWIPE_TOUCH_SIZE = "swipe_touch_size";
     private static final String COL_SWIPE_START_END_POS = "swipe_start_end_pos";
     private static final String COL_SWIPE_VELOCITY = "swipe_velocity";
 
@@ -145,8 +149,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         String createRealSwipesTable = "CREATE TABLE " + REAL_SWIPES
                 + " (id INTEGER PRIMARY KEY AUTOINCREMENT, "
                 + COL_DURATION + " float(53), "
+                + COL_MIN_SIZE + " float(53), "
+                + COL_MAX_SIZE + " float(53), "
                 + COL_AVG_SIZE + " float(53), "
                 + COL_DOWN_SIZE + " float(53), "
+                + COL_UP_SIZE + " float(53), "
                 + COL_START_X + " float(53), "
                 + COL_START_Y + " float(53), "
                 + COL_END_X + " float(53), "
@@ -212,8 +219,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         String createGanSwipesTable = "CREATE TABLE " + GAN_SWIPES
                 + " (id INTEGER PRIMARY KEY AUTOINCREMENT, "
                 + COL_DURATION + " float(53), "
+                + COL_MIN_SIZE + " float(53), "
+                + COL_MAX_SIZE + " float(53), "
                 + COL_AVG_SIZE + " float(53), "
                 + COL_DOWN_SIZE + " float(53), "
+                + COL_UP_SIZE + " float(53), "
                 + COL_START_X + " float(53), "
                 + COL_START_Y + " float(53), "
                 + COL_END_X + " float(53), "
@@ -279,8 +289,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         String createTestSwipesTable = "CREATE TABLE " + TEST_SWIPES
                 + " (id INTEGER PRIMARY KEY AUTOINCREMENT, "
                 + COL_DURATION + " float(53), "
+                + COL_MIN_SIZE + " float(53), "
+                + COL_MAX_SIZE + " float(53), "
                 + COL_AVG_SIZE + " float(53), "
                 + COL_DOWN_SIZE + " float(53), "
+                + COL_UP_SIZE + " float(53), "
                 + COL_START_X + " float(53), "
                 + COL_START_Y + " float(53), "
                 + COL_END_X + " float(53), "
@@ -349,8 +362,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         String createRealSwipesNormalizedTable = "CREATE TABLE " + REAL_SWIPES_NORMALIZED
                 + " (id INTEGER PRIMARY KEY AUTOINCREMENT, "
                 + COL_DURATION + " float(53), "
+                + COL_MIN_SIZE + " float(53), "
+                + COL_MAX_SIZE + " float(53), "
                 + COL_AVG_SIZE + " float(53), "
                 + COL_DOWN_SIZE + " float(53), "
+                + COL_UP_SIZE + " float(53), "
                 + COL_START_X + " float(53), "
                 + COL_START_Y + " float(53), "
                 + COL_END_X + " float(53), "
@@ -416,8 +432,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         String createGanSwipesNormalizedTable = "CREATE TABLE " + GAN_SWIPES_NORMALIZED
                 + " (id INTEGER PRIMARY KEY AUTOINCREMENT, "
                 + COL_DURATION + " float(53), "
+                + COL_MIN_SIZE + " float(53), "
+                + COL_MAX_SIZE + " float(53), "
                 + COL_AVG_SIZE + " float(53), "
                 + COL_DOWN_SIZE + " float(53), "
+                + COL_UP_SIZE + " float(53), "
                 + COL_START_X + " float(53), "
                 + COL_START_Y + " float(53), "
                 + COL_END_X + " float(53), "
@@ -483,8 +502,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         String createTestSwipesNormalizedTable = "CREATE TABLE " + TEST_SWIPES_NORMALIZED
                 + " (id INTEGER PRIMARY KEY AUTOINCREMENT, "
                 + COL_DURATION + " float(53), "
+                + COL_MIN_SIZE + " float(53), "
+                + COL_MAX_SIZE + " float(53), "
                 + COL_AVG_SIZE + " float(53), "
                 + COL_DOWN_SIZE + " float(53), "
+                + COL_UP_SIZE + " float(53), "
                 + COL_START_X + " float(53), "
                 + COL_START_Y + " float(53), "
                 + COL_END_X + " float(53), "
@@ -594,6 +616,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 + COL_ANGULAR_VELOCITY + " integer(1), "
                 + COL_ORIENTATION + " integer(1), "
                 + COL_SWIPE_DURATION + " integer(1), "
+                + COL_SWIPE_TOUCH_SIZE + " integer(1), "
                 + COL_SWIPE_START_END_POS + " integer(1), "
                 + COL_SWIPE_VELOCITY + " integer(1))";
 
@@ -642,6 +665,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             contentValues.put(COL_ANGULAR_VELOCITY, 1);
             contentValues.put(COL_ORIENTATION, 1);
             contentValues.put(COL_SWIPE_DURATION, 1);
+            contentValues.put(COL_SWIPE_TOUCH_SIZE, 1);
             contentValues.put(COL_SWIPE_START_END_POS, 1);
             contentValues.put(COL_SWIPE_VELOCITY, 1);
 
@@ -671,8 +695,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         ContentValues contentValues = new ContentValues();
 
         contentValues.put(COL_DURATION, swipe.getDuration());
+        contentValues.put(COL_MIN_SIZE, swipe.getMinSize());
+        contentValues.put(COL_MAX_SIZE, swipe.getMaxSize());
         contentValues.put(COL_AVG_SIZE, swipe.getAvgSize());
         contentValues.put(COL_DOWN_SIZE, swipe.getDownSize());
+        contentValues.put(COL_UP_SIZE, swipe.getUpSize());
         contentValues.put(COL_START_X, swipe.getStartX());
         contentValues.put(COL_START_Y, swipe.getStartY());
         contentValues.put(COL_END_X, swipe.getEndX());
@@ -761,8 +788,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         ContentValues contentValues = new ContentValues();
 
         contentValues.put(COL_DURATION, swipe.getDuration());
+        contentValues.put(COL_MIN_SIZE, swipe.getMinSize());
+        contentValues.put(COL_MAX_SIZE, swipe.getMaxSize());
         contentValues.put(COL_AVG_SIZE, swipe.getAvgSize());
         contentValues.put(COL_DOWN_SIZE, swipe.getDownSize());
+        contentValues.put(COL_UP_SIZE, swipe.getUpSize());
         contentValues.put(COL_START_X, swipe.getStartX());
         contentValues.put(COL_START_Y, swipe.getStartY());
         contentValues.put(COL_END_X, swipe.getEndX());
@@ -845,67 +875,70 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             ContentValues contentValues = new ContentValues();
 
             contentValues.put(COL_DURATION, swipeValues[0]);
-            contentValues.put(COL_AVG_SIZE, swipeValues[1]);
-            contentValues.put(COL_DOWN_SIZE, swipeValues[2]);
-            contentValues.put(COL_START_X, swipeValues[3]);
-            contentValues.put(COL_START_Y, swipeValues[4]);
-            contentValues.put(COL_END_X, swipeValues[5]);
-            contentValues.put(COL_END_Y, swipeValues[6]);
-            contentValues.put(COL_MIN_X_VELOCITY, swipeValues[7]);
-            contentValues.put(COL_MAX_X_VELOCITY, swipeValues[8]);
-            contentValues.put(COL_AVG_X_VELOCITY, swipeValues[9]);
-            contentValues.put(COL_STD_X_VELOCITY, swipeValues[10]);
-            contentValues.put(COL_VAR_X_VELOCITY, swipeValues[11]);
-            contentValues.put(COL_MIN_Y_VELOCITY, swipeValues[12]);
-            contentValues.put(COL_MAX_Y_VELOCITY, swipeValues[13]);
-            contentValues.put(COL_AVG_Y_VELOCITY, swipeValues[14]);
-            contentValues.put(COL_STD_Y_VELOCITY, swipeValues[15]);
-            contentValues.put(COL_VAR_Y_VELOCITY, swipeValues[16]);
-            contentValues.put(COL_MIN_X_ACCELEROMETER, swipeValues[17]);
-            contentValues.put(COL_MAX_X_ACCELEROMETER, swipeValues[18]);
-            contentValues.put(COL_AVG_X_ACCELEROMETER, swipeValues[19]);
-            contentValues.put(COL_STD_X_ACCELEROMETER, swipeValues[20]);
-            contentValues.put(COL_VAR_X_ACCELEROMETER, swipeValues[21]);
-            contentValues.put(COL_MIN_Y_ACCELEROMETER, swipeValues[22]);
-            contentValues.put(COL_MAX_Y_ACCELEROMETER, swipeValues[23]);
-            contentValues.put(COL_AVG_Y_ACCELEROMETER, swipeValues[24]);
-            contentValues.put(COL_STD_Y_ACCELEROMETER, swipeValues[25]);
-            contentValues.put(COL_VAR_Y_ACCELEROMETER, swipeValues[26]);
-            contentValues.put(COL_MIN_Z_ACCELEROMETER, swipeValues[27]);
-            contentValues.put(COL_MAX_Z_ACCELEROMETER, swipeValues[28]);
-            contentValues.put(COL_AVG_Z_ACCELEROMETER, swipeValues[29]);
-            contentValues.put(COL_STD_Z_ACCELEROMETER, swipeValues[30]);
-            contentValues.put(COL_VAR_Z_ACCELEROMETER, swipeValues[31]);
-            contentValues.put(COL_MIN_X_GYROSCOPE, swipeValues[32]);
-            contentValues.put(COL_MAX_X_GYROSCOPE, swipeValues[33]);
-            contentValues.put(COL_AVG_X_GYROSCOPE, swipeValues[34]);
-            contentValues.put(COL_STD_X_GYROSCOPE, swipeValues[35]);
-            contentValues.put(COL_VAR_X_GYROSCOPE, swipeValues[36]);
-            contentValues.put(COL_MIN_Y_GYROSCOPE, swipeValues[37]);
-            contentValues.put(COL_MAX_Y_GYROSCOPE, swipeValues[38]);
-            contentValues.put(COL_AVG_Y_GYROSCOPE, swipeValues[39]);
-            contentValues.put(COL_STD_Y_GYROSCOPE, swipeValues[40]);
-            contentValues.put(COL_VAR_Y_GYROSCOPE, swipeValues[41]);
-            contentValues.put(COL_MIN_Z_GYROSCOPE, swipeValues[42]);
-            contentValues.put(COL_MAX_Z_GYROSCOPE, swipeValues[43]);
-            contentValues.put(COL_AVG_Z_GYROSCOPE, swipeValues[44]);
-            contentValues.put(COL_STD_Z_GYROSCOPE, swipeValues[45]);
-            contentValues.put(COL_VAR_Z_GYROSCOPE, swipeValues[46]);
-            contentValues.put(COL_MIN_X_ORIENTATION, swipeValues[47]);
-            contentValues.put(COL_MAX_X_ORIENTATION, swipeValues[48]);
-            contentValues.put(COL_AVG_X_ORIENTATION, swipeValues[49]);
-            contentValues.put(COL_STD_X_ORIENTATION, swipeValues[50]);
-            contentValues.put(COL_VAR_X_ORIENTATION, swipeValues[51]);
-            contentValues.put(COL_MIN_Y_ORIENTATION, swipeValues[52]);
-            contentValues.put(COL_MAX_Y_ORIENTATION, swipeValues[53]);
-            contentValues.put(COL_AVG_Y_ORIENTATION, swipeValues[54]);
-            contentValues.put(COL_STD_Y_ORIENTATION, swipeValues[55]);
-            contentValues.put(COL_VAR_Y_ORIENTATION, swipeValues[56]);
-            contentValues.put(COL_MIN_Z_ORIENTATION, swipeValues[57]);
-            contentValues.put(COL_MAX_Z_ORIENTATION, swipeValues[58]);
-            contentValues.put(COL_AVG_Z_ORIENTATION, swipeValues[59]);
-            contentValues.put(COL_STD_Z_ORIENTATION, swipeValues[60]);
-            contentValues.put(COL_VAR_Z_ORIENTATION, swipeValues[61]);
+            contentValues.put(COL_MIN_SIZE, swipeValues[1]);
+            contentValues.put(COL_MAX_SIZE, swipeValues[2]);
+            contentValues.put(COL_AVG_SIZE, swipeValues[3]);
+            contentValues.put(COL_DOWN_SIZE, swipeValues[4]);
+            contentValues.put(COL_UP_SIZE, swipeValues[5]);
+            contentValues.put(COL_START_X, swipeValues[6]);
+            contentValues.put(COL_START_Y, swipeValues[7]);
+            contentValues.put(COL_END_X, swipeValues[8]);
+            contentValues.put(COL_END_Y, swipeValues[9]);
+            contentValues.put(COL_MIN_X_VELOCITY, swipeValues[10]);
+            contentValues.put(COL_MAX_X_VELOCITY, swipeValues[11]);
+            contentValues.put(COL_AVG_X_VELOCITY, swipeValues[12]);
+            contentValues.put(COL_STD_X_VELOCITY, swipeValues[13]);
+            contentValues.put(COL_VAR_X_VELOCITY, swipeValues[14]);
+            contentValues.put(COL_MIN_Y_VELOCITY, swipeValues[15]);
+            contentValues.put(COL_MAX_Y_VELOCITY, swipeValues[16]);
+            contentValues.put(COL_AVG_Y_VELOCITY, swipeValues[17]);
+            contentValues.put(COL_STD_Y_VELOCITY, swipeValues[18]);
+            contentValues.put(COL_VAR_Y_VELOCITY, swipeValues[19]);
+            contentValues.put(COL_MIN_X_ACCELEROMETER, swipeValues[20]);
+            contentValues.put(COL_MAX_X_ACCELEROMETER, swipeValues[21]);
+            contentValues.put(COL_AVG_X_ACCELEROMETER, swipeValues[22]);
+            contentValues.put(COL_STD_X_ACCELEROMETER, swipeValues[23]);
+            contentValues.put(COL_VAR_X_ACCELEROMETER, swipeValues[24]);
+            contentValues.put(COL_MIN_Y_ACCELEROMETER, swipeValues[25]);
+            contentValues.put(COL_MAX_Y_ACCELEROMETER, swipeValues[26]);
+            contentValues.put(COL_AVG_Y_ACCELEROMETER, swipeValues[27]);
+            contentValues.put(COL_STD_Y_ACCELEROMETER, swipeValues[28]);
+            contentValues.put(COL_VAR_Y_ACCELEROMETER, swipeValues[29]);
+            contentValues.put(COL_MIN_Z_ACCELEROMETER, swipeValues[30]);
+            contentValues.put(COL_MAX_Z_ACCELEROMETER, swipeValues[31]);
+            contentValues.put(COL_AVG_Z_ACCELEROMETER, swipeValues[32]);
+            contentValues.put(COL_STD_Z_ACCELEROMETER, swipeValues[33]);
+            contentValues.put(COL_VAR_Z_ACCELEROMETER, swipeValues[34]);
+            contentValues.put(COL_MIN_X_GYROSCOPE, swipeValues[35]);
+            contentValues.put(COL_MAX_X_GYROSCOPE, swipeValues[36]);
+            contentValues.put(COL_AVG_X_GYROSCOPE, swipeValues[37]);
+            contentValues.put(COL_STD_X_GYROSCOPE, swipeValues[38]);
+            contentValues.put(COL_VAR_X_GYROSCOPE, swipeValues[39]);
+            contentValues.put(COL_MIN_Y_GYROSCOPE, swipeValues[40]);
+            contentValues.put(COL_MAX_Y_GYROSCOPE, swipeValues[41]);
+            contentValues.put(COL_AVG_Y_GYROSCOPE, swipeValues[42]);
+            contentValues.put(COL_STD_Y_GYROSCOPE, swipeValues[43]);
+            contentValues.put(COL_VAR_Y_GYROSCOPE, swipeValues[44]);
+            contentValues.put(COL_MIN_Z_GYROSCOPE, swipeValues[45]);
+            contentValues.put(COL_MAX_Z_GYROSCOPE, swipeValues[46]);
+            contentValues.put(COL_AVG_Z_GYROSCOPE, swipeValues[47]);
+            contentValues.put(COL_STD_Z_GYROSCOPE, swipeValues[48]);
+            contentValues.put(COL_VAR_Z_GYROSCOPE, swipeValues[49]);
+            contentValues.put(COL_MIN_X_ORIENTATION, swipeValues[50]);
+            contentValues.put(COL_MAX_X_ORIENTATION, swipeValues[51]);
+            contentValues.put(COL_AVG_X_ORIENTATION, swipeValues[52]);
+            contentValues.put(COL_STD_X_ORIENTATION, swipeValues[53]);
+            contentValues.put(COL_VAR_X_ORIENTATION, swipeValues[54]);
+            contentValues.put(COL_MIN_Y_ORIENTATION, swipeValues[55]);
+            contentValues.put(COL_MAX_Y_ORIENTATION, swipeValues[56]);
+            contentValues.put(COL_AVG_Y_ORIENTATION, swipeValues[57]);
+            contentValues.put(COL_STD_Y_ORIENTATION, swipeValues[58]);
+            contentValues.put(COL_VAR_Y_ORIENTATION, swipeValues[59]);
+            contentValues.put(COL_MIN_Z_ORIENTATION, swipeValues[60]);
+            contentValues.put(COL_MAX_Z_ORIENTATION, swipeValues[61]);
+            contentValues.put(COL_AVG_Z_ORIENTATION, swipeValues[62]);
+            contentValues.put(COL_STD_Z_ORIENTATION, swipeValues[63]);
+            contentValues.put(COL_VAR_Z_ORIENTATION, swipeValues[64]);
             contentValues.put(COL_HOLDING_POSITION, swipe.getHoldingPosition());
             contentValues.put(COL_USER_ID, swipe.getUserId());
 
@@ -923,8 +956,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         while(!cursor.isAfterLast()) {
             Swipe swipe = new Swipe();
             swipe.setDuration(cursor.getDouble(cursor.getColumnIndex(COL_DURATION)));
+            swipe.setMinSize(cursor.getDouble(cursor.getColumnIndex(COL_MIN_SIZE)));
+            swipe.setMaxSize(cursor.getDouble(cursor.getColumnIndex(COL_MAX_SIZE)));
             swipe.setAvgSize(cursor.getDouble(cursor.getColumnIndex(COL_AVG_SIZE)));
             swipe.setDownSize(cursor.getDouble(cursor.getColumnIndex(COL_DOWN_SIZE)));
+            swipe.setUpSize(cursor.getDouble(cursor.getColumnIndex(COL_UP_SIZE)));
             swipe.setStartX(cursor.getDouble(cursor.getColumnIndex(COL_START_X)));
             swipe.setStartY(cursor.getDouble(cursor.getColumnIndex(COL_START_Y)));
             swipe.setEndX(cursor.getDouble(cursor.getColumnIndex(COL_END_X)));
@@ -1020,8 +1056,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         while(!cursor.isAfterLast()) {
             Swipe swipe = new Swipe();
             swipe.setDuration(cursor.getDouble(cursor.getColumnIndex(COL_DURATION)));
+            swipe.setMinSize(cursor.getDouble(cursor.getColumnIndex(COL_MIN_SIZE)));
+            swipe.setMaxSize(cursor.getDouble(cursor.getColumnIndex(COL_MAX_SIZE)));
             swipe.setAvgSize(cursor.getDouble(cursor.getColumnIndex(COL_AVG_SIZE)));
             swipe.setDownSize(cursor.getDouble(cursor.getColumnIndex(COL_DOWN_SIZE)));
+            swipe.setUpSize(cursor.getDouble(cursor.getColumnIndex(COL_UP_SIZE)));
             swipe.setStartX(cursor.getDouble(cursor.getColumnIndex(COL_START_X)));
             swipe.setStartY(cursor.getDouble(cursor.getColumnIndex(COL_START_Y)));
             swipe.setEndX(cursor.getDouble(cursor.getColumnIndex(COL_END_X)));
@@ -1241,7 +1280,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return userData;
     }
 
-    public boolean saveFeatureData(int acceleration, int angular_velocity, int orientation, int swipe_duration, int swipe_start_end_pos, int swipe_velocity) {
+    public boolean saveFeatureData(int acceleration, int angular_velocity, int orientation, int swipe_duration, int swipe_touch_size, int swipe_start_end_pos, int swipe_velocity) {
         SQLiteDatabase db = this.getWritableDatabase();
         db.execSQL("DELETE FROM " + FEATURE_DATA);
 
@@ -1251,6 +1290,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         contentValues.put(COL_ANGULAR_VELOCITY, angular_velocity);
         contentValues.put(COL_ORIENTATION, orientation);
         contentValues.put(COL_SWIPE_DURATION, swipe_duration);
+        contentValues.put(COL_SWIPE_TOUCH_SIZE, swipe_touch_size);
         contentValues.put(COL_SWIPE_START_END_POS, swipe_start_end_pos);
         contentValues.put(COL_SWIPE_VELOCITY, swipe_velocity);
 
@@ -1271,6 +1311,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         featureData.add(cursor.getInt(cursor.getColumnIndex(COL_ANGULAR_VELOCITY)));
         featureData.add(cursor.getInt(cursor.getColumnIndex(COL_ORIENTATION)));
         featureData.add(cursor.getInt(cursor.getColumnIndex(COL_SWIPE_DURATION)));
+        featureData.add(cursor.getInt(cursor.getColumnIndex(COL_SWIPE_TOUCH_SIZE)));
         featureData.add(cursor.getInt(cursor.getColumnIndex(COL_SWIPE_START_END_POS)));
         featureData.add(cursor.getInt(cursor.getColumnIndex(COL_SWIPE_VELOCITY)));
 

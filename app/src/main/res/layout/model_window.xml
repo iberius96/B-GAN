@@ -103,7 +103,7 @@
         android:layout_marginStart="20dp"
         android:text="Start/End position"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/swipeDurationCheckBox" />
+        app:layout_constraintTop_toBottomOf="@+id/swipeTouchSizeCheckBox" />
 
     <CheckBox
         android:id="@+id/swipeVelocityCheckBox"
@@ -113,6 +113,15 @@
         android:text="Velocity"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/swipeStartEndPosCheckBox" />
+
+    <CheckBox
+        android:id="@+id/swipeTouchSizeCheckBox"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:text="Touch size"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/swipeDurationCheckBox" />
 
     <CheckBox
         android:id="@+id/angularVelocityCheckBox"

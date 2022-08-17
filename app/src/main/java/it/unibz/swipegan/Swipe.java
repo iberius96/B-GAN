@@ -11,8 +11,11 @@ import weka.core.Instances;
 
 public class Swipe {
     private double duration;
+    private double minSize;
+    private double maxSize;
     private double avgSize;
     private double downSize;
+    private double upSize;
     private double startX;
     private double startY;
     private double endX;
@@ -81,67 +84,70 @@ public class Swipe {
 
     public Swipe(double[] swipeArray, double holdingPosition, String userId) {
         this.duration = swipeArray[0];
-        this.avgSize = swipeArray[1];
-        this.downSize = swipeArray[2];
-        this.startX = swipeArray[3];
-        this.startY = swipeArray[4];
-        this.endX = swipeArray[5];
-        this.endY = swipeArray[6];
-        this.minXVelocity = swipeArray[7];
-        this.maxXVelocity = swipeArray[8];
-        this.avgXVelocity = swipeArray[9];
-        this.stdXVelocity = swipeArray[10];
-        this.varXVelocity = swipeArray[11];
-        this.minYVelocity = swipeArray[12];
-        this.maxYVelocity = swipeArray[13];
-        this.avgYVelocity = swipeArray[14];
-        this.stdYVelocity = swipeArray[15];
-        this.varYVelocity = swipeArray[16];
-        this.minXAccelerometer = swipeArray[17];
-        this.maxXAccelerometer = swipeArray[18];
-        this.avgXAccelerometer = swipeArray[19];
-        this.stdXAccelerometer = swipeArray[20];
-        this.varXAccelerometer = swipeArray[21];
-        this.minYAccelerometer = swipeArray[22];
-        this.maxYAccelerometer = swipeArray[23];
-        this.avgYAccelerometer = swipeArray[24];
-        this.stdYAccelerometer = swipeArray[25];
-        this.varYAccelerometer = swipeArray[26];
-        this.minZAccelerometer = swipeArray[27];
-        this.maxZAccelerometer = swipeArray[28];
-        this.avgZAccelerometer = swipeArray[29];
-        this.stdZAccelerometer = swipeArray[30];
-        this.varZAccelerometer = swipeArray[31];
-        this.minXGyroscope = swipeArray[32];
-        this.maxXGyroscope = swipeArray[33];
-        this.avgXGyroscope = swipeArray[34];
-        this.stdXGyroscope = swipeArray[35];
-        this.varXGyroscope = swipeArray[36];
-        this.minYGyroscope = swipeArray[37];
-        this.maxYGyroscope = swipeArray[38];
-        this.avgYGyroscope = swipeArray[39];
-        this.stdYGyroscope = swipeArray[40];
-        this.varYGyroscope = swipeArray[41];
-        this.minZGyroscope = swipeArray[42];
-        this.maxZGyroscope = swipeArray[43];
-        this.avgZGyroscope = swipeArray[44];
-        this.stdZGyroscope = swipeArray[45];
-        this.varZGyroscope = swipeArray[46];
-        this.minXOrientation = swipeArray[47];
-        this.maxXOrientation = swipeArray[48];
-        this.avgXOrientation = swipeArray[49];
-        this.stdXOrientation = swipeArray[50];
-        this.varXOrientation = swipeArray[51];
-        this.minYOrientation = swipeArray[52];
-        this.maxYOrientation = swipeArray[53];
-        this.avgYOrientation = swipeArray[54];
-        this.stdYOrientation = swipeArray[55];
-        this.varYOrientation = swipeArray[56];
-        this.minZOrientation = swipeArray[57];
-        this.maxZOrientation = swipeArray[58];
-        this.avgZOrientation = swipeArray[59];
-        this.stdZOrientation = swipeArray[60];
-        this.varZOrientation = swipeArray[61];
+        this.minSize = swipeArray[1];
+        this.maxSize = swipeArray[2];
+        this.avgSize = swipeArray[3];
+        this.downSize = swipeArray[4];
+        this.upSize =  swipeArray[5];
+        this.startX = swipeArray[6];
+        this.startY = swipeArray[7];
+        this.endX = swipeArray[8];
+        this.endY = swipeArray[9];
+        this.minXVelocity = swipeArray[10];
+        this.maxXVelocity = swipeArray[11];
+        this.avgXVelocity = swipeArray[12];
+        this.stdXVelocity = swipeArray[13];
+        this.varXVelocity = swipeArray[14];
+        this.minYVelocity = swipeArray[15];
+        this.maxYVelocity = swipeArray[16];
+        this.avgYVelocity = swipeArray[17];
+        this.stdYVelocity = swipeArray[18];
+        this.varYVelocity = swipeArray[19];
+        this.minXAccelerometer = swipeArray[20];
+        this.maxXAccelerometer = swipeArray[21];
+        this.avgXAccelerometer = swipeArray[22];
+        this.stdXAccelerometer = swipeArray[23];
+        this.varXAccelerometer = swipeArray[24];
+        this.minYAccelerometer = swipeArray[25];
+        this.maxYAccelerometer = swipeArray[26];
+        this.avgYAccelerometer = swipeArray[27];
+        this.stdYAccelerometer = swipeArray[28];
+        this.varYAccelerometer = swipeArray[29];
+        this.minZAccelerometer = swipeArray[30];
+        this.maxZAccelerometer = swipeArray[31];
+        this.avgZAccelerometer = swipeArray[32];
+        this.stdZAccelerometer = swipeArray[33];
+        this.varZAccelerometer = swipeArray[34];
+        this.minXGyroscope = swipeArray[35];
+        this.maxXGyroscope = swipeArray[36];
+        this.avgXGyroscope = swipeArray[37];
+        this.stdXGyroscope = swipeArray[38];
+        this.varXGyroscope = swipeArray[39];
+        this.minYGyroscope = swipeArray[40];
+        this.maxYGyroscope = swipeArray[41];
+        this.avgYGyroscope = swipeArray[42];
+        this.stdYGyroscope = swipeArray[43];
+        this.varYGyroscope = swipeArray[44];
+        this.minZGyroscope = swipeArray[45];
+        this.maxZGyroscope = swipeArray[46];
+        this.avgZGyroscope = swipeArray[47];
+        this.stdZGyroscope = swipeArray[48];
+        this.varZGyroscope = swipeArray[49];
+        this.minXOrientation = swipeArray[50];
+        this.maxXOrientation = swipeArray[51];
+        this.avgXOrientation = swipeArray[52];
+        this.stdXOrientation = swipeArray[53];
+        this.varXOrientation = swipeArray[54];
+        this.minYOrientation = swipeArray[55];
+        this.maxYOrientation = swipeArray[56];
+        this.avgYOrientation = swipeArray[57];
+        this.stdYOrientation = swipeArray[58];
+        this.varYOrientation = swipeArray[59];
+        this.minZOrientation = swipeArray[60];
+        this.maxZOrientation = swipeArray[61];
+        this.avgZOrientation = swipeArray[62];
+        this.stdZOrientation = swipeArray[63];
+        this.varZOrientation = swipeArray[64];
         this.holdingPosition = holdingPosition;
         this.userId = userId;
     }
@@ -152,6 +158,22 @@ public class Swipe {
 
     public void setDuration(double duration) {
         this.duration = duration;
+    }
+
+    public double getMinSize() {
+        return minSize;
+    }
+
+    public void setMinSize(double minSize) {
+        this.minSize = minSize;
+    }
+
+    public double getMaxSize() {
+        return maxSize;
+    }
+
+    public void setMaxSize(double maxSize) {
+        this.maxSize = maxSize;
     }
 
     public double getAvgSize() {
@@ -168,6 +190,14 @@ public class Swipe {
 
     public void setDownSize(double downSize) {
         this.downSize = downSize;
+    }
+
+    public double getUpSize() {
+        return upSize;
+    }
+
+    public void setUpSize(double upSize) {
+        this.upSize = upSize;
     }
 
     public double getStartX() {
@@ -666,12 +696,20 @@ public class Swipe {
             map.put("MIN_DURATION", map.get("MIN_DURATION") == null || swipe.getDuration() < map.get("MIN_DURATION") ? swipe.getDuration() : map.get("MIN_DURATION"));
             map.put("MAX_DURATION", map.get("MAX_DURATION") == null || swipe.getDuration() > map.get("MAX_DURATION") ? swipe.getDuration() : map.get("MAX_DURATION"));
 
-            // TODO: See if they need to be normalized
+            map.put("MIN_MIN_SIZE", map.get("MIN_MIN_SIZE") == null || swipe.getMinSize() < map.get("MIN_MIN_SIZE") ? swipe.getMinSize() : map.get("MIN_MIN_SIZE"));
+            map.put("MAX_MIN_SIZE", map.get("MAX_MIN_SIZE") == null || swipe.getMinSize() > map.get("MAX_MIN_SIZE") ? swipe.getMinSize() : map.get("MAX_MIN_SIZE"));
+
+            map.put("MIN_MAX_SIZE", map.get("MIN_MAX_SIZE") == null || swipe.getMaxSize() < map.get("MIN_MAX_SIZE") ? swipe.getMaxSize() : map.get("MIN_MAX_SIZE"));
+            map.put("MAX_MAX_SIZE", map.get("MAX_MAX_SIZE") == null || swipe.getMaxSize() > map.get("MAX_MAX_SIZE") ? swipe.getMaxSize() : map.get("MAX_MAX_SIZE"));
+
             map.put("MIN_AVG_SIZE", map.get("MIN_AVG_SIZE") == null || swipe.getAvgSize() < map.get("MIN_AVG_SIZE") ? swipe.getAvgSize() : map.get("MIN_AVG_SIZE"));
             map.put("MAX_AVG_SIZE", map.get("MAX_AVG_SIZE") == null || swipe.getAvgSize() > map.get("MAX_AVG_SIZE") ? swipe.getAvgSize() : map.get("MAX_AVG_SIZE"));
 
             map.put("MIN_DOWN_SIZE", map.get("MIN_DOWN_SIZE") == null || swipe.getDownSize() < map.get("MIN_DOWN_SIZE") ? swipe.getDownSize() : map.get("MIN_DOWN_SIZE"));
             map.put("MAX_DOWN_SIZE", map.get("MAX_DOWN_SIZE") == null || swipe.getDownSize() > map.get("MAX_DOWN_SIZE") ? swipe.getDownSize() : map.get("MAX_DOWN_SIZE"));
+
+            map.put("MIN_UP_SIZE", map.get("MIN_UP_SIZE") == null || swipe.getUpSize() < map.get("MIN_UP_SIZE") ? swipe.getUpSize() : map.get("MIN_UP_SIZE"));
+            map.put("MAX_UP_SIZE", map.get("MAX_UP_SIZE") == null || swipe.getUpSize() > map.get("MAX_UP_SIZE") ? swipe.getUpSize() : map.get("MAX_UP_SIZE"));
 
             map.put("MIN_START_X", map.get("MIN_START_X") == null || swipe.getStartX() < map.get("MIN_START_X") ? swipe.getStartX() : map.get("MIN_START_X"));
             map.put("MAX_START_X", map.get("MAX_START_X") == null || swipe.getStartX() > map.get("MAX_START_X") ? swipe.getStartX() : map.get("MAX_START_X"));
@@ -713,8 +751,11 @@ public class Swipe {
 
         double[] ret = new double[] {
                 (this.duration - map.get("MIN_DURATION")) / (map.get("MAX_DURATION") - map.get("MIN_DURATION")),
+                (this.minSize - map.get("MIN_MIN_SIZE")) / (map.get("MAX_MIN_SIZE") - map.get("MIN_MIN_SIZE")),
+                (this.maxSize - map.get("MIN_MAX_SIZE")) / (map.get("MAX_MAX_SIZE") - map.get("MIN_MAX_SIZE")),
                 (this.avgSize - map.get("MIN_AVG_SIZE")) / (map.get("MAX_AVG_SIZE") - map.get("MIN_AVG_SIZE")),
                 (this.downSize- map.get("MIN_DOWN_SIZE")) / (map.get("MAX_DOWN_SIZE") - map.get("MIN_DOWN_SIZE")),
+                (this.upSize- map.get("MIN_UP_SIZE")) / (map.get("MAX_UP_SIZE") - map.get("MIN_UP_SIZE")),
                 (this.startX - map.get("MIN_START_X")) / (map.get("MAX_START_X") - map.get("MIN_START_X")),
                 (this.startY - map.get("MIN_START_Y")) / (map.get("MAX_START_Y") - map.get("MIN_START_Y")),
                 (this.endX - map.get("MIN_END_X")) / (map.get("MAX_END_X") - map.get("MIN_END_X")),
@@ -789,72 +830,75 @@ public class Swipe {
 
         Swipe swipe = new Swipe();
         swipe.setDuration(values[0] * (map.get("MAX_DURATION") - map.get("MIN_DURATION")) + map.get("MIN_DURATION"));
-        swipe.setAvgSize(values[1] * (map.get("MAX_AVG_SIZE") - map.get("MIN_AVG_SIZE")) + map.get("MIN_AVG_SIZE"));
-        swipe.setDownSize(values[2] * (map.get("MAX_DOWN_SIZE") - map.get("MIN_DOWN_SIZE")) + map.get("MIN_DOWN_SIZE"));
-        swipe.setStartX(values[3] * (map.get("MAX_START_X") - map.get("MIN_START_X")) + map.get("MIN_START_X"));
-        swipe.setStartY(values[4] * (map.get("MAX_START_Y") - map.get("MIN_START_Y")) + map.get("MIN_START_Y"));
-        swipe.setEndX(values[5] * (map.get("MAX_END_X") - map.get("MIN_END_X")) + map.get("MIN_END_X"));
-        swipe.setEndY(values[6] * (map.get("MAX_END_Y") - map.get("MIN_END_Y")) + map.get("MIN_END_Y"));
+        swipe.setMinSize(values[1] * (map.get("MAX_MIN_SIZE") - map.get("MIN_MIN_SIZE")) + map.get("MIN_MIN_SIZE"));
+        swipe.setMaxSize(values[2] * (map.get("MAX_MAX_SIZE") - map.get("MIN_MAX_SIZE")) + map.get("MIN_MAX_SIZE"));
+        swipe.setAvgSize(values[3] * (map.get("MAX_AVG_SIZE") - map.get("MIN_AVG_SIZE")) + map.get("MIN_AVG_SIZE"));
+        swipe.setDownSize(values[4] * (map.get("MAX_DOWN_SIZE") - map.get("MIN_DOWN_SIZE")) + map.get("MIN_DOWN_SIZE"));
+        swipe.setUpSize(values[5] * (map.get("MAX_UP_SIZE") - map.get("MIN_UP_SIZE")) + map.get("MIN_UP_SIZE"));
+        swipe.setStartX(values[6] * (map.get("MAX_START_X") - map.get("MIN_START_X")) + map.get("MIN_START_X"));
+        swipe.setStartY(values[7] * (map.get("MAX_START_Y") - map.get("MIN_START_Y")) + map.get("MIN_START_Y"));
+        swipe.setEndX(values[8] * (map.get("MAX_END_X") - map.get("MIN_END_X")) + map.get("MIN_END_X"));
+        swipe.setEndY(values[9] * (map.get("MAX_END_Y") - map.get("MIN_END_Y")) + map.get("MIN_END_Y"));
 
-        swipe.setMinXVelocity(values[7] * (map.get("MAX_MIN_X_VELOCITY") - map.get("MIN_MIN_X_VELOCITY")) + map.get("MIN_MIN_X_VELOCITY"));
-        swipe.setMaxXVelocity(values[8] * (map.get("MAX_MAX_X_VELOCITY") - map.get("MIN_MAX_X_VELOCITY")) + map.get("MIN_MAX_X_VELOCITY"));
-        swipe.setAvgXVelocity(values[9] * (map.get("MAX_AVG_X_VELOCITY") - map.get("MIN_AVG_X_VELOCITY")) + map.get("MIN_AVG_X_VELOCITY"));
-        swipe.setStdXVelocity(values[10] * (map.get("MAX_STD_X_VELOCITY") - map.get("MIN_STD_X_VELOCITY")) + map.get("MIN_STD_X_VELOCITY"));
-        swipe.setVarXVelocity(values[11] * (map.get("MAX_VAR_X_VELOCITY") - map.get("MIN_VAR_X_VELOCITY")) + map.get("MIN_VAR_X_VELOCITY"));
+        swipe.setMinXVelocity(values[10] * (map.get("MAX_MIN_X_VELOCITY") - map.get("MIN_MIN_X_VELOCITY")) + map.get("MIN_MIN_X_VELOCITY"));
+        swipe.setMaxXVelocity(values[11] * (map.get("MAX_MAX_X_VELOCITY") - map.get("MIN_MAX_X_VELOCITY")) + map.get("MIN_MAX_X_VELOCITY"));
+        swipe.setAvgXVelocity(values[12] * (map.get("MAX_AVG_X_VELOCITY") - map.get("MIN_AVG_X_VELOCITY")) + map.get("MIN_AVG_X_VELOCITY"));
+        swipe.setStdXVelocity(values[13] * (map.get("MAX_STD_X_VELOCITY") - map.get("MIN_STD_X_VELOCITY")) + map.get("MIN_STD_X_VELOCITY"));
+        swipe.setVarXVelocity(values[14] * (map.get("MAX_VAR_X_VELOCITY") - map.get("MIN_VAR_X_VELOCITY")) + map.get("MIN_VAR_X_VELOCITY"));
 
-        swipe.setMinYVelocity(values[12] * (map.get("MAX_MIN_Y_VELOCITY") - map.get("MIN_MIN_Y_VELOCITY")) + map.get("MIN_MIN_Y_VELOCITY"));
-        swipe.setMaxYVelocity(values[13] * (map.get("MAX_MAX_Y_VELOCITY") - map.get("MIN_MAX_Y_VELOCITY")) + map.get("MIN_MAX_Y_VELOCITY"));
-        swipe.setAvgYVelocity(values[14] * (map.get("MAX_AVG_Y_VELOCITY") - map.get("MIN_AVG_Y_VELOCITY")) + map.get("MIN_AVG_Y_VELOCITY"));
-        swipe.setStdYVelocity(values[15] * (map.get("MAX_STD_Y_VELOCITY") - map.get("MIN_STD_Y_VELOCITY")) + map.get("MIN_STD_Y_VELOCITY"));
-        swipe.setVarYVelocity(values[16] * (map.get("MAX_VAR_Y_VELOCITY") - map.get("MIN_VAR_Y_VELOCITY")) + map.get("MIN_VAR_Y_VELOCITY"));
+        swipe.setMinYVelocity(values[15] * (map.get("MAX_MIN_Y_VELOCITY") - map.get("MIN_MIN_Y_VELOCITY")) + map.get("MIN_MIN_Y_VELOCITY"));
+        swipe.setMaxYVelocity(values[16] * (map.get("MAX_MAX_Y_VELOCITY") - map.get("MIN_MAX_Y_VELOCITY")) + map.get("MIN_MAX_Y_VELOCITY"));
+        swipe.setAvgYVelocity(values[17] * (map.get("MAX_AVG_Y_VELOCITY") - map.get("MIN_AVG_Y_VELOCITY")) + map.get("MIN_AVG_Y_VELOCITY"));
+        swipe.setStdYVelocity(values[18] * (map.get("MAX_STD_Y_VELOCITY") - map.get("MIN_STD_Y_VELOCITY")) + map.get("MIN_STD_Y_VELOCITY"));
+        swipe.setVarYVelocity(values[19] * (map.get("MAX_VAR_Y_VELOCITY") - map.get("MIN_VAR_Y_VELOCITY")) + map.get("MIN_VAR_Y_VELOCITY"));
 
-        swipe.setMinXAccelerometer(values[17] * (map.get("MAX_MIN_X_ACCELEROMETER") - map.get("MIN_MIN_X_ACCELEROMETER")) + map.get("MIN_MIN_X_ACCELEROMETER"));
-        swipe.setMaxXAccelerometer(values[18] * (map.get("MAX_MAX_X_ACCELEROMETER") - map.get("MIN_MAX_X_ACCELEROMETER")) + map.get("MIN_MAX_X_ACCELEROMETER"));
-        swipe.setAvgXAccelerometer(values[19] * (map.get("MAX_AVG_X_ACCELEROMETER") - map.get("MIN_AVG_X_ACCELEROMETER")) + map.get("MIN_AVG_X_ACCELEROMETER"));
-        swipe.setStdXAccelerometer(values[20] * (map.get("MAX_STD_X_ACCELEROMETER") - map.get("MIN_STD_X_ACCELEROMETER")) + map.get("MIN_STD_X_ACCELEROMETER"));
-        swipe.setVarXAccelerometer(values[21] * (map.get("MAX_VAR_X_ACCELEROMETER") - map.get("MIN_VAR_X_ACCELEROMETER")) + map.get("MIN_VAR_X_ACCELEROMETER"));
-        swipe.setMinYAccelerometer(values[22] * (map.get("MAX_MIN_Y_ACCELEROMETER") - map.get("MIN_MIN_Y_ACCELEROMETER")) + map.get("MIN_MIN_Y_ACCELEROMETER"));
-        swipe.setMaxYAccelerometer(values[23] * (map.get("MAX_MAX_Y_ACCELEROMETER") - map.get("MIN_MAX_Y_ACCELEROMETER")) + map.get("MIN_MAX_Y_ACCELEROMETER"));
-        swipe.setAvgYAccelerometer(values[24] * (map.get("MAX_AVG_Y_ACCELEROMETER") - map.get("MIN_AVG_Y_ACCELEROMETER")) + map.get("MIN_AVG_Y_ACCELEROMETER"));
-        swipe.setStdYAccelerometer(values[25] * (map.get("MAX_STD_Y_ACCELEROMETER") - map.get("MIN_STD_Y_ACCELEROMETER")) + map.get("MIN_STD_Y_ACCELEROMETER"));
-        swipe.setVarYAccelerometer(values[26] * (map.get("MAX_VAR_Y_ACCELEROMETER") - map.get("MIN_VAR_Y_ACCELEROMETER")) + map.get("MIN_VAR_Y_ACCELEROMETER"));
-        swipe.setMinZAccelerometer(values[27] * (map.get("MAX_MIN_Z_ACCELEROMETER") - map.get("MIN_MIN_Z_ACCELEROMETER")) + map.get("MIN_MIN_Z_ACCELEROMETER"));
-        swipe.setMaxZAccelerometer(values[28] * (map.get("MAX_MAX_Z_ACCELEROMETER") - map.get("MIN_MAX_Z_ACCELEROMETER")) + map.get("MIN_MAX_Z_ACCELEROMETER"));
-        swipe.setAvgZAccelerometer(values[29] * (map.get("MAX_AVG_Z_ACCELEROMETER") - map.get("MIN_AVG_Z_ACCELEROMETER")) + map.get("MIN_AVG_Z_ACCELEROMETER"));
-        swipe.setStdZAccelerometer(values[30] * (map.get("MAX_STD_Z_ACCELEROMETER") - map.get("MIN_STD_Z_ACCELEROMETER")) + map.get("MIN_STD_Z_ACCELEROMETER"));
-        swipe.setVarZAccelerometer(values[31] * (map.get("MAX_VAR_Z_ACCELEROMETER") - map.get("MIN_VAR_Z_ACCELEROMETER")) + map.get("MIN_VAR_Z_ACCELEROMETER"));
+        swipe.setMinXAccelerometer(values[20] * (map.get("MAX_MIN_X_ACCELEROMETER") - map.get("MIN_MIN_X_ACCELEROMETER")) + map.get("MIN_MIN_X_ACCELEROMETER"));
+        swipe.setMaxXAccelerometer(values[21] * (map.get("MAX_MAX_X_ACCELEROMETER") - map.get("MIN_MAX_X_ACCELEROMETER")) + map.get("MIN_MAX_X_ACCELEROMETER"));
+        swipe.setAvgXAccelerometer(values[22] * (map.get("MAX_AVG_X_ACCELEROMETER") - map.get("MIN_AVG_X_ACCELEROMETER")) + map.get("MIN_AVG_X_ACCELEROMETER"));
+        swipe.setStdXAccelerometer(values[23] * (map.get("MAX_STD_X_ACCELEROMETER") - map.get("MIN_STD_X_ACCELEROMETER")) + map.get("MIN_STD_X_ACCELEROMETER"));
+        swipe.setVarXAccelerometer(values[24] * (map.get("MAX_VAR_X_ACCELEROMETER") - map.get("MIN_VAR_X_ACCELEROMETER")) + map.get("MIN_VAR_X_ACCELEROMETER"));
+        swipe.setMinYAccelerometer(values[25] * (map.get("MAX_MIN_Y_ACCELEROMETER") - map.get("MIN_MIN_Y_ACCELEROMETER")) + map.get("MIN_MIN_Y_ACCELEROMETER"));
+        swipe.setMaxYAccelerometer(values[26] * (map.get("MAX_MAX_Y_ACCELEROMETER") - map.get("MIN_MAX_Y_ACCELEROMETER")) + map.get("MIN_MAX_Y_ACCELEROMETER"));
+        swipe.setAvgYAccelerometer(values[27] * (map.get("MAX_AVG_Y_ACCELEROMETER") - map.get("MIN_AVG_Y_ACCELEROMETER")) + map.get("MIN_AVG_Y_ACCELEROMETER"));
+        swipe.setStdYAccelerometer(values[28] * (map.get("MAX_STD_Y_ACCELEROMETER") - map.get("MIN_STD_Y_ACCELEROMETER")) + map.get("MIN_STD_Y_ACCELEROMETER"));
+        swipe.setVarYAccelerometer(values[29] * (map.get("MAX_VAR_Y_ACCELEROMETER") - map.get("MIN_VAR_Y_ACCELEROMETER")) + map.get("MIN_VAR_Y_ACCELEROMETER"));
+        swipe.setMinZAccelerometer(values[30] * (map.get("MAX_MIN_Z_ACCELEROMETER") - map.get("MIN_MIN_Z_ACCELEROMETER")) + map.get("MIN_MIN_Z_ACCELEROMETER"));
+        swipe.setMaxZAccelerometer(values[31] * (map.get("MAX_MAX_Z_ACCELEROMETER") - map.get("MIN_MAX_Z_ACCELEROMETER")) + map.get("MIN_MAX_Z_ACCELEROMETER"));
+        swipe.setAvgZAccelerometer(values[32] * (map.get("MAX_AVG_Z_ACCELEROMETER") - map.get("MIN_AVG_Z_ACCELEROMETER")) + map.get("MIN_AVG_Z_ACCELEROMETER"));
+        swipe.setStdZAccelerometer(values[33] * (map.get("MAX_STD_Z_ACCELEROMETER") - map.get("MIN_STD_Z_ACCELEROMETER")) + map.get("MIN_STD_Z_ACCELEROMETER"));
+        swipe.setVarZAccelerometer(values[34] * (map.get("MAX_VAR_Z_ACCELEROMETER") - map.get("MIN_VAR_Z_ACCELEROMETER")) + map.get("MIN_VAR_Z_ACCELEROMETER"));
 
-        swipe.setMinXGyroscope(values[32] * (map.get("MAX_MIN_X_GYROSCOPE") - map.get("MIN_MIN_X_GYROSCOPE")) + map.get("MIN_MIN_X_GYROSCOPE"));
-        swipe.setMaxXGyroscope(values[33] * (map.get("MAX_MAX_X_GYROSCOPE") - map.get("MIN_MAX_X_GYROSCOPE")) + map.get("MIN_MAX_X_GYROSCOPE"));
-        swipe.setAvgXGyroscope(values[34] * (map.get("MAX_AVG_X_GYROSCOPE") - map.get("MIN_AVG_X_GYROSCOPE")) + map.get("MIN_AVG_X_GYROSCOPE"));
-        swipe.setStdXGyroscope(values[35] * (map.get("MAX_STD_X_GYROSCOPE") - map.get("MIN_STD_X_GYROSCOPE")) + map.get("MIN_STD_X_GYROSCOPE"));
-        swipe.setVarXGyroscope(values[36] * (map.get("MAX_VAR_X_GYROSCOPE") - map.get("MIN_VAR_X_GYROSCOPE")) + map.get("MIN_VAR_X_GYROSCOPE"));
-        swipe.setMinYGyroscope(values[37] * (map.get("MAX_MIN_Y_GYROSCOPE") - map.get("MIN_MIN_Y_GYROSCOPE")) + map.get("MIN_MIN_Y_GYROSCOPE"));
-        swipe.setMaxYGyroscope(values[38] * (map.get("MAX_MAX_Y_GYROSCOPE") - map.get("MIN_MAX_Y_GYROSCOPE")) + map.get("MIN_MAX_Y_GYROSCOPE"));
-        swipe.setAvgYGyroscope(values[39] * (map.get("MAX_AVG_Y_GYROSCOPE") - map.get("MIN_AVG_Y_GYROSCOPE")) + map.get("MIN_AVG_Y_GYROSCOPE"));
-        swipe.setStdYGyroscope(values[40] * (map.get("MAX_STD_Y_GYROSCOPE") - map.get("MIN_STD_Y_GYROSCOPE")) + map.get("MIN_STD_Y_GYROSCOPE"));
-        swipe.setVarYGyroscope(values[41] * (map.get("MAX_VAR_Y_GYROSCOPE") - map.get("MIN_VAR_Y_GYROSCOPE")) + map.get("MIN_VAR_Y_GYROSCOPE"));
-        swipe.setMinZGyroscope(values[42] * (map.get("MAX_MIN_Z_GYROSCOPE") - map.get("MIN_MIN_Z_GYROSCOPE")) + map.get("MIN_MIN_Z_GYROSCOPE"));
-        swipe.setMaxZGyroscope(values[43] * (map.get("MAX_MAX_Z_GYROSCOPE") - map.get("MIN_MAX_Z_GYROSCOPE")) + map.get("MIN_MAX_Z_GYROSCOPE"));
-        swipe.setAvgZGyroscope(values[44] * (map.get("MAX_AVG_Z_GYROSCOPE") - map.get("MIN_AVG_Z_GYROSCOPE")) + map.get("MIN_AVG_Z_GYROSCOPE"));
-        swipe.setStdZGyroscope(values[45] * (map.get("MAX_STD_Z_GYROSCOPE") - map.get("MIN_STD_Z_GYROSCOPE")) + map.get("MIN_STD_Z_GYROSCOPE"));
-        swipe.setVarZGyroscope(values[46] * (map.get("MAX_VAR_Z_GYROSCOPE") - map.get("MIN_VAR_Z_GYROSCOPE")) + map.get("MIN_VAR_Z_GYROSCOPE"));
+        swipe.setMinXGyroscope(values[35] * (map.get("MAX_MIN_X_GYROSCOPE") - map.get("MIN_MIN_X_GYROSCOPE")) + map.get("MIN_MIN_X_GYROSCOPE"));
+        swipe.setMaxXGyroscope(values[36] * (map.get("MAX_MAX_X_GYROSCOPE") - map.get("MIN_MAX_X_GYROSCOPE")) + map.get("MIN_MAX_X_GYROSCOPE"));
+        swipe.setAvgXGyroscope(values[37] * (map.get("MAX_AVG_X_GYROSCOPE") - map.get("MIN_AVG_X_GYROSCOPE")) + map.get("MIN_AVG_X_GYROSCOPE"));
+        swipe.setStdXGyroscope(values[38] * (map.get("MAX_STD_X_GYROSCOPE") - map.get("MIN_STD_X_GYROSCOPE")) + map.get("MIN_STD_X_GYROSCOPE"));
+        swipe.setVarXGyroscope(values[39] * (map.get("MAX_VAR_X_GYROSCOPE") - map.get("MIN_VAR_X_GYROSCOPE")) + map.get("MIN_VAR_X_GYROSCOPE"));
+        swipe.setMinYGyroscope(values[40] * (map.get("MAX_MIN_Y_GYROSCOPE") - map.get("MIN_MIN_Y_GYROSCOPE")) + map.get("MIN_MIN_Y_GYROSCOPE"));
+        swipe.setMaxYGyroscope(values[41] * (map.get("MAX_MAX_Y_GYROSCOPE") - map.get("MIN_MAX_Y_GYROSCOPE")) + map.get("MIN_MAX_Y_GYROSCOPE"));
+        swipe.setAvgYGyroscope(values[42] * (map.get("MAX_AVG_Y_GYROSCOPE") - map.get("MIN_AVG_Y_GYROSCOPE")) + map.get("MIN_AVG_Y_GYROSCOPE"));
+        swipe.setStdYGyroscope(values[43] * (map.get("MAX_STD_Y_GYROSCOPE") - map.get("MIN_STD_Y_GYROSCOPE")) + map.get("MIN_STD_Y_GYROSCOPE"));
+        swipe.setVarYGyroscope(values[44] * (map.get("MAX_VAR_Y_GYROSCOPE") - map.get("MIN_VAR_Y_GYROSCOPE")) + map.get("MIN_VAR_Y_GYROSCOPE"));
+        swipe.setMinZGyroscope(values[45] * (map.get("MAX_MIN_Z_GYROSCOPE") - map.get("MIN_MIN_Z_GYROSCOPE")) + map.get("MIN_MIN_Z_GYROSCOPE"));
+        swipe.setMaxZGyroscope(values[46] * (map.get("MAX_MAX_Z_GYROSCOPE") - map.get("MIN_MAX_Z_GYROSCOPE")) + map.get("MIN_MAX_Z_GYROSCOPE"));
+        swipe.setAvgZGyroscope(values[47] * (map.get("MAX_AVG_Z_GYROSCOPE") - map.get("MIN_AVG_Z_GYROSCOPE")) + map.get("MIN_AVG_Z_GYROSCOPE"));
+        swipe.setStdZGyroscope(values[48] * (map.get("MAX_STD_Z_GYROSCOPE") - map.get("MIN_STD_Z_GYROSCOPE")) + map.get("MIN_STD_Z_GYROSCOPE"));
+        swipe.setVarZGyroscope(values[49] * (map.get("MAX_VAR_Z_GYROSCOPE") - map.get("MIN_VAR_Z_GYROSCOPE")) + map.get("MIN_VAR_Z_GYROSCOPE"));
 
-        swipe.setMinXOrientation(values[47] * (map.get("MAX_MIN_X_ORIENTATION") - map.get("MIN_MIN_X_ORIENTATION")) + map.get("MIN_MIN_X_ORIENTATION"));
-        swipe.setMaxXOrientation(values[48] * (map.get("MAX_MAX_X_ORIENTATION") - map.get("MIN_MAX_X_ORIENTATION")) + map.get("MIN_MAX_X_ORIENTATION"));
-        swipe.setAvgXOrientation(values[49] * (map.get("MAX_AVG_X_ORIENTATION") - map.get("MIN_AVG_X_ORIENTATION")) + map.get("MIN_AVG_X_ORIENTATION"));
-        swipe.setStdXOrientation(values[50] * (map.get("MAX_STD_X_ORIENTATION") - map.get("MIN_STD_X_ORIENTATION")) + map.get("MIN_STD_X_ORIENTATION"));
-        swipe.setVarXOrientation(values[51] * (map.get("MAX_VAR_X_ORIENTATION") - map.get("MIN_VAR_X_ORIENTATION")) + map.get("MIN_VAR_X_ORIENTATION"));
-        swipe.setMinYOrientation(values[52] * (map.get("MAX_MIN_Y_ORIENTATION") - map.get("MIN_MIN_Y_ORIENTATION")) + map.get("MIN_MIN_Y_ORIENTATION"));
-        swipe.setMaxYOrientation(values[53] * (map.get("MAX_MAX_Y_ORIENTATION") - map.get("MIN_MAX_Y_ORIENTATION")) + map.get("MIN_MAX_Y_ORIENTATION"));
-        swipe.setAvgYOrientation(values[54] * (map.get("MAX_AVG_Y_ORIENTATION") - map.get("MIN_AVG_Y_ORIENTATION")) + map.get("MIN_AVG_Y_ORIENTATION"));
-        swipe.setStdYOrientation(values[55] * (map.get("MAX_STD_Y_ORIENTATION") - map.get("MIN_STD_Y_ORIENTATION")) + map.get("MIN_STD_Y_ORIENTATION"));
-        swipe.setVarYOrientation(values[56] * (map.get("MAX_VAR_Y_ORIENTATION") - map.get("MIN_VAR_Y_ORIENTATION")) + map.get("MIN_VAR_Y_ORIENTATION"));
-        swipe.setMinZOrientation(values[57] * (map.get("MAX_MIN_Z_ORIENTATION") - map.get("MIN_MIN_Z_ORIENTATION")) + map.get("MIN_MIN_Z_ORIENTATION"));
-        swipe.setMaxZOrientation(values[58] * (map.get("MAX_MAX_Z_ORIENTATION") - map.get("MIN_MAX_Z_ORIENTATION")) + map.get("MIN_MAX_Z_ORIENTATION"));
-        swipe.setAvgZOrientation(values[59] * (map.get("MAX_AVG_Z_ORIENTATION") - map.get("MIN_AVG_Z_ORIENTATION")) + map.get("MIN_AVG_Z_ORIENTATION"));
-        swipe.setStdZOrientation(values[60] * (map.get("MAX_STD_Z_ORIENTATION") - map.get("MIN_STD_Z_ORIENTATION")) + map.get("MIN_STD_Z_ORIENTATION"));
-        swipe.setVarZOrientation(values[61] * (map.get("MAX_VAR_Z_ORIENTATION") - map.get("MIN_VAR_Z_ORIENTATION")) + map.get("MIN_VAR_Z_ORIENTATION"));
+        swipe.setMinXOrientation(values[50] * (map.get("MAX_MIN_X_ORIENTATION") - map.get("MIN_MIN_X_ORIENTATION")) + map.get("MIN_MIN_X_ORIENTATION"));
+        swipe.setMaxXOrientation(values[51] * (map.get("MAX_MAX_X_ORIENTATION") - map.get("MIN_MAX_X_ORIENTATION")) + map.get("MIN_MAX_X_ORIENTATION"));
+        swipe.setAvgXOrientation(values[52] * (map.get("MAX_AVG_X_ORIENTATION") - map.get("MIN_AVG_X_ORIENTATION")) + map.get("MIN_AVG_X_ORIENTATION"));
+        swipe.setStdXOrientation(values[53] * (map.get("MAX_STD_X_ORIENTATION") - map.get("MIN_STD_X_ORIENTATION")) + map.get("MIN_STD_X_ORIENTATION"));
+        swipe.setVarXOrientation(values[54] * (map.get("MAX_VAR_X_ORIENTATION") - map.get("MIN_VAR_X_ORIENTATION")) + map.get("MIN_VAR_X_ORIENTATION"));
+        swipe.setMinYOrientation(values[55] * (map.get("MAX_MIN_Y_ORIENTATION") - map.get("MIN_MIN_Y_ORIENTATION")) + map.get("MIN_MIN_Y_ORIENTATION"));
+        swipe.setMaxYOrientation(values[56] * (map.get("MAX_MAX_Y_ORIENTATION") - map.get("MIN_MAX_Y_ORIENTATION")) + map.get("MIN_MAX_Y_ORIENTATION"));
+        swipe.setAvgYOrientation(values[57] * (map.get("MAX_AVG_Y_ORIENTATION") - map.get("MIN_AVG_Y_ORIENTATION")) + map.get("MIN_AVG_Y_ORIENTATION"));
+        swipe.setStdYOrientation(values[58] * (map.get("MAX_STD_Y_ORIENTATION") - map.get("MIN_STD_Y_ORIENTATION")) + map.get("MIN_STD_Y_ORIENTATION"));
+        swipe.setVarYOrientation(values[59] * (map.get("MAX_VAR_Y_ORIENTATION") - map.get("MIN_VAR_Y_ORIENTATION")) + map.get("MIN_VAR_Y_ORIENTATION"));
+        swipe.setMinZOrientation(values[60] * (map.get("MAX_MIN_Z_ORIENTATION") - map.get("MIN_MIN_Z_ORIENTATION")) + map.get("MIN_MIN_Z_ORIENTATION"));
+        swipe.setMaxZOrientation(values[61] * (map.get("MAX_MAX_Z_ORIENTATION") - map.get("MIN_MAX_Z_ORIENTATION")) + map.get("MIN_MAX_Z_ORIENTATION"));
+        swipe.setAvgZOrientation(values[62] * (map.get("MAX_AVG_Z_ORIENTATION") - map.get("MIN_AVG_Z_ORIENTATION")) + map.get("MIN_AVG_Z_ORIENTATION"));
+        swipe.setStdZOrientation(values[63] * (map.get("MAX_STD_Z_ORIENTATION") - map.get("MIN_STD_Z_ORIENTATION")) + map.get("MIN_STD_Z_ORIENTATION"));
+        swipe.setVarZOrientation(values[64] * (map.get("MAX_VAR_Z_ORIENTATION") - map.get("MIN_VAR_Z_ORIENTATION")) + map.get("MIN_VAR_Z_ORIENTATION"));
 
         swipe.setHoldingPosition(holdingPosition);
 
@@ -864,9 +908,13 @@ public class Swipe {
     }
 
     public double[] toArray() {
-        return new double[] {this.duration,
+        return new double[] {
+                this.duration,
+                this.minSize,
+                this.maxSize,
                 this.avgSize,
                 this.downSize,
+                this.upSize,
                 this.startX,
                 this.startY,
                 this.endX,
@@ -932,8 +980,11 @@ public class Swipe {
     public String toString() {
         return "Swipe{" +
                 "duration=" + duration +
+                "\n minSize=" + minSize +
+                "\n maxSize=" + maxSize +
                 "\n avgSize=" + avgSize +
                 "\n downSize=" + downSize +
+                "\n upSize=" + upSize +
                 "\n startX=" + startX +
                 "\n startY=" + startY +
                 "\n endX=" + endX +
@@ -1004,14 +1055,20 @@ public class Swipe {
         boolean useAngularVelocity = featureData.get(1) == 1;
         boolean useOrientation = featureData.get(2) == 1;
         boolean useSwipeDuration = featureData.get(3) == 1;
-        boolean useSwipeStartEndPos = featureData.get(4) == 1;
-        boolean useSwipeVelocity = featureData.get(5) == 1;
+        boolean useSwipeSize = featureData.get(4) == 1;
+        boolean useSwipeStartEndPos = featureData.get(5) == 1;
+        boolean useSwipeVelocity = featureData.get(6) == 1;
 
         ArrayList<Double> featureSet = new ArrayList<>();
         if(useSwipeDuration) {
             featureSet.add(this.getDuration());
+        }
+        if(useSwipeSize) {
+            featureSet.add(this.getMinSize());
+            featureSet.add(this.getMaxSize());
             featureSet.add(this.getAvgSize());
             featureSet.add(this.getDownSize());
+            featureSet.add(this.getUpSize());
         }
         if(useSwipeStartEndPos) {
             featureSet.add(this.getStartX());

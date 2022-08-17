@@ -429,8 +429,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         double duration = this.duration;
 
         DoubleSummaryStatistics sizesStats = this.sizes.stream().mapToDouble(x -> (double) x).summaryStatistics();
+        double minSize = sizesStats.getMin();
+        double maxSize = sizesStats.getMax();
         double avgSize = sizesStats.getAverage();
         double downSize = this.sizes.get(0);
+        double upSize = this.sizes.get(this.sizes.size() - 1);
 
         double startX = this.xLocations.get(0);
         double startY = this.yLocations.get(0);
@@ -515,9 +518,15 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         double stdZOrientation = Math.sqrt(varZOrientation);
 
         Swipe newSwipe = new Swipe();
+
         newSwipe.setDuration(duration);
+
+        newSwipe.setMinSize(minSize);
+        newSwipe.setMaxSize(maxSize);
         newSwipe.setAvgSize(avgSize);
         newSwipe.setDownSize(downSize);
+        newSwipe.setUpSize(upSize);
+
         newSwipe.setStartX(startX);
         newSwipe.setStartY(startY);
         newSwipe.setEndX(endX);
@@ -738,11 +747,14 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         CheckBox swipeDurationCheckBox = popupView.findViewById(R.id.swipeDurationCheckBox);
         swipeDurationCheckBox.setChecked(featureData.get(3) == 1);
 
+        CheckBox swipeTouchSizeCheckBox = popupView.findViewById(R.id.swipeTouchSizeCheckBox);
+        swipeTouchSizeCheckBox.setChecked(featureData.get(4) == 1);
+
         CheckBox swipeStartEndPosCheckBox = popupView.findViewById(R.id.swipeStartEndPosCheckBox);
-        swipeStartEndPosCheckBox.setChecked(featureData.get(4) == 1);
+        swipeStartEndPosCheckBox.setChecked(featureData.get(5) == 1);
 
         CheckBox swipeVelocityCheckBox = popupView.findViewById(R.id.swipeVelocityCheckBox);
-        swipeVelocityCheckBox.setChecked(featureData.get(5) == 1);
+        swipeVelocityCheckBox.setChecked(featureData.get(6) == 1);
 
         Button saveProfileButton = popupView.findViewById(R.id.saveProfileButton);
         saveProfileButton.setOnClickListener(new View.OnClickListener() {
@@ -752,6 +764,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     angularVelocityCheckBox.isChecked() ||
                     orientationCheckBox.isChecked() ||
                     swipeDurationCheckBox.isChecked() ||
+                    swipeTouchSizeCheckBox.isChecked() ||
                     swipeStartEndPosCheckBox.isChecked() ||
                     swipeVelocityCheckBox.isChecked()
                 ) {
@@ -760,6 +773,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                             angularVelocityCheckBox.isChecked() ? 1 : 0,
                             orientationCheckBox.isChecked() ? 1 : 0,
                             swipeDurationCheckBox.isChecked() ? 1 : 0,
+                            swipeTouchSizeCheckBox.isChecked() ? 1 : 0,
                             swipeStartEndPosCheckBox.isChecked() ? 1 : 0,
                             swipeVelocityCheckBox.isChecked() ? 1 : 0
                     );
@@ -1025,7 +1039,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     public void trainClassifierWith(ArrayList<Swipe> trainSwipes) {
-
         Instances dataSet = this.getWekaDataset();
 
         for(int i=0 ; i < trainSwipes.size(); i++)
@@ -1123,8 +1136,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     public Instances getWekaDataset() {
         Attribute duration = new Attribute("duration");
+        Attribute minSize = new Attribute("minSize");
+        Attribute maxSize = new Attribute("maxSize");
         Attribute avgSize = new Attribute("avgSize");
         Attribute downSize = new Attribute("downSize");
+        Attribute upSize = new Attribute("upSize");
         Attribute startX = new Attribute("startX");
         Attribute startY = new Attribute("startY");
         Attribute endX = new Attribute("endX");
@@ -1195,14 +1211,20 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         boolean useAngularVelocity = featureData.get(1) == 1;
         boolean useOrientation = featureData.get(2) == 1;
         boolean useSwipeDuration = featureData.get(3) == 1;
-        boolean useSwipeStartEndPos = featureData.get(4) == 1;
-        boolean useSwipeVelocity = featureData.get(5) == 1;
+        boolean useSwipeSize = featureData.get(4) == 1;
+        boolean useSwipeStartEndPos = featureData.get(5) == 1;
+        boolean useSwipeVelocity = featureData.get(6) == 1;
 
         ArrayList<Attribute> attributes = new ArrayList<>();
         if(useSwipeDuration) {
             attributes.add(duration);
+        }
+        if(useSwipeSize) {
+            attributes.add(minSize);
+            attributes.add(maxSize);
             attributes.add(avgSize);
             attributes.add(downSize);
+            attributes.add(upSize);
         }
         if(useSwipeStartEndPos) {
             attributes.add(startX);
