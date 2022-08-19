@@ -342,7 +342,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                         }
 
                         int classifierSamples = this.dbHelper.getRecordsCount("REAL_SWIPES");
-                        this.dbHelper.addTestRecord(swipe, authenticationValue, testingTime, classifierSamples);
+
+                        swipe.setAuthentication(authenticationValue);
+                        swipe.setAuthenticationTime(testingTime);
+                        swipe.setClassifierSamples(classifierSamples);
+                        this.dbHelper.addTestRecord(swipe);
 
                         outputMessage += String.format("%1$-18s", String.format("%02d", classifierSamples));
                         outputMessage += String.format("%1$-18s", prediction == 0.0 ? "Accepted" : "Rejected");
@@ -833,7 +837,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             strSummary += "\n";
 
             //for (int i=0; i < this.oneClassClassifiers.size(); i++) {
-            ArrayList<Swipe> testSwipes = dbHelper.getTestSwipes();
+            ArrayList<Swipe> testSwipes = dbHelper.getAllSwipes("TEST_SWIPES");
 
             if (testSwipes.size() == 0) {
                 this.showAlertDialog("ATTENTION", "You need to enter at least a swipe to test the authentication system");
