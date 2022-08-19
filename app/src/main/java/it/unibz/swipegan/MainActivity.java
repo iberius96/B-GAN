@@ -57,8 +57,6 @@ import static android.Manifest.permission.READ_EXTERNAL_STORAGE;
 import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
-    private static final int NUMBER_GAN_SAMPLES = 100;
-
     private long startTime = 0;
     private boolean isTrainingMode = true;
     private boolean isTrainingClassifier = false;
@@ -963,9 +961,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
                     uiHandler.post(uiRFTrainingRunnable);
 
-                    trainClassifierWith(swipes, ganTime);
+                    trainClassifierWith(swipes, true, ganTime);
                 } else {
-                    trainClassifierWith(swipes);
+                    trainClassifierWith(swipes, false, 0.0);
                 }
 
                 uiHandler.post(uiRunnable);
@@ -978,7 +976,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         new Thread(runnable).start();
 
     }
-    public void trainClassifierWith(ArrayList<Swipe> trainSwipes, double ganTime) {
+
+    public void trainClassifierWith(ArrayList<Swipe> trainSwipes, boolean hasGan, double ganTime) {
         Instances dataSet = this.getWekaDataset();
 
         for(int i=0 ; i < trainSwipes.size(); i++)
@@ -988,7 +987,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         }
 
         String finalSummary = "";
-        finalSummary += String.format("%1$-9s %2$-9s %3$-9s %4$-9s %5$-9s", "Input", "TAR", "FRR", "GAN", "Train");
+        finalSummary += String.format("%1$-9s %2$-9s %3$-9s %4$-9s %5$-9s", "Input", "TAR", "FRR", hasGan ? "GAN" : "Swipe", "Train");
         finalSummary += "\n";
 
         System.out.println("ARFF representation of Dataset");
@@ -996,8 +995,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         OneClassClassifier oneClassClassifier = new OneClassClassifier();
         try {
-//            Options from Weka GUI when testing One-class RandomForest classifier:
-//            String[] options = {"-num", "weka.classifiers.meta.generators.GaussianGenerator -S 1 -M 0.0 -SD 1.0", "-nom", "weka.classifiers.meta.generators.NominalGenerator -S 1", "-trr", "0.1", "-tcl", "1", "-cvr", "10", "-cvf", "10.0", "-P", "0.5", "-S", "1", "-W", "weka.classifiers.meta.Bagging", "--", "-P", "100", "-S", "1", "-num-slots", "1", "-I", "10", "-W", "weka.classifiers.trees.RandomForest", "--", "-P", "100", "-I", "100", "-num-slots", "1", "-K", "0", "-M", "1.0", "-V", "0.001", "-S", "1", "", ""};
             String[] options = {"-num", "weka.classifiers.meta.generators.GaussianGenerator -S 1 -M 0.0 -SD 1.0", "-nom", "weka.classifiers.meta.generators.NominalGenerator -S 1", "-trr", "0.001", "-tcl", "1", "-cvr", "10", "-cvf", "10.0", "-P", "0.5", "-S", "1", "-W", "weka.classifiers.trees.RandomForest", "--", "-I", "100", "-num-slots", "1", "-K", "0", "-S", "1", "", "", "", "", "", "", "", ""};
             oneClassClassifier.setOptions(options);
             oneClassClassifier.setTargetClassLabel("User");
@@ -1021,11 +1018,15 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             finalSummary += String.format("%1$-12s", String.format("%02.0f", instances));
             finalSummary += String.format("%1$-10s", String.format("%.1f", TAR));
             finalSummary += String.format("%1$-11s", String.format("%.1f", FRR));
-            finalSummary += String.format("%1$-11s", String.format("%.3f", ganTime));
+            finalSummary += String.format("%1$-11s", String.format("%.3f", hasGan ? ganTime : averageSwipeDuration));
             finalSummary += String.format("%1$-10s", String.format("%.3f", rfTrainingTime));
             finalSummary += "\n";
 
-            this.dbHelper.saveGANResults(instances, TAR, FRR, averageSwipeDuration, rfTrainingTime, ganTime, trainSwipes.size());
+           if(hasGan) {
+               this.dbHelper.saveGANResults(instances, TAR, FRR, averageSwipeDuration, rfTrainingTime, ganTime, trainSwipes.size());
+           } else {
+               this.dbHelper.saveRealResults(instances, TAR, FRR, averageSwipeDuration, rfTrainingTime, trainSwipes.size());
+           }
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -1040,69 +1041,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         runOnUiThread(() -> context.enableUserInteraction());
         runOnUiThread(() -> context.showAlertDialog("TRAINING RESULTS", strSummary));
 
-    }
-
-    public void trainClassifierWith(ArrayList<Swipe> trainSwipes) {
-        Instances dataSet = this.getWekaDataset();
-
-        for(int i=0 ; i < trainSwipes.size(); i++)
-        {
-            Instance newInstance = trainSwipes.get(i).getAsWekaInstance(dataSet,true, dbHelper);
-            dataSet.add(newInstance);
-        }
-
-        String finalSummary = "";
-        finalSummary += String.format("%1$-9s %2$-9s %3$-9s %4$-9s %5$-9s", "Input", "TAR", "FRR", "Swipe", "Train");
-        finalSummary += "\n";
-
-        System.out.println("ARFF representation of Dataset");
-        System.out.println(dataSet.toString());
-
-        OneClassClassifier oneClassClassifier = new OneClassClassifier();
-        try {
-//            Options from Weka GUI when testing One-class RandomForest classifier:
-//            String[] options = {"-num", "weka.classifiers.meta.generators.GaussianGenerator -S 1 -M 0.0 -SD 1.0", "-nom", "weka.classifiers.meta.generators.NominalGenerator -S 1", "-trr", "0.1", "-tcl", "1", "-cvr", "10", "-cvf", "10.0", "-P", "0.5", "-S", "1", "-W", "weka.classifiers.meta.Bagging", "--", "-P", "100", "-S", "1", "-num-slots", "1", "-I", "10", "-W", "weka.classifiers.trees.RandomForest", "--", "-P", "100", "-I", "100", "-num-slots", "1", "-K", "0", "-M", "1.0", "-V", "0.001", "-S", "1", "", ""};
-            String[] options = {"-num", "weka.classifiers.meta.generators.GaussianGenerator -S 1 -M 0.0 -SD 1.0", "-nom", "weka.classifiers.meta.generators.NominalGenerator -S 1", "-trr", "0.001", "-tcl", "1", "-cvr", "10", "-cvf", "10.0", "-P", "0.5", "-S", "1", "-W", "weka.classifiers.trees.RandomForest", "--", "-I", "100", "-num-slots", "1", "-K", "0", "-S", "1", "", "", "", "", "", "", "", ""};
-            oneClassClassifier.setOptions(options);
-            oneClassClassifier.setTargetClassLabel("User");
-
-            long rfStartTime = System.nanoTime();
-            oneClassClassifier.buildClassifier(dataSet);
-            long rfEndTime = System.nanoTime();
-            double rfTrainingTime = (double) (rfEndTime - rfStartTime) / 1_000_000_000;
-
-            Evaluation eTest = new Evaluation(dataSet);
-            eTest.crossValidateModel(oneClassClassifier, dataSet, 5, new Random(1));
-
-            this.oneClassClassifier = oneClassClassifier;
-
-            double instances = eTest.numInstances();
-            double TAR = eTest.pctCorrect();
-            double FRR = eTest.pctUnclassified();
-
-            double averageSwipeDuration = trainSwipes.subList(0, dataSet.size()).stream().mapToDouble(Swipe::getDuration).average().getAsDouble() / 1_000;
-
-            finalSummary += String.format("%1$-12s", String.format("%02.0f", instances));
-            finalSummary += String.format("%1$-10s", String.format("%.1f", TAR));
-            finalSummary += String.format("%1$-11s", String.format("%.1f", FRR));
-            finalSummary += String.format("%1$-11s", String.format("%.3f", averageSwipeDuration));
-            finalSummary += String.format("%1$-10s", String.format("%.3f", rfTrainingTime));
-            finalSummary += "\n";
-
-            this.dbHelper.saveRealResults(instances, TAR, FRR, averageSwipeDuration, rfTrainingTime, trainSwipes.size());
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        System.out.println(finalSummary);
-        this.isTrainingClassifier = false;
-
-        final String strSummary = finalSummary;
-        MainActivity context = this;
-
-        runOnUiThread(() -> context.enableUserInteraction());
-        runOnUiThread(() -> context.showAlertDialog("TRAINING RESULTS", strSummary));
     }
 
     public synchronized void saveData(View view) {
@@ -1139,77 +1077,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     public Instances getWekaDataset() {
-        Attribute duration = new Attribute("duration");
-        Attribute minSize = new Attribute("minSize");
-        Attribute maxSize = new Attribute("maxSize");
-        Attribute avgSize = new Attribute("avgSize");
-        Attribute downSize = new Attribute("downSize");
-        Attribute upSize = new Attribute("upSize");
-        Attribute startX = new Attribute("startX");
-        Attribute startY = new Attribute("startY");
-        Attribute endX = new Attribute("endX");
-        Attribute endY = new Attribute("endY");
-        Attribute minXVelocity = new Attribute("minXVelocity");
-        Attribute maxXVelocity = new Attribute("maxXVelocity");
-        Attribute avgXVelocity = new Attribute("avgXVelocity");
-        Attribute stdXVelocity = new Attribute("stdXVelocity");
-        Attribute varXVelocity = new Attribute("varXVelocity");
-        Attribute minYVelocity = new Attribute("minYVelocity");
-        Attribute maxYVelocity = new Attribute("maxYVelocity");
-        Attribute avgYVelocity = new Attribute("avgYVelocity");
-        Attribute stdYVelocity = new Attribute("stdYVelocity");
-        Attribute varYVelocity = new Attribute("varYVelocity");
-        Attribute minXAccelerometer = new Attribute("minXAccelerometer");
-        Attribute maxXAccelerometer = new Attribute("maxXAccelerometer");
-        Attribute avgXAccelerometer = new Attribute("avgXAccelerometer");
-        Attribute stdXAccelerometer = new Attribute("stdXAccelerometer");
-        Attribute varXAccelerometer = new Attribute("varXAccelerometer");
-        Attribute minYAccelerometer = new Attribute("minYAccelerometer");
-        Attribute maxYAccelerometer = new Attribute("maxYAccelerometer");
-        Attribute avgYAccelerometer = new Attribute("avgYAccelerometer");
-        Attribute stdYAccelerometer = new Attribute("stdYAccelerometer");
-        Attribute varYAccelerometer = new Attribute("varYAccelerometer");
-        Attribute minZAccelerometer = new Attribute("minZAccelerometer");
-        Attribute maxZAccelerometer = new Attribute("maxZAccelerometer");
-        Attribute avgZAccelerometer = new Attribute("avgZAccelerometer");
-        Attribute stdZAccelerometer = new Attribute("stdZAccelerometer");
-        Attribute varZAccelerometer = new Attribute("varZAccelerometer");
-        Attribute minXGyroscope = new Attribute("minXGyroscope");
-        Attribute maxXGyroscope = new Attribute("maxXGyroscope");
-        Attribute avgXGyroscope = new Attribute("avgXGyroscope");
-        Attribute stdXGyroscope = new Attribute("stdXGyroscope");
-        Attribute varXGyroscope = new Attribute("varXGyroscope");
-        Attribute minYGyroscope = new Attribute("minYGyroscope");
-        Attribute maxYGyroscope = new Attribute("maxYGyroscope");
-        Attribute avgYGyroscope = new Attribute("avgYGyroscope");
-        Attribute stdYGyroscope = new Attribute("stdYGyroscope");
-        Attribute varYGyroscope = new Attribute("varYGyroscope");
-        Attribute minZGyroscope = new Attribute("minZGyroscope");
-        Attribute maxZGyroscope = new Attribute("maxZGyroscope");
-        Attribute avgZGyroscope = new Attribute("avgZGyroscope");
-        Attribute stdZGyroscope = new Attribute("stdZGyroscope");
-        Attribute varZGyroscope = new Attribute("varZGyroscope");
-        Attribute minXOrientation = new Attribute("minXOrientation");
-        Attribute maxXOrientation = new Attribute("maxXOrientation");
-        Attribute avgXOrientation = new Attribute("avgXOrientation");
-        Attribute stdXOrientation = new Attribute("stdXOrientation");
-        Attribute varXOrientation = new Attribute("varXOrientation");
-        Attribute minYOrientation = new Attribute("minYOrientation");
-        Attribute maxYOrientation = new Attribute("maxYOrientation");
-        Attribute avgYOrientation = new Attribute("avgYOrientation");
-        Attribute stdYOrientation = new Attribute("stdYOrientation");
-        Attribute varYOrientation = new Attribute("varYOrientation");
-        Attribute minZOrientation = new Attribute("minZOrientation");
-        Attribute maxZOrientation = new Attribute("maxZOrientation");
-        Attribute avgZOrientation = new Attribute("avgZOrientation");
-        Attribute stdZOrientation = new Attribute("stdZOrientation");
-        Attribute varZOrientation = new Attribute("varZOrientation");
-
-        ArrayList<String> myNominalValues = new ArrayList<>(2);
-        myNominalValues.add("User");
-        myNominalValues.add("Attacker");
-        Attribute owner = new Attribute("owner", myNominalValues);
-
         ArrayList<Integer> featureData = dbHelper.getFeatureData();
         boolean useAcceleration = featureData.get(0) == 1;
         boolean useAngularVelocity = featureData.get(1) == 1;
@@ -1221,84 +1088,89 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         ArrayList<Attribute> attributes = new ArrayList<>();
         if(useSwipeDuration) {
-            attributes.add(duration);
+            attributes.add(new Attribute("duration"));
         }
         if(useSwipeSize) {
-            attributes.add(minSize);
-            attributes.add(maxSize);
-            attributes.add(avgSize);
-            attributes.add(downSize);
-            attributes.add(upSize);
+            attributes.add(new Attribute("minSize"));
+            attributes.add(new Attribute("maxSize"));
+            attributes.add(new Attribute("avgSize"));
+            attributes.add(new Attribute("downSize"));
+            attributes.add(new Attribute("upSize"));
         }
         if(useSwipeStartEndPos) {
-            attributes.add(startX);
-            attributes.add(startY);
-            attributes.add(endX);
-            attributes.add(endY);
+            attributes.add(new Attribute("startX"));
+            attributes.add(new Attribute("startY"));
+            attributes.add(new Attribute("endX"));
+            attributes.add(new Attribute("endY"));
         }
         if(useSwipeVelocity) {
-            attributes.add(minXVelocity);
-            attributes.add(maxXVelocity);
-            attributes.add(avgXVelocity);
-            attributes.add(stdXVelocity);
-            attributes.add(varXVelocity);
-            attributes.add(minYVelocity);
-            attributes.add(maxYVelocity);
-            attributes.add(avgYVelocity);
-            attributes.add(stdYVelocity);
-            attributes.add(varYVelocity);
+            attributes.add(new Attribute("minXVelocity"));
+            attributes.add(new Attribute("maxXVelocity"));
+            attributes.add(new Attribute("avgXVelocity"));
+            attributes.add(new Attribute("stdXVelocity"));
+            attributes.add(new Attribute("varXVelocity"));
+            attributes.add(new Attribute("minYVelocity"));
+            attributes.add(new Attribute("maxYVelocity"));
+            attributes.add(new Attribute("avgYVelocity"));
+            attributes.add(new Attribute("stdYVelocity"));
+            attributes.add(new Attribute("varYVelocity"));
         }
         if(useAcceleration) {
-            attributes.add(minXAccelerometer);
-            attributes.add(maxXAccelerometer);
-            attributes.add(avgXAccelerometer);
-            attributes.add(stdXAccelerometer);
-            attributes.add(varXAccelerometer);
-            attributes.add(minYAccelerometer);
-            attributes.add(maxYAccelerometer);
-            attributes.add(avgYAccelerometer);
-            attributes.add(stdYAccelerometer);
-            attributes.add(varYAccelerometer);
-            attributes.add(minZAccelerometer);
-            attributes.add(maxZAccelerometer);
-            attributes.add(avgZAccelerometer);
-            attributes.add(stdZAccelerometer);
-            attributes.add(varZAccelerometer);
+            attributes.add(new Attribute("minXAccelerometer"));
+            attributes.add(new Attribute("maxXAccelerometer"));
+            attributes.add(new Attribute("avgXAccelerometer"));
+            attributes.add(new Attribute("stdXAccelerometer"));
+            attributes.add(new Attribute("varXAccelerometer"));
+            attributes.add(new Attribute("minYAccelerometer"));
+            attributes.add(new Attribute("maxYAccelerometer"));
+            attributes.add(new Attribute("avgYAccelerometer"));
+            attributes.add(new Attribute("stdYAccelerometer"));
+            attributes.add(new Attribute("varYAccelerometer"));
+            attributes.add(new Attribute("minZAccelerometer"));
+            attributes.add(new Attribute("maxZAccelerometer"));
+            attributes.add(new Attribute("avgZAccelerometer"));
+            attributes.add(new Attribute("stdZAccelerometer"));
+            attributes.add(new Attribute("varZAccelerometer"));
         }
         if(useAngularVelocity) {
-            attributes.add(minXGyroscope);
-            attributes.add(maxXGyroscope);
-            attributes.add(avgXGyroscope);
-            attributes.add(stdXGyroscope);
-            attributes.add(varXGyroscope);
-            attributes.add(minYGyroscope);
-            attributes.add(maxYGyroscope);
-            attributes.add(avgYGyroscope);
-            attributes.add(stdYGyroscope);
-            attributes.add(varYGyroscope);
-            attributes.add(minZGyroscope);
-            attributes.add(maxZGyroscope);
-            attributes.add(avgZGyroscope);
-            attributes.add(stdZGyroscope);
-            attributes.add(varZGyroscope);
+            attributes.add(new Attribute("minXGyroscope"));
+            attributes.add(new Attribute("maxXGyroscope"));
+            attributes.add(new Attribute("avgXGyroscope"));
+            attributes.add(new Attribute("stdXGyroscope"));
+            attributes.add(new Attribute("varXGyroscope"));
+            attributes.add(new Attribute("minYGyroscope"));
+            attributes.add(new Attribute("maxYGyroscope"));
+            attributes.add(new Attribute("avgYGyroscope"));
+            attributes.add(new Attribute("stdYGyroscope"));
+            attributes.add(new Attribute("varYGyroscope"));
+            attributes.add(new Attribute("minZGyroscope"));
+            attributes.add(new Attribute("maxZGyroscope"));
+            attributes.add(new Attribute("avgZGyroscope"));
+            attributes.add(new Attribute("stdZGyroscope"));
+            attributes.add(new Attribute("varZGyroscope"));
         }
         if(useOrientation) {
-            attributes.add(minXOrientation);
-            attributes.add(maxXOrientation);
-            attributes.add(avgXOrientation);
-            attributes.add(stdXOrientation);
-            attributes.add(varXOrientation);
-            attributes.add(minYOrientation);
-            attributes.add(maxYOrientation);
-            attributes.add(avgYOrientation);
-            attributes.add(stdYOrientation);
-            attributes.add(varYOrientation);
-            attributes.add(minZOrientation);
-            attributes.add(maxZOrientation);
-            attributes.add(avgZOrientation);
-            attributes.add(stdZOrientation);
-            attributes.add(varZOrientation);
+            attributes.add(new Attribute("minXOrientation"));
+            attributes.add(new Attribute("maxXOrientation"));
+            attributes.add(new Attribute("avgXOrientation"));
+            attributes.add(new Attribute("stdXOrientation"));
+            attributes.add(new Attribute("varXOrientation"));
+            attributes.add(new Attribute("minYOrientation"));
+            attributes.add(new Attribute("maxYOrientation"));
+            attributes.add(new Attribute("avgYOrientation"));
+            attributes.add(new Attribute("stdYOrientation"));
+            attributes.add(new Attribute("varYOrientation"));
+            attributes.add(new Attribute("minZOrientation"));
+            attributes.add(new Attribute("maxZOrientation"));
+            attributes.add(new Attribute("avgZOrientation"));
+            attributes.add(new Attribute("stdZOrientation"));
+            attributes.add(new Attribute("varZOrientation"));
         }
+
+        ArrayList<String> myNominalValues = new ArrayList<>(2);
+        myNominalValues.add("User");
+        myNominalValues.add("Attacker");
+        Attribute owner = new Attribute("owner", myNominalValues);
         attributes.add(owner);
 
         Instances dataSet = new Instances("swipes", attributes, 0);

@@ -750,18 +750,18 @@ public class Swipe {
             map.put("MIN_END_Y", map.get("MIN_END_Y") == null || swipe.getEndY() < map.get("MIN_END_Y") ? swipe.getEndY() : map.get("MIN_END_Y"));
             map.put("MAX_END_Y", map.get("MAX_END_Y") == null || swipe.getEndY() > map.get("MAX_END_Y") ? swipe.getEndY() : map.get("MAX_END_Y"));
 
-            for(int i = 0; i < DatabaseHelper.features.length; i++) {
-                for(int j = 0; j < DatabaseHelper.metrics.length; j++) {
-                    for(int x = 0; x < DatabaseHelper.dimensions.length; x++) {
-                        if (x == 2 && i == 0) { continue; }
+            for(String feature : DatabaseHelper.features) {
+                for(String metric : DatabaseHelper.metrics) {
+                    for(String dimension : DatabaseHelper.dimensions) {
+                        if (dimension == "Z" && feature == "Velocity") { continue; }
 
-                        String min_key = "MIN_" + DatabaseHelper.metrics[j].toUpperCase() + "_" + DatabaseHelper.dimensions[x] + "_" + DatabaseHelper.features[i].toUpperCase();
-                        String max_key = "MAX_" + DatabaseHelper.metrics[j].toUpperCase() + "_" + DatabaseHelper.dimensions[x] + "_" + DatabaseHelper.features[i].toUpperCase();
+                        String min_key = "MIN_" + metric.toUpperCase() + "_" + dimension + "_" + feature.toUpperCase();
+                        String max_key = "MAX_" + metric.toUpperCase() + "_" + dimension + "_" + feature.toUpperCase();
 
                         java.lang.reflect.Method cur_method = null;
                         Double cur_value = 0.0;
                         try {
-                            cur_method = swipe.getClass().getMethod("get" + DatabaseHelper.metrics[j] + DatabaseHelper.dimensions[x] + DatabaseHelper.features[i]);
+                            cur_method = swipe.getClass().getMethod("get" + metric + dimension + feature);
                             cur_value = (Double) cur_method.invoke(swipe);
                         } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
                             e.printStackTrace();
@@ -793,18 +793,18 @@ public class Swipe {
         ret.add((this.endX - map.get("MIN_END_X")) / (map.get("MAX_END_X") - map.get("MIN_END_X")));
         ret.add((this.endY - map.get("MIN_END_Y")) / (map.get("MAX_END_Y") - map.get("MIN_END_Y")));
 
-        for(int i = 0; i < DatabaseHelper.features.length; i++) {
-            for (int j = 0; j < DatabaseHelper.metrics.length; j++) {
-                for (int x = 0; x < DatabaseHelper.dimensions.length; x++) {
-                    if (x == 2 && i == 0) { continue; }
+        for(String feature : DatabaseHelper.features) {
+            for(String metric : DatabaseHelper.metrics) {
+                for(String dimension : DatabaseHelper.dimensions) {
+                    if (dimension == "Z" && feature == "Velocity") { continue; }
 
-                    String min_key = "MIN_" + DatabaseHelper.metrics[j].toUpperCase() + "_" + DatabaseHelper.dimensions[x] + "_" + DatabaseHelper.features[i].toUpperCase();
-                    String max_key = "MAX_" + DatabaseHelper.metrics[j].toUpperCase() + "_" + DatabaseHelper.dimensions[x] + "_" + DatabaseHelper.features[i].toUpperCase();
+                    String min_key = "MIN_" + metric.toUpperCase() + "_" + dimension + "_" + feature.toUpperCase();
+                    String max_key = "MAX_" + metric.toUpperCase() + "_" + dimension + "_" + feature.toUpperCase();
 
                     java.lang.reflect.Method cur_method = null;
                     Double cur_value = 0.0;
                     try {
-                        cur_method = this.getClass().getMethod("get" + DatabaseHelper.metrics[j] + DatabaseHelper.dimensions[x] + DatabaseHelper.features[i]);
+                        cur_method = this.getClass().getMethod("get" + metric + dimension + feature);
                         cur_value = (Double) cur_method.invoke(this);
                     } catch (IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
                         e.printStackTrace();
@@ -841,17 +841,17 @@ public class Swipe {
         swipe.setEndY(values[9] * (map.get("MAX_END_Y") - map.get("MIN_END_Y")) + map.get("MIN_END_Y"));
 
         Integer values_idx = 10;
-        for(int i = 0; i < DatabaseHelper.features.length; i++) {
-            for (int j = 0; j < DatabaseHelper.metrics.length; j++) {
-                for (int x = 0; x < DatabaseHelper.dimensions.length; x++) {
-                    if (x == 2 && i == 0) { continue; }
+        for(String feature : DatabaseHelper.features) {
+            for(String metric : DatabaseHelper.metrics) {
+                for(String dimension : DatabaseHelper.dimensions) {
+                    if (dimension == "Z" && feature == "Velocity") { continue; }
 
-                    String min_key = "MIN_" + DatabaseHelper.metrics[j].toUpperCase() + "_" + DatabaseHelper.dimensions[x] + "_" + DatabaseHelper.features[i].toUpperCase();
-                    String max_key = "MAX_" + DatabaseHelper.metrics[j].toUpperCase() + "_" + DatabaseHelper.dimensions[x] + "_" + DatabaseHelper.features[i].toUpperCase();
+                    String min_key = "MIN_" + metric.toUpperCase() + "_" + dimension + "_" + feature.toUpperCase();
+                    String max_key = "MAX_" + metric.toUpperCase() + "_" + dimension + "_" + feature.toUpperCase();
 
                     java.lang.reflect.Method cur_method = null;
                     try {
-                        cur_method = swipe.getClass().getMethod("set" + DatabaseHelper.metrics[j] + DatabaseHelper.dimensions[x] + DatabaseHelper.features[i], double.class);
+                        cur_method = swipe.getClass().getMethod("set" + metric + dimension + feature, double.class);
                         cur_method.invoke(swipe, values[values_idx] * (map.get(max_key) - map.get(min_key)) + map.get(min_key));
                     } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
                         e.printStackTrace();

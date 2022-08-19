@@ -364,17 +364,17 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         contentValues.put(COL_END_X, swipe.getEndX());
         contentValues.put(COL_END_Y, swipe.getEndY());
 
-        for(int i = 0; i < features.length; i++) {
-            for (int j = 0; j < metrics.length; j++) {
-                for (int x = 0; x < dimensions.length; x++) {
-                    if (x == 2 && i == 0) { continue; }
+        for(String feature : DatabaseHelper.features) {
+            for(String metric : DatabaseHelper.metrics) {
+                for(String dimension : DatabaseHelper.dimensions) {
+                    if (dimension == "Z" && feature == "Velocity") { continue; }
 
-                    String col_name = metrics[j].toLowerCase() + "_" + dimensions[x].toLowerCase() + "_" + features[i].toLowerCase();
+                    String col_name = metric.toLowerCase() + "_" + dimension.toLowerCase() + "_" + feature.toLowerCase();
 
                     java.lang.reflect.Method cur_method = null;
                     Double col_value = 0.0;
                     try {
-                        cur_method = swipe.getClass().getMethod("get" + metrics[j] + dimensions[x] + features[i]);
+                        cur_method = swipe.getClass().getMethod("get" + metric + dimension + feature);
                         col_value = (Double) cur_method.invoke(swipe);
                     } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
                         e.printStackTrace();
@@ -477,17 +477,17 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             swipe.setEndX(cursor.getDouble(cursor.getColumnIndex(COL_END_X)));
             swipe.setEndY(cursor.getDouble(cursor.getColumnIndex(COL_END_Y)));
 
-            for(int i = 0; i < features.length; i++) {
-                for (int j = 0; j < metrics.length; j++) {
-                    for (int x = 0; x < dimensions.length; x++) {
-                        if (x == 2 && i == 0) { continue; }
+            for(String feature : DatabaseHelper.features) {
+                for(String metric : DatabaseHelper.metrics) {
+                    for(String dimension : DatabaseHelper.dimensions) {
+                        if (dimension == "Z" && feature == "Velocity") { continue; }
 
-                        String col_name = metrics[j].toLowerCase() + "_" + dimensions[x].toLowerCase() + "_" + features[i].toLowerCase();
+                        String col_name = metric.toLowerCase() + "_" + dimension.toLowerCase() + "_" + feature.toLowerCase();
 
                         java.lang.reflect.Method cur_method = null;
                         Double cur_value = 0.0;
                         try {
-                            cur_method = swipe.getClass().getMethod("set" + metrics[j] + dimensions[x] + features[i], double.class);
+                            cur_method = swipe.getClass().getMethod("set" + metric + dimension + feature, double.class);
                             cur_method.invoke(swipe, cursor.getDouble(cursor.getColumnIndex(col_name)));
                         } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
                             e.printStackTrace();
