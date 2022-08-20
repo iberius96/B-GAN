@@ -94,7 +94,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     private DatabaseHelper dbHelper;
 
-    private OneClassClassifier oneClassClassifier;
+    private OneClassClassifier oneClassClassifiers[] = new OneClassClassifier[3];
     private GAN gan;
 
     private Button ganButton;
@@ -327,37 +327,39 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                         outputMessage += String.format("%1$-15s %2$-16s %3$-18s", "Inputs", "Prediction", "Test time");
                         outputMessage += "\n";
 
-                        long startTime = System.nanoTime();
-                        double prediction = this.getPredictionFrom(swipe);
-                        long endTime = System.nanoTime();
-                        double testingTime = (double) (endTime - startTime) / 1_000_000_000;
+                        for(DatabaseHelper.ModelType modelType : DatabaseHelper.ModelType.values()) {
+                            long startTime = System.nanoTime();
+                            double prediction = this.getPredictionFrom(swipe, modelType);
+                            long endTime = System.nanoTime();
+                            double testingTime = (double) (endTime - startTime) / 1_000_000_000;
 
-                        double authenticationValue;
-                        if (this.attackSwitch.isChecked()) {
-                            authenticationValue = prediction != 0.0 ? 1.0 : 0.0;
-                        } else {
-                            authenticationValue = prediction == 0.0 ? 1.0 : 0.0;
+                            double authenticationValue;
+                            if (this.attackSwitch.isChecked()) {
+                                authenticationValue = prediction != 0.0 ? 1.0 : 0.0;
+                            } else {
+                                authenticationValue = prediction == 0.0 ? 1.0 : 0.0;
+                            }
+
+                            int classifierSamples = this.dbHelper.getRecordsCount("REAL_SWIPES");
+
+                            swipe.setAuthentication(authenticationValue, modelType);
+                            swipe.setAuthenticationTime(testingTime, modelType);
+                            swipe.setClassifierSamples(classifierSamples);
+
+                            outputMessage += String.format("%1$-18s", String.format("%02d", classifierSamples));
+                            outputMessage += String.format("%1$-18s", prediction == 0.0 ? "Accepted" : "Rejected");
+                            outputMessage += String.format("%1$-18s", String.format("%.4f", testingTime));
+                            outputMessage += "\n";
+
+                            if(modelType == DatabaseHelper.ModelType.FULL) {
+                                if (prediction == 0.0) {
+                                    this.showSnackBar("Authentication: ACCEPTED", "#238823");
+                                } else {
+                                    this.showSnackBar("Authentication: REJECTED", "#D2222D");
+                                }
+                            }
                         }
-
-                        int classifierSamples = this.dbHelper.getRecordsCount("REAL_SWIPES");
-
-                        swipe.setAuthentication(authenticationValue);
-                        swipe.setAuthenticationTime(testingTime);
-                        swipe.setClassifierSamples(classifierSamples);
                         this.dbHelper.addTestRecord(swipe);
-
-                        outputMessage += String.format("%1$-18s", String.format("%02d", classifierSamples));
-                        outputMessage += String.format("%1$-18s", prediction == 0.0 ? "Accepted" : "Rejected");
-                        outputMessage += String.format("%1$-18s", String.format("%.4f", testingTime));
-                        outputMessage += "\n";
-
-                        //this.showAlertDialog("AUTHENTICATION", outputMessage);
-                        if (prediction == 0.0) {
-                            this.showSnackBar("Authentication: ACCEPTED", "#238823");
-                        } else {
-                            this.showSnackBar("Authentication: REJECTED", "#D2222D");
-                        }
-
                     }
 
                 }
@@ -371,33 +373,21 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         return super.onTouchEvent(event);
     }
 
-    private double getPredictionFrom(Swipe swipe) {
-        Instance instance = swipe.getAsWekaInstance(this.getWekaDataset(), false, dbHelper);
-        instance.setDataset(this.getWekaDataset());
+    private double getPredictionFrom(Swipe swipe, DatabaseHelper.ModelType modelType) {
+        Instance instance = swipe.getAsWekaInstance(this.getWekaDataset(DatabaseHelper.ModelType.FULL), false, dbHelper, DatabaseHelper.ModelType.FULL);
+        instance.setDataset(this.getWekaDataset(DatabaseHelper.ModelType.FULL));
 
         double prediction = 0.0;
 
         try {
             // classifyInstances returns the index of the most likely class identified (NaN if neither class was identified)
-            prediction = this.oneClassClassifier.classifyInstance(instance);
+            prediction = this.oneClassClassifiers[modelType.ordinal()].classifyInstance(instance);
             System.out.println("Prediction: " + prediction);
-            System.out.println("Distribution: " + Arrays.toString(this.oneClassClassifier.distributionForInstance(instance)));
+            System.out.println("Distribution: " + Arrays.toString(this.oneClassClassifiers[modelType.ordinal()].distributionForInstance(instance)));
         } catch (Exception e) {
             e.printStackTrace();
         }
         return prediction;
-    }
-    private double[] getDistributionFrom(Swipe swipe) {
-        double[] distribution = new double[1];
-
-        Instance instance = swipe.getAsWekaInstance(this.getWekaDataset(), false, dbHelper);
-        instance.setDataset(this.getWekaDataset());
-        try {
-            distribution = this.oneClassClassifier.distributionForInstance(instance);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return distribution;
     }
 
     public void resetValues() {
@@ -829,12 +819,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             this.dbHelper.resetDB(false);
             this.inputTextView.setText("Inputs " + this.dbHelper.getRecordsCount("REAL_SWIPES") + " (min 5)");
         } else {
-
             String strSummary = "";
             strSummary += String.format("%1$-9s %2$-9s %3$-9s %4$-9s %5$-9s %6$-9s %7$-9s %8$-9s", "Inputs", "TAR", "FRR", "TRR", "FAR", "Swipe", "Train", "Classifier");
             strSummary += "\n";
 
-            //for (int i=0; i < this.oneClassClassifiers.size(); i++) {
             ArrayList<Swipe> testSwipes = dbHelper.getAllSwipes("TEST_SWIPES");
 
             if (testSwipes.size() == 0) {
@@ -844,31 +832,37 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
             ArrayList<double[]> userTestingData = this.dbHelper.getTestingData("User");
             ArrayList<double[]> attackerTestingData = this.dbHelper.getTestingData("Attacker");
-            System.out.println(Arrays.toString(attackerTestingData.stream().mapToDouble(x -> x[0]).toArray()));
 
-            double instances = userTestingData.size() + attackerTestingData.size();
-            double TAR = userTestingData.isEmpty() ? 0.0 : userTestingData.stream().mapToDouble(x -> x[0]).sum() / userTestingData.size() * 100;
-            double FRR = userTestingData.isEmpty() ? 0.0 : (userTestingData.size() - (userTestingData.stream().mapToDouble(x -> x[0]).sum())) / userTestingData.size() * 100;
-            double TRR = attackerTestingData.isEmpty() ? 0.0 : (attackerTestingData.stream().mapToDouble(x -> x[0]).sum()) / attackerTestingData.size() * 100;
-            double FAR = attackerTestingData.isEmpty() ? 0.0 : (attackerTestingData.size() - (attackerTestingData.stream().mapToDouble(x -> x[0]).sum())) / attackerTestingData.size() * 100;
-            double averageSwipeDuration = testSwipes.stream().mapToDouble(Swipe::getDuration).average().getAsDouble() / 1_000.0;
+            for(DatabaseHelper.ModelType modelType : DatabaseHelper.ModelType.values()) {
+                int cur_idx = modelType.ordinal();
 
-            userTestingData.addAll(attackerTestingData);
-            double avgTestTime = userTestingData.stream().mapToDouble(x -> x[1]).average().getAsDouble();
+                System.out.println(Arrays.toString(attackerTestingData.stream().mapToDouble(x -> x[cur_idx]).toArray()));
 
-            int classifierSamples = this.dbHelper.getRecordsCount("REAL_SWIPES");
-            this.dbHelper.saveTestResults(instances, TAR, FRR, TRR, FAR, averageSwipeDuration, avgTestTime, classifierSamples);
+                double instances = userTestingData.size() + attackerTestingData.size();
+                double TAR = userTestingData.isEmpty() ? 0.0 : userTestingData.stream().mapToDouble(x -> x[cur_idx]).sum() / userTestingData.size() * 100;
+                double FRR = userTestingData.isEmpty() ? 0.0 : (userTestingData.size() - (userTestingData.stream().mapToDouble(x -> x[cur_idx]).sum())) / userTestingData.size() * 100;
+                double TRR = attackerTestingData.isEmpty() ? 0.0 : (attackerTestingData.stream().mapToDouble(x -> x[cur_idx]).sum()) / attackerTestingData.size() * 100;
+                double FAR = attackerTestingData.isEmpty() ? 0.0 : (attackerTestingData.size() - (attackerTestingData.stream().mapToDouble(x -> x[cur_idx]).sum())) / attackerTestingData.size() * 100;
+                double averageSwipeDuration = testSwipes.stream().mapToDouble(Swipe::getDuration).average().getAsDouble() / 1_000.0;
 
-            strSummary += String.format("%1$-12s", String.format("%02.0f", instances));
-            strSummary += String.format("%1$-10s", String.format("%.1f", TAR));
-            strSummary += String.format("%1$-11s", String.format("%.1f", FRR));
-            strSummary += String.format("%1$-10s", String.format("%.1f", TRR));
-            strSummary += String.format("%1$-11s", String.format("%.1f", FAR));
-            strSummary += String.format("%1$-11s", String.format("%.3f", averageSwipeDuration));
-            strSummary += String.format("%1$-10s", String.format("%.3f", avgTestTime));
-            strSummary += String.format("%1$-10s", String.format("%02d", classifierSamples));
-            strSummary += "\n";
-            //}
+                userTestingData.addAll(attackerTestingData);
+                double avgTestTime = userTestingData.stream().mapToDouble(x -> x[cur_idx+3]).average().getAsDouble();
+
+                int classifierSamples = this.dbHelper.getRecordsCount("REAL_SWIPES");
+                this.dbHelper.saveTestResults(instances, TAR, FRR, TRR, FAR, averageSwipeDuration, avgTestTime, classifierSamples, modelType);
+
+                if(modelType == DatabaseHelper.ModelType.FULL) {
+                    strSummary += String.format("%1$-12s", String.format("%02.0f", instances));
+                    strSummary += String.format("%1$-10s", String.format("%.1f", TAR));
+                    strSummary += String.format("%1$-11s", String.format("%.1f", FRR));
+                    strSummary += String.format("%1$-10s", String.format("%.1f", TRR));
+                    strSummary += String.format("%1$-11s", String.format("%.1f", FAR));
+                    strSummary += String.format("%1$-11s", String.format("%.3f", averageSwipeDuration));
+                    strSummary += String.format("%1$-10s", String.format("%.3f", avgTestTime));
+                    strSummary += String.format("%1$-10s", String.format("%02d", classifierSamples));
+                    strSummary += "\n";
+                }
+            }
 
             this.showAlertDialog("TESTING RESULTS", strSummary);
 
@@ -938,10 +932,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             this.holdingPositionRadioGroup.setVisibility(View.INVISIBLE);
         };
 
-        Runnable uiRFTrainingRunnable = () -> {
-            progressTextView.setText("Training classifier");
-        };
-
         Runnable runnable = () -> {
             dbHelper.deleteRealResults();
             dbHelper.deleteGANData();
@@ -959,11 +949,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     long ganEndTime = System.nanoTime();
                     double ganTime = (double) (ganEndTime - ganStartTime) / 1_000_000_000;
 
-                    uiHandler.post(uiRFTrainingRunnable);
-
-                    trainClassifierWith(swipes, true, ganTime);
+                    for(DatabaseHelper.ModelType modelType : DatabaseHelper.ModelType.values()) {
+                        uiHandler.post(() -> {progressTextView.setText("Training " + modelType.name() + " classifier");});
+                        trainClassifierWith(swipes, true, ganTime, modelType); }
                 } else {
-                    trainClassifierWith(swipes, false, 0.0);
+                    for(DatabaseHelper.ModelType modelType : DatabaseHelper.ModelType.values()) {
+                        uiHandler.post(() -> {progressTextView.setText("Training " + modelType.name() + " classifier");});
+                        trainClassifierWith(swipes, false, 0.0, modelType); }
                 }
 
                 uiHandler.post(uiRunnable);
@@ -977,12 +969,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     }
 
-    public void trainClassifierWith(ArrayList<Swipe> trainSwipes, boolean hasGan, double ganTime) {
-        Instances dataSet = this.getWekaDataset();
+    public void trainClassifierWith(ArrayList<Swipe> trainSwipes, boolean hasGan, double ganTime, DatabaseHelper.ModelType modelType) {
+        Instances dataSet = this.getWekaDataset(modelType);
 
         for(int i=0 ; i < trainSwipes.size(); i++)
         {
-            Instance newInstance = trainSwipes.get(i).getAsWekaInstance(dataSet,true, dbHelper);
+            Instance newInstance = trainSwipes.get(i).getAsWekaInstance(dataSet,true, dbHelper, modelType);
             dataSet.add(newInstance);
         }
 
@@ -1007,7 +999,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             Evaluation eTest = new Evaluation(dataSet);
             eTest.crossValidateModel(oneClassClassifier, dataSet, 5, new Random(1));
 
-            this.oneClassClassifier = oneClassClassifier;
+            this.oneClassClassifiers[modelType.ordinal()] = oneClassClassifier;
 
             double instances = eTest.numInstances();
             double TAR = eTest.pctCorrect();
@@ -1023,9 +1015,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             finalSummary += "\n";
 
            if(hasGan) {
-               this.dbHelper.saveGANResults(instances, TAR, FRR, averageSwipeDuration, rfTrainingTime, ganTime, trainSwipes.size());
+               this.dbHelper.saveGANResults(instances, TAR, FRR, averageSwipeDuration, rfTrainingTime, ganTime, trainSwipes.size(), modelType);
            } else {
-               this.dbHelper.saveRealResults(instances, TAR, FRR, averageSwipeDuration, rfTrainingTime, trainSwipes.size());
+               this.dbHelper.saveRealResults(instances, TAR, FRR, averageSwipeDuration, rfTrainingTime, trainSwipes.size(), modelType);
            }
 
         } catch (Exception e) {
@@ -1033,14 +1025,16 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         }
 
         System.out.println(finalSummary);
-        this.isTrainingClassifier = false;
 
-        final String strSummary = finalSummary;
-        MainActivity context = this;
+        if(modelType == DatabaseHelper.ModelType.FULL) {
+            this.isTrainingClassifier = false;
 
-        runOnUiThread(() -> context.enableUserInteraction());
-        runOnUiThread(() -> context.showAlertDialog("TRAINING RESULTS", strSummary));
+            final String strSummary = finalSummary;
+            MainActivity context = this;
 
+            runOnUiThread(() -> context.enableUserInteraction());
+            runOnUiThread(() -> context.showAlertDialog("TRAINING RESULTS", strSummary));
+        }
     }
 
     public synchronized void saveData(View view) {
@@ -1076,7 +1070,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         snackbar.show();
     }
 
-    public Instances getWekaDataset() {
+    public Instances getWekaDataset(DatabaseHelper.ModelType modelType) {
         ArrayList<Integer> featureData = dbHelper.getFeatureData();
         boolean useAcceleration = featureData.get(0) == 1;
         boolean useAngularVelocity = featureData.get(1) == 1;
@@ -1087,84 +1081,89 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         boolean useSwipeVelocity = featureData.get(6) == 1;
 
         ArrayList<Attribute> attributes = new ArrayList<>();
-        if(useSwipeDuration) {
-            attributes.add(new Attribute("duration"));
+
+        if(modelType != DatabaseHelper.ModelType.HOLD) {
+            if (useSwipeDuration) {
+                attributes.add(new Attribute("duration"));
+            }
+            if (useSwipeSize) {
+                attributes.add(new Attribute("minSize"));
+                attributes.add(new Attribute("maxSize"));
+                attributes.add(new Attribute("avgSize"));
+                attributes.add(new Attribute("downSize"));
+                attributes.add(new Attribute("upSize"));
+            }
+            if (useSwipeStartEndPos) {
+                attributes.add(new Attribute("startX"));
+                attributes.add(new Attribute("startY"));
+                attributes.add(new Attribute("endX"));
+                attributes.add(new Attribute("endY"));
+            }
+            if (useSwipeVelocity) {
+                attributes.add(new Attribute("minXVelocity"));
+                attributes.add(new Attribute("maxXVelocity"));
+                attributes.add(new Attribute("avgXVelocity"));
+                attributes.add(new Attribute("stdXVelocity"));
+                attributes.add(new Attribute("varXVelocity"));
+                attributes.add(new Attribute("minYVelocity"));
+                attributes.add(new Attribute("maxYVelocity"));
+                attributes.add(new Attribute("avgYVelocity"));
+                attributes.add(new Attribute("stdYVelocity"));
+                attributes.add(new Attribute("varYVelocity"));
+            }
         }
-        if(useSwipeSize) {
-            attributes.add(new Attribute("minSize"));
-            attributes.add(new Attribute("maxSize"));
-            attributes.add(new Attribute("avgSize"));
-            attributes.add(new Attribute("downSize"));
-            attributes.add(new Attribute("upSize"));
-        }
-        if(useSwipeStartEndPos) {
-            attributes.add(new Attribute("startX"));
-            attributes.add(new Attribute("startY"));
-            attributes.add(new Attribute("endX"));
-            attributes.add(new Attribute("endY"));
-        }
-        if(useSwipeVelocity) {
-            attributes.add(new Attribute("minXVelocity"));
-            attributes.add(new Attribute("maxXVelocity"));
-            attributes.add(new Attribute("avgXVelocity"));
-            attributes.add(new Attribute("stdXVelocity"));
-            attributes.add(new Attribute("varXVelocity"));
-            attributes.add(new Attribute("minYVelocity"));
-            attributes.add(new Attribute("maxYVelocity"));
-            attributes.add(new Attribute("avgYVelocity"));
-            attributes.add(new Attribute("stdYVelocity"));
-            attributes.add(new Attribute("varYVelocity"));
-        }
-        if(useAcceleration) {
-            attributes.add(new Attribute("minXAccelerometer"));
-            attributes.add(new Attribute("maxXAccelerometer"));
-            attributes.add(new Attribute("avgXAccelerometer"));
-            attributes.add(new Attribute("stdXAccelerometer"));
-            attributes.add(new Attribute("varXAccelerometer"));
-            attributes.add(new Attribute("minYAccelerometer"));
-            attributes.add(new Attribute("maxYAccelerometer"));
-            attributes.add(new Attribute("avgYAccelerometer"));
-            attributes.add(new Attribute("stdYAccelerometer"));
-            attributes.add(new Attribute("varYAccelerometer"));
-            attributes.add(new Attribute("minZAccelerometer"));
-            attributes.add(new Attribute("maxZAccelerometer"));
-            attributes.add(new Attribute("avgZAccelerometer"));
-            attributes.add(new Attribute("stdZAccelerometer"));
-            attributes.add(new Attribute("varZAccelerometer"));
-        }
-        if(useAngularVelocity) {
-            attributes.add(new Attribute("minXGyroscope"));
-            attributes.add(new Attribute("maxXGyroscope"));
-            attributes.add(new Attribute("avgXGyroscope"));
-            attributes.add(new Attribute("stdXGyroscope"));
-            attributes.add(new Attribute("varXGyroscope"));
-            attributes.add(new Attribute("minYGyroscope"));
-            attributes.add(new Attribute("maxYGyroscope"));
-            attributes.add(new Attribute("avgYGyroscope"));
-            attributes.add(new Attribute("stdYGyroscope"));
-            attributes.add(new Attribute("varYGyroscope"));
-            attributes.add(new Attribute("minZGyroscope"));
-            attributes.add(new Attribute("maxZGyroscope"));
-            attributes.add(new Attribute("avgZGyroscope"));
-            attributes.add(new Attribute("stdZGyroscope"));
-            attributes.add(new Attribute("varZGyroscope"));
-        }
-        if(useOrientation) {
-            attributes.add(new Attribute("minXOrientation"));
-            attributes.add(new Attribute("maxXOrientation"));
-            attributes.add(new Attribute("avgXOrientation"));
-            attributes.add(new Attribute("stdXOrientation"));
-            attributes.add(new Attribute("varXOrientation"));
-            attributes.add(new Attribute("minYOrientation"));
-            attributes.add(new Attribute("maxYOrientation"));
-            attributes.add(new Attribute("avgYOrientation"));
-            attributes.add(new Attribute("stdYOrientation"));
-            attributes.add(new Attribute("varYOrientation"));
-            attributes.add(new Attribute("minZOrientation"));
-            attributes.add(new Attribute("maxZOrientation"));
-            attributes.add(new Attribute("avgZOrientation"));
-            attributes.add(new Attribute("stdZOrientation"));
-            attributes.add(new Attribute("varZOrientation"));
+        if(modelType != DatabaseHelper.ModelType.SWIPE) {
+            if (useAcceleration) {
+                attributes.add(new Attribute("minXAccelerometer"));
+                attributes.add(new Attribute("maxXAccelerometer"));
+                attributes.add(new Attribute("avgXAccelerometer"));
+                attributes.add(new Attribute("stdXAccelerometer"));
+                attributes.add(new Attribute("varXAccelerometer"));
+                attributes.add(new Attribute("minYAccelerometer"));
+                attributes.add(new Attribute("maxYAccelerometer"));
+                attributes.add(new Attribute("avgYAccelerometer"));
+                attributes.add(new Attribute("stdYAccelerometer"));
+                attributes.add(new Attribute("varYAccelerometer"));
+                attributes.add(new Attribute("minZAccelerometer"));
+                attributes.add(new Attribute("maxZAccelerometer"));
+                attributes.add(new Attribute("avgZAccelerometer"));
+                attributes.add(new Attribute("stdZAccelerometer"));
+                attributes.add(new Attribute("varZAccelerometer"));
+            }
+            if (useAngularVelocity) {
+                attributes.add(new Attribute("minXGyroscope"));
+                attributes.add(new Attribute("maxXGyroscope"));
+                attributes.add(new Attribute("avgXGyroscope"));
+                attributes.add(new Attribute("stdXGyroscope"));
+                attributes.add(new Attribute("varXGyroscope"));
+                attributes.add(new Attribute("minYGyroscope"));
+                attributes.add(new Attribute("maxYGyroscope"));
+                attributes.add(new Attribute("avgYGyroscope"));
+                attributes.add(new Attribute("stdYGyroscope"));
+                attributes.add(new Attribute("varYGyroscope"));
+                attributes.add(new Attribute("minZGyroscope"));
+                attributes.add(new Attribute("maxZGyroscope"));
+                attributes.add(new Attribute("avgZGyroscope"));
+                attributes.add(new Attribute("stdZGyroscope"));
+                attributes.add(new Attribute("varZGyroscope"));
+            }
+            if (useOrientation) {
+                attributes.add(new Attribute("minXOrientation"));
+                attributes.add(new Attribute("maxXOrientation"));
+                attributes.add(new Attribute("avgXOrientation"));
+                attributes.add(new Attribute("stdXOrientation"));
+                attributes.add(new Attribute("varXOrientation"));
+                attributes.add(new Attribute("minYOrientation"));
+                attributes.add(new Attribute("maxYOrientation"));
+                attributes.add(new Attribute("avgYOrientation"));
+                attributes.add(new Attribute("stdYOrientation"));
+                attributes.add(new Attribute("varYOrientation"));
+                attributes.add(new Attribute("minZOrientation"));
+                attributes.add(new Attribute("maxZOrientation"));
+                attributes.add(new Attribute("avgZOrientation"));
+                attributes.add(new Attribute("stdZOrientation"));
+                attributes.add(new Attribute("varZOrientation"));
+            }
         }
 
         ArrayList<String> myNominalValues = new ArrayList<>(2);

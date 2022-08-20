@@ -79,8 +79,14 @@ public class Swipe {
     private String userId;
 
     // Test swipe features
-    private double authentication = 0.0;
-    private double authenticationTime = 0.0;
+    private double authenticationHold = 0.0;
+    private double authenticationSwipe = 0.0;
+    private double authenticationFull = 0.0;
+
+    private double authenticationTimeHold = 0.0;
+    private double authenticationTimeSwipe = 0.0;
+    private double authenticationTimeFull = 0.0;
+
     private int classifierSamples = 0;
 
     public Swipe() {
@@ -693,20 +699,44 @@ public class Swipe {
         this.userId = userId;
     }
 
-    public double getAuthentication() {
-        return authentication;
+    public double getAuthentication(DatabaseHelper.ModelType modelType) {
+        if (modelType == DatabaseHelper.ModelType.HOLD) {
+            return authenticationHold;
+        } else if(modelType == DatabaseHelper.ModelType.SWIPE) {
+            return authenticationSwipe;
+        } else {
+            return authenticationFull;
+        }
     }
 
-    public void setAuthentication(double authentication) {
-        this.authentication = authentication;
+    public void setAuthentication(double authentication, DatabaseHelper.ModelType modelType) {
+        if (modelType == DatabaseHelper.ModelType.HOLD) {
+            this.authenticationHold = authentication;
+        } else if(modelType == DatabaseHelper.ModelType.SWIPE) {
+            this.authenticationSwipe = authentication;
+        } else {
+            this.authenticationFull = authentication;
+        }
     }
 
-    public double getAuthenticationTime() {
-        return authenticationTime;
+    public double getAuthenticationTime(DatabaseHelper.ModelType modelType) {
+        if (modelType == DatabaseHelper.ModelType.HOLD) {
+            return authenticationTimeHold;
+        } else if(modelType == DatabaseHelper.ModelType.SWIPE) {
+            return authenticationTimeSwipe;
+        } else {
+            return authenticationTimeFull;
+        }
     }
 
-    public void setAuthenticationTime(double authenticationTime) {
-        this.authenticationTime = authenticationTime;
+    public void setAuthenticationTime(double authenticationTime, DatabaseHelper.ModelType modelType) {
+        if (modelType == DatabaseHelper.ModelType.HOLD) {
+            this.authenticationTimeHold = authenticationTime;
+        } else if(modelType == DatabaseHelper.ModelType.SWIPE) {
+            this.authenticationTimeSwipe = authenticationTime;
+        } else {
+            this.authenticationTimeFull = authenticationTime;
+        }
     }
 
     public int getClassifierSamples() {
@@ -941,7 +971,7 @@ public class Swipe {
                 '}';
     }
 
-    public Instance getAsWekaInstance(Instances dataSet, boolean isTrainInstance, DatabaseHelper dbHelper){
+    public Instance getAsWekaInstance(Instances dataSet, boolean isTrainInstance, DatabaseHelper dbHelper, DatabaseHelper.ModelType modelType){
         ArrayList<Integer> featureData = dbHelper.getFeatureData();
         boolean useAcceleration = featureData.get(0) == 1;
         boolean useAngularVelocity = featureData.get(1) == 1;
@@ -952,84 +982,89 @@ public class Swipe {
         boolean useSwipeVelocity = featureData.get(6) == 1;
 
         ArrayList<Double> featureSet = new ArrayList<>();
-        if(useSwipeDuration) {
-            featureSet.add(this.getDuration());
+
+        if(modelType != DatabaseHelper.ModelType.HOLD) {
+            if (useSwipeDuration) {
+                featureSet.add(this.getDuration());
+            }
+            if (useSwipeSize) {
+                featureSet.add(this.getMinSize());
+                featureSet.add(this.getMaxSize());
+                featureSet.add(this.getAvgSize());
+                featureSet.add(this.getDownSize());
+                featureSet.add(this.getUpSize());
+            }
+            if (useSwipeStartEndPos) {
+                featureSet.add(this.getStartX());
+                featureSet.add(this.getStartY());
+                featureSet.add(this.getEndX());
+                featureSet.add(this.getEndY());
+            }
+            if (useSwipeVelocity) {
+                featureSet.add(this.getMinXVelocity());
+                featureSet.add(this.getMaxXVelocity());
+                featureSet.add(this.getAvgXVelocity());
+                featureSet.add(this.getStdXVelocity());
+                featureSet.add(this.getVarXVelocity());
+                featureSet.add(this.getMinYVelocity());
+                featureSet.add(this.getMaxYVelocity());
+                featureSet.add(this.getAvgYVelocity());
+                featureSet.add(this.getStdYVelocity());
+                featureSet.add(this.getVarYVelocity());
+            }
         }
-        if(useSwipeSize) {
-            featureSet.add(this.getMinSize());
-            featureSet.add(this.getMaxSize());
-            featureSet.add(this.getAvgSize());
-            featureSet.add(this.getDownSize());
-            featureSet.add(this.getUpSize());
-        }
-        if(useSwipeStartEndPos) {
-            featureSet.add(this.getStartX());
-            featureSet.add(this.getStartY());
-            featureSet.add(this.getEndX());
-            featureSet.add(this.getEndY());
-        }
-        if(useSwipeVelocity) {
-            featureSet.add(this.getMinXVelocity());
-            featureSet.add(this.getMaxXVelocity());
-            featureSet.add(this.getAvgXVelocity());
-            featureSet.add(this.getStdXVelocity());
-            featureSet.add(this.getVarXVelocity());
-            featureSet.add(this.getMinYVelocity());
-            featureSet.add(this.getMaxYVelocity());
-            featureSet.add(this.getAvgYVelocity());
-            featureSet.add(this.getStdYVelocity());
-            featureSet.add(this.getVarYVelocity());
-        }
-        if(useAcceleration) {
-            featureSet.add(this.getMinXAccelerometer());
-            featureSet.add(this.getMaxXAccelerometer());
-            featureSet.add(this.getAvgXAccelerometer());
-            featureSet.add(this.getStdXAccelerometer());
-            featureSet.add(this.getVarXAccelerometer());
-            featureSet.add(this.getMinYAccelerometer());
-            featureSet.add(this.getMaxYAccelerometer());
-            featureSet.add(this.getAvgYAccelerometer());
-            featureSet.add(this.getStdYAccelerometer());
-            featureSet.add(this.getVarYAccelerometer());
-            featureSet.add(this.getMinZAccelerometer());
-            featureSet.add(this.getMaxZAccelerometer());
-            featureSet.add(this.getAvgZAccelerometer());
-            featureSet.add(this.getStdZAccelerometer());
-            featureSet.add(this.getVarZAccelerometer());
-        }
-        if(useAngularVelocity) {
-            featureSet.add(this.getMinXGyroscope());
-            featureSet.add(this.getMaxXGyroscope());
-            featureSet.add(this.getAvgXGyroscope());
-            featureSet.add(this.getStdXGyroscope());
-            featureSet.add(this.getVarXGyroscope());
-            featureSet.add(this.getMinYGyroscope());
-            featureSet.add(this.getMaxYGyroscope());
-            featureSet.add(this.getAvgYGyroscope());
-            featureSet.add(this.getStdYGyroscope());
-            featureSet.add(this.getVarYGyroscope());
-            featureSet.add(this.getMinZGyroscope());
-            featureSet.add(this.getMaxZGyroscope());
-            featureSet.add(this.getAvgZGyroscope());
-            featureSet.add(this.getStdZGyroscope());
-            featureSet.add(this.getVarZGyroscope());
-        }
-        if(useOrientation){
-            featureSet.add(this.getMinXOrientation());
-            featureSet.add(this.getMaxXOrientation());
-            featureSet.add(this.getAvgXOrientation());
-            featureSet.add(this.getStdXOrientation());
-            featureSet.add(this.getVarXOrientation());
-            featureSet.add(this.getMinYOrientation());
-            featureSet.add(this.getMaxYOrientation());
-            featureSet.add(this.getAvgYOrientation());
-            featureSet.add(this.getStdYOrientation());
-            featureSet.add(this.getVarYOrientation());
-            featureSet.add(this.getMinZOrientation());
-            featureSet.add(this.getMaxZOrientation());
-            featureSet.add(this.getAvgZOrientation());
-            featureSet.add(this.getStdZOrientation());
-            featureSet.add(this.getVarZOrientation());
+        if(modelType != DatabaseHelper.ModelType.SWIPE) {
+            if (useAcceleration) {
+                featureSet.add(this.getMinXAccelerometer());
+                featureSet.add(this.getMaxXAccelerometer());
+                featureSet.add(this.getAvgXAccelerometer());
+                featureSet.add(this.getStdXAccelerometer());
+                featureSet.add(this.getVarXAccelerometer());
+                featureSet.add(this.getMinYAccelerometer());
+                featureSet.add(this.getMaxYAccelerometer());
+                featureSet.add(this.getAvgYAccelerometer());
+                featureSet.add(this.getStdYAccelerometer());
+                featureSet.add(this.getVarYAccelerometer());
+                featureSet.add(this.getMinZAccelerometer());
+                featureSet.add(this.getMaxZAccelerometer());
+                featureSet.add(this.getAvgZAccelerometer());
+                featureSet.add(this.getStdZAccelerometer());
+                featureSet.add(this.getVarZAccelerometer());
+            }
+            if (useAngularVelocity) {
+                featureSet.add(this.getMinXGyroscope());
+                featureSet.add(this.getMaxXGyroscope());
+                featureSet.add(this.getAvgXGyroscope());
+                featureSet.add(this.getStdXGyroscope());
+                featureSet.add(this.getVarXGyroscope());
+                featureSet.add(this.getMinYGyroscope());
+                featureSet.add(this.getMaxYGyroscope());
+                featureSet.add(this.getAvgYGyroscope());
+                featureSet.add(this.getStdYGyroscope());
+                featureSet.add(this.getVarYGyroscope());
+                featureSet.add(this.getMinZGyroscope());
+                featureSet.add(this.getMaxZGyroscope());
+                featureSet.add(this.getAvgZGyroscope());
+                featureSet.add(this.getStdZGyroscope());
+                featureSet.add(this.getVarZGyroscope());
+            }
+            if (useOrientation) {
+                featureSet.add(this.getMinXOrientation());
+                featureSet.add(this.getMaxXOrientation());
+                featureSet.add(this.getAvgXOrientation());
+                featureSet.add(this.getStdXOrientation());
+                featureSet.add(this.getVarXOrientation());
+                featureSet.add(this.getMinYOrientation());
+                featureSet.add(this.getMaxYOrientation());
+                featureSet.add(this.getAvgYOrientation());
+                featureSet.add(this.getStdYOrientation());
+                featureSet.add(this.getVarYOrientation());
+                featureSet.add(this.getMinZOrientation());
+                featureSet.add(this.getMaxZOrientation());
+                featureSet.add(this.getAvgZOrientation());
+                featureSet.add(this.getStdZOrientation());
+                featureSet.add(this.getVarZOrientation());
+            }
         }
 
         Instance instance = new DenseInstance(featureSet.size() + 1);
