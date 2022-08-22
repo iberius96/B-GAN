@@ -1,26 +1,31 @@
 package it.unibz.swipegan;
 
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
+import static android.Manifest.permission.READ_EXTERNAL_STORAGE;
+import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
+import static it.unibz.swipegan.GAN.NUM_EPOCHS;
 
+import android.app.ActivityManager;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.os.BatteryManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.CpuUsageInfo;
+import android.os.Debug;
 import android.os.Environment;
 import android.os.Handler;
+import android.os.HardwarePropertiesManager;
 import android.os.Looper;
 import android.os.StrictMode;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
-import android.view.OrientationEventListener;
-import android.view.VelocityTracker;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -34,6 +39,12 @@ import android.widget.RadioGroup;
 import android.widget.Switch;
 import android.widget.TextView;
 
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+
+import com.google.android.material.snackbar.Snackbar;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -41,20 +52,10 @@ import java.util.DoubleSummaryStatistics;
 import java.util.Random;
 
 import weka.classifiers.evaluation.Evaluation;
+import weka.classifiers.meta.OneClassClassifier;
+import weka.core.Attribute;
 import weka.core.Instance;
 import weka.core.Instances;
-import weka.core.Attribute;
-import weka.classifiers.meta.OneClassClassifier;
-
-import android.content.pm.PackageManager;
-import androidx.core.app.ActivityCompat;
-
-import com.google.android.material.snackbar.Snackbar;
-
-import static it.unibz.swipegan.GAN.NUM_EPOCHS;
-
-import static android.Manifest.permission.READ_EXTERNAL_STORAGE;
-import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
     private long startTime = 0;
@@ -374,8 +375,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     private double getPredictionFrom(Swipe swipe, DatabaseHelper.ModelType modelType) {
-        Instance instance = swipe.getAsWekaInstance(this.getWekaDataset(DatabaseHelper.ModelType.FULL), false, dbHelper, DatabaseHelper.ModelType.FULL);
-        instance.setDataset(this.getWekaDataset(DatabaseHelper.ModelType.FULL));
+        Instance instance = swipe.getAsWekaInstance(this.getWekaDataset(modelType), false, dbHelper, modelType);
+        instance.setDataset(this.getWekaDataset(modelType));
 
         double prediction = 0.0;
 
@@ -936,10 +937,17 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             dbHelper.deleteRealResults();
             dbHelper.deleteGANData();
             dbHelper.deleteTestingData();
+            dbHelper.deleteResourceData();
 
             ArrayList<Swipe> swipes = dbHelper.getAllSwipes("REAL_SWIPES");
             try {
                 if (isGanMode) {
+                    ResourceMonitor resourceMonitor = new ResourceMonitor();
+                    resourceMonitor.start(
+                            (ActivityManager) getSystemService(ACTIVITY_SERVICE),
+                            (BatteryManager) getSystemService(BATTERY_SERVICE)
+                    );
+
                     long ganStartTime = System.nanoTime();
                     ArrayList<Swipe> fakeSwipes = gan.getFakeSwipeSamples(swipes, swipes.size(), progressTextView);
                     dbHelper.addSwipesNormalized(swipes, "REAL_SWIPES_NORMALIZED");
@@ -948,6 +956,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     swipes.addAll(fakeSwipes);
                     long ganEndTime = System.nanoTime();
                     double ganTime = (double) (ganEndTime - ganStartTime) / 1_000_000_000;
+
+                    resourceMonitor.setTrainingTime(ganTime);
+                    resourceMonitor.stop(dbHelper, "GAN");
 
                     for(DatabaseHelper.ModelType modelType : DatabaseHelper.ModelType.values()) {
                         uiHandler.post(() -> {progressTextView.setText("Training " + modelType.name() + " classifier");});
@@ -991,10 +1002,19 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             oneClassClassifier.setOptions(options);
             oneClassClassifier.setTargetClassLabel("User");
 
-            long rfStartTime = System.nanoTime();
+            ResourceMonitor resourceMonitor = new ResourceMonitor();
+            resourceMonitor.start(
+                    (ActivityManager) getSystemService(ACTIVITY_SERVICE),
+                    (BatteryManager) getSystemService(BATTERY_SERVICE)
+            );
+
+            double rfStartTime = Debug.threadCpuTimeNanos();
             oneClassClassifier.buildClassifier(dataSet);
-            long rfEndTime = System.nanoTime();
+            double rfEndTime = Debug.threadCpuTimeNanos();
             double rfTrainingTime = (double) (rfEndTime - rfStartTime) / 1_000_000_000;
+
+            resourceMonitor.setTrainingTime(rfTrainingTime);
+            resourceMonitor.stop(dbHelper, modelType.name());
 
             Evaluation eTest = new Evaluation(dataSet);
             eTest.crossValidateModel(oneClassClassifier, dataSet, 5, new Random(1));

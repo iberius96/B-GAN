@@ -41,8 +41,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String TEST_RESULTS = "TEST_RESULTS";
 
     private static final String USER_DATA = "USER_DATA";
-
     private static final String FEATURE_DATA = "FEATURE_DATA";
+    private static final String RESOURCE_DATA = "RESOURCE_DATA";
 
     private static final String COL_AUTHENTICATION_HOLD = "AUTHENTICATION_HOLD";
     private static final String COL_AUTHENTICATION_SWIPE = "AUTHENTICATION_SWIPE";
@@ -146,6 +146,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String COL_SWIPE_TOUCH_SIZE = "swipe_touch_size";
     private static final String COL_SWIPE_START_END_POS = "swipe_start_end_pos";
     private static final String COL_SWIPE_VELOCITY = "swipe_velocity";
+
+    private static final String COL_MIN_CPU_TEMP = "min_cpu_temp";
+    private static final String COL_MAX_CPU_TEMP = "max_cpu_temp";
+    private static final String COL_AVG_CPU_TEMP = "avg_cpu_temp";
+    private static final String COL_MIN_MEMORY_USAGE = "min_memory_usage";
+    private static final String COL_MAX_MEMORY_USAGE = "max_memory_usage";
+    private static final String COL_AVG_MEMORY_USAGE = "avg_memory_usage";
+    private static final String COL_POWER_DRAW = "power_draw";
 
     public static final String[] features = {"Velocity", "Accelerometer", "Gyroscope", "Orientation"};
     public static final String[] metrics = {"Min", "Max", "Avg", "Var", "Std"};
@@ -284,6 +292,18 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 + COL_SWIPE_START_END_POS + " integer(1), "
                 + COL_SWIPE_VELOCITY + " integer(1))";
 
+        String createResourceDataTable = "CREATE TABLE " + RESOURCE_DATA
+                + " (id INTEGER PRIMARY KEY AUTOINCREMENT, "
+                + COL_MIN_CPU_TEMP + " float(53), "
+                + COL_MAX_CPU_TEMP + " float(53), "
+                + COL_AVG_CPU_TEMP + " float(53), "
+                + COL_MIN_MEMORY_USAGE + " float(53), "
+                + COL_MAX_MEMORY_USAGE + " float(53), "
+                + COL_AVG_MEMORY_USAGE + " float(53), "
+                + COL_POWER_DRAW + " float(53), "
+                + COL_TRAINING_TIME + " float(53), "
+                + COL_MODEL_TYPE + " varchar(20))";
+
         String[] swipes_tables = {REAL_SWIPES, GAN_SWIPES, TEST_SWIPES, REAL_SWIPES_NORMALIZED, GAN_SWIPES_NORMALIZED, TEST_SWIPES_NORMALIZED};
         for(int i = 0; i < swipes_tables.length; i++) {
             String create_statement = swipes_base.replace("BASE_TABLE", swipes_tables[i]);
@@ -308,8 +328,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL(createTestResultsTable);
 
         db.execSQL(createUserDataTable);
-
         db.execSQL(createFeatureDataTable);
+        db.execSQL(createResourceDataTable);
 
         // Insert default user data
         Cursor user_cursor = db.rawQuery("SELECT * FROM " + USER_DATA, null);
@@ -358,7 +378,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             GAN_RESULTS,
             TEST_RESULTS,
             USER_DATA,
-            FEATURE_DATA
+            FEATURE_DATA,
+            RESOURCE_DATA
         };
 
         for(int i = 0; i < upgrade_tables.length; i++) {
@@ -579,6 +600,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL("DELETE FROM " + GAN_RESULTS);
     }
 
+    public void deleteResourceData() {
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.execSQL("DELETE FROM " + RESOURCE_DATA);
+    }
+
     public void deleteRealResults() {
         SQLiteDatabase db = this.getWritableDatabase();
         db.execSQL("DELETE FROM " + REAL_RESULTS);
@@ -714,6 +740,48 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return featureData;
     }
 
+    public boolean saveResourceData(Double[] cpu_temps, Double[] memory_usage, Double power_draw, Double training_time, String model_type) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues contentValues = new ContentValues();
+
+        contentValues.put(COL_MIN_CPU_TEMP, cpu_temps[0]);
+        contentValues.put(COL_MAX_CPU_TEMP, cpu_temps[1]);
+        contentValues.put(COL_AVG_CPU_TEMP, cpu_temps[2]);
+        contentValues.put(COL_MIN_MEMORY_USAGE, memory_usage[0]);
+        contentValues.put(COL_MAX_MEMORY_USAGE, memory_usage[1]);
+        contentValues.put(COL_AVG_MEMORY_USAGE, memory_usage[2]);
+        contentValues.put(COL_POWER_DRAW, power_draw);
+        contentValues.put(COL_TRAINING_TIME, training_time);
+        contentValues.put(COL_MODEL_TYPE, model_type);
+
+        long result = db.insert(RESOURCE_DATA, null, contentValues);
+        return result != -1;
+    }
+
+    public ArrayList<String> getResourceData() {
+        SQLiteDatabase db = this.getReadableDatabase();
+        String query = "SELECT * FROM " + RESOURCE_DATA;
+
+        Cursor cursor = db.rawQuery(query, null);
+        cursor.moveToFirst();
+
+        ArrayList<String> resourceData = new ArrayList<>();
+
+        resourceData.add(Float.toString(cursor.getFloat(cursor.getColumnIndex(COL_MIN_CPU_TEMP))));
+        resourceData.add(Float.toString(cursor.getFloat(cursor.getColumnIndex(COL_MAX_CPU_TEMP))));
+        resourceData.add(Float.toString(cursor.getFloat(cursor.getColumnIndex(COL_AVG_CPU_TEMP))));
+        resourceData.add(Float.toString(cursor.getFloat(cursor.getColumnIndex(COL_MIN_MEMORY_USAGE))));
+        resourceData.add(Float.toString(cursor.getFloat(cursor.getColumnIndex(COL_MAX_MEMORY_USAGE))));
+        resourceData.add(Float.toString(cursor.getFloat(cursor.getColumnIndex(COL_AVG_MEMORY_USAGE))));
+        resourceData.add(Long.toString(cursor.getLong(cursor.getColumnIndex(COL_POWER_DRAW))));
+        resourceData.add(Double.toString(cursor.getDouble(cursor.getColumnIndex(COL_TRAINING_TIME))));
+        resourceData.add(cursor.getString(cursor.getColumnIndex(COL_MODEL_TYPE)));
+
+        cursor.close();
+
+        return resourceData;
+    }
+
     public synchronized void saveAsCSV(String tableName, String filePath, ContentResolver resolver, String downloadPath) {
 
         FileOutputStream fos;
@@ -808,6 +876,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         this.saveAsCSV(TEST_RESULTS, currentDateTime + "_" + "testResults.csv", resolver, downloadPath);
         this.saveAsCSV(USER_DATA, currentDateTime + "_" + "userData.csv", resolver, downloadPath);
         this.saveAsCSV(FEATURE_DATA, currentDateTime + "_" + "featureData.csv", resolver, downloadPath);
+        this.saveAsCSV(RESOURCE_DATA, currentDateTime + "_" + "resourceData.csv", resolver, downloadPath);
 
     }
 
@@ -819,6 +888,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL("DELETE FROM " + GAN_RESULTS);
         db.execSQL("DELETE FROM " + REAL_SWIPES_NORMALIZED);
         db.execSQL("DELETE FROM " + TEST_SWIPES_NORMALIZED);
+        db.execSQL("DELETE FROM " + RESOURCE_DATA);
 
         if(GANOnly == false) {
             db.execSQL("DELETE FROM " + REAL_SWIPES);
