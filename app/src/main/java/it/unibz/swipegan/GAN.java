@@ -29,7 +29,7 @@ public class GAN {
     private static final int LATENT_DIM = 12;
     public static final int NUM_EPOCHS = 4_000;
     public static final int NUM_LAYER_UNITS = 8;
-    public static final int NUM_TRAIN_FEATURES = 65;
+    public static final int NUM_TRAIN_FEATURES = 66;
 
     private MultiLayerNetwork generator;
     private MultiLayerNetwork discriminator;

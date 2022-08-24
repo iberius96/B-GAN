@@ -20,8 +20,10 @@ import java.lang.reflect.InvocationTargetException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Locale;
 import java.util.Objects;
+
+import static com.google.common.base.CaseFormat.LOWER_CAMEL;
+import static com.google.common.base.CaseFormat.LOWER_UNDERSCORE;
 
 import au.com.bytecode.opencsv.CSVWriter;
 
@@ -52,8 +54,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String COL_AUTHENTICATION_TIME_SWIPE = "AUTHENTICATION_TIME_SWIPE";
     private static final String COL_AUTHENTICATION_TIME_FULL = "AUTHENTICATION_TIME_FULL";
 
-    private static final String COL_ID = "id";
     private static final String COL_DURATION = "duration";
+    private static final String COL_LENGTH = "length";
     private static final String COL_MIN_SIZE = "min_size";
     private static final String COL_MAX_SIZE = "max_size";
     private static final String COL_AVG_SIZE = "avg_size";
@@ -63,61 +65,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String COL_START_Y = "start_y";
     private static final String COL_END_X = "end_x";
     private static final String COL_END_Y = "end_y";
-    private static final String COL_MIN_X_VELOCITY = "min_x_velocity";
-    private static final String COL_MAX_X_VELOCITY = "max_x_velocity";
-    private static final String COL_AVG_X_VELOCITY = "avg_x_velocity";
-    private static final String COL_STD_X_VELOCITY = "std_x_velocity";
-    private static final String COL_VAR_X_VELOCITY = "var_x_velocity";
-    private static final String COL_MIN_Y_VELOCITY = "min_y_velocity";
-    private static final String COL_MAX_Y_VELOCITY = "max_y_velocity";
-    private static final String COL_AVG_Y_VELOCITY = "avg_y_velocity";
-    private static final String COL_STD_Y_VELOCITY = "std_y_velocity";
-    private static final String COL_VAR_Y_VELOCITY = "var_y_velocity";
-    private static final String COL_MIN_X_ACCELEROMETER = "min_x_accelerometer";
-    private static final String COL_MAX_X_ACCELEROMETER = "max_x_accelerometer";
-    private static final String COL_AVG_X_ACCELEROMETER = "avg_x_accelerometer";
-    private static final String COL_STD_X_ACCELEROMETER = "std_x_accelerometer";
-    private static final String COL_VAR_X_ACCELEROMETER = "var_x_accelerometer";
-    private static final String COL_MIN_Y_ACCELEROMETER = "min_y_accelerometer";
-    private static final String COL_MAX_Y_ACCELEROMETER = "max_y_accelerometer";
-    private static final String COL_AVG_Y_ACCELEROMETER = "avg_y_accelerometer";
-    private static final String COL_STD_Y_ACCELEROMETER = "std_y_accelerometer";
-    private static final String COL_VAR_Y_ACCELEROMETER = "var_y_accelerometer";
-    private static final String COL_MIN_Z_ACCELEROMETER = "min_z_accelerometer";
-    private static final String COL_MAX_Z_ACCELEROMETER = "max_z_accelerometer";
-    private static final String COL_AVG_Z_ACCELEROMETER = "avg_z_accelerometer";
-    private static final String COL_STD_Z_ACCELEROMETER = "std_z_accelerometer";
-    private static final String COL_VAR_Z_ACCELEROMETER = "var_z_accelerometer";
-    private static final String COL_MIN_X_GYROSCOPE = "min_x_gyroscope";
-    private static final String COL_MAX_X_GYROSCOPE = "max_x_gyroscope";
-    private static final String COL_AVG_X_GYROSCOPE = "avg_x_gyroscope";
-    private static final String COL_STD_X_GYROSCOPE = "std_x_gyroscope";
-    private static final String COL_VAR_X_GYROSCOPE = "var_x_gyroscope";
-    private static final String COL_MIN_Y_GYROSCOPE = "min_y_gyroscope";
-    private static final String COL_MAX_Y_GYROSCOPE = "max_y_gyroscope";
-    private static final String COL_AVG_Y_GYROSCOPE = "avg_y_gyroscope";
-    private static final String COL_STD_Y_GYROSCOPE = "std_y_gyroscope";
-    private static final String COL_VAR_Y_GYROSCOPE = "var_y_gyroscope";
-    private static final String COL_MIN_Z_GYROSCOPE = "min_z_gyroscope";
-    private static final String COL_MAX_Z_GYROSCOPE = "max_z_gyroscope";
-    private static final String COL_AVG_Z_GYROSCOPE = "avg_z_gyroscope";
-    private static final String COL_STD_Z_GYROSCOPE = "std_z_gyroscope";
-    private static final String COL_VAR_Z_GYROSCOPE = "var_z_gyroscope";
-    private static final String COL_MIN_X_ORIENTATION = "min_x_orientation";
-    private static final String COL_MAX_X_ORIENTATION = "max_x_orientation";
-    private static final String COL_AVG_X_ORIENTATION = "avg_x_orientation";
-    private static final String COL_STD_X_ORIENTATION = "std_x_orientation";
-    private static final String COL_VAR_X_ORIENTATION = "var_x_orientation";
-    private static final String COL_MIN_Y_ORIENTATION = "min_y_orientation";
-    private static final String COL_MAX_Y_ORIENTATION = "max_y_orientation";
-    private static final String COL_AVG_Y_ORIENTATION = "avg_y_orientation";
-    private static final String COL_STD_Y_ORIENTATION = "std_y_orientation";
-    private static final String COL_VAR_Y_ORIENTATION = "var_y_orientation";
-    private static final String COL_MIN_Z_ORIENTATION = "min_z_orientation";
-    private static final String COL_MAX_Z_ORIENTATION = "max_z_orientation";
-    private static final String COL_AVG_Z_ORIENTATION = "avg_z_orientation";
-    private static final String COL_STD_Z_ORIENTATION = "std_z_orientation";
-    private static final String COL_VAR_Z_ORIENTATION = "var_z_orientation";
     private static final String COL_HOLDING_POSITION = "holding_position";
 
     private static final String COL_INSTANCES = "INSTANCES";
@@ -143,6 +90,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String COL_ANGULAR_VELOCITY = "angular_velocity";
     private static final String COL_ORIENTATION = "orientation";
     private static final String COL_SWIPE_DURATION = "swipe_duration";
+    private static final String COL_SWIPE_SHAPE = "swipe_shape";
     private static final String COL_SWIPE_TOUCH_SIZE = "swipe_touch_size";
     private static final String COL_SWIPE_START_END_POS = "swipe_start_end_pos";
     private static final String COL_SWIPE_VELOCITY = "swipe_velocity";
@@ -155,6 +103,15 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String COL_AVG_MEMORY_USAGE = "avg_memory_usage";
     private static final String COL_POWER_DRAW = "power_draw";
 
+    public static final String[] head_features = {
+            COL_DURATION,
+            COL_LENGTH,
+            COL_MIN_SIZE, COL_MAX_SIZE, COL_AVG_SIZE, COL_DOWN_SIZE, COL_UP_SIZE,
+            COL_START_X, COL_START_Y,
+            COL_END_X, COL_END_Y,
+    };
+
+    // Used to reference velocity- and all swipe- related features
     public static final String[] features = {"Velocity", "Accelerometer", "Gyroscope", "Orientation"};
     public static final String[] metrics = {"Min", "Max", "Avg", "Var", "Std"};
     public static final String[] dimensions = {"X", "Y", "Z"};
@@ -172,74 +129,23 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db) {
         String swipes_base = "CREATE TABLE " + "BASE_TABLE"
-                + " (id INTEGER PRIMARY KEY AUTOINCREMENT, "
-                + COL_DURATION + " float(53), "
-                + COL_MIN_SIZE + " float(53), "
-                + COL_MAX_SIZE + " float(53), "
-                + COL_AVG_SIZE + " float(53), "
-                + COL_DOWN_SIZE + " float(53), "
-                + COL_UP_SIZE + " float(53), "
-                + COL_START_X + " float(53), "
-                + COL_START_Y + " float(53), "
-                + COL_END_X + " float(53), "
-                + COL_END_Y + " float(53), "
-                + COL_MIN_X_VELOCITY + " float(53), "
-                + COL_MAX_X_VELOCITY + " float(53), "
-                + COL_AVG_X_VELOCITY + " float(53), "
-                + COL_STD_X_VELOCITY + " float(53), "
-                + COL_VAR_X_VELOCITY + " float(53), "
-                + COL_MIN_Y_VELOCITY + " float(53), "
-                + COL_MAX_Y_VELOCITY + " float(53), "
-                + COL_AVG_Y_VELOCITY + " float(53), "
-                + COL_STD_Y_VELOCITY + " float(53), "
-                + COL_VAR_Y_VELOCITY + " float(53), "
-                + COL_MIN_X_ACCELEROMETER + " float(53), "
-                + COL_MAX_X_ACCELEROMETER + " float(53), "
-                + COL_AVG_X_ACCELEROMETER + " float(53), "
-                + COL_STD_X_ACCELEROMETER + " float(53), "
-                + COL_VAR_X_ACCELEROMETER + " float(53), "
-                + COL_MIN_Y_ACCELEROMETER + " float(53), "
-                + COL_MAX_Y_ACCELEROMETER + " float(53), "
-                + COL_AVG_Y_ACCELEROMETER + " float(53), "
-                + COL_STD_Y_ACCELEROMETER + " float(53), "
-                + COL_VAR_Y_ACCELEROMETER + " float(53), "
-                + COL_MIN_Z_ACCELEROMETER + " float(53), "
-                + COL_MAX_Z_ACCELEROMETER + " float(53), "
-                + COL_AVG_Z_ACCELEROMETER + " float(53), "
-                + COL_STD_Z_ACCELEROMETER + " float(53), "
-                + COL_VAR_Z_ACCELEROMETER + " float(53), "
-                + COL_MIN_X_GYROSCOPE + " float(53), "
-                + COL_MAX_X_GYROSCOPE + " float(53), "
-                + COL_AVG_X_GYROSCOPE + " float(53), "
-                + COL_STD_X_GYROSCOPE + " float(53), "
-                + COL_VAR_X_GYROSCOPE + " float(53), "
-                + COL_MIN_Y_GYROSCOPE + " float(53), "
-                + COL_MAX_Y_GYROSCOPE + " float(53), "
-                + COL_AVG_Y_GYROSCOPE + " float(53), "
-                + COL_STD_Y_GYROSCOPE + " float(53), "
-                + COL_VAR_Y_GYROSCOPE + " float(53), "
-                + COL_MIN_Z_GYROSCOPE + " float(53), "
-                + COL_MAX_Z_GYROSCOPE + " float(53), "
-                + COL_AVG_Z_GYROSCOPE + " float(53), "
-                + COL_STD_Z_GYROSCOPE + " float(53), "
-                + COL_VAR_Z_GYROSCOPE + " float(53), "
-                + COL_MIN_X_ORIENTATION + " float(53), "
-                + COL_MAX_X_ORIENTATION + " float(53), "
-                + COL_AVG_X_ORIENTATION + " float(53), "
-                + COL_STD_X_ORIENTATION + " float(53), "
-                + COL_VAR_X_ORIENTATION + " float(53), "
-                + COL_MIN_Y_ORIENTATION + " float(53), "
-                + COL_MAX_Y_ORIENTATION + " float(53), "
-                + COL_AVG_Y_ORIENTATION + " float(53), "
-                + COL_STD_Y_ORIENTATION + " float(53), "
-                + COL_VAR_Y_ORIENTATION + " float(53), "
-                + COL_MIN_Z_ORIENTATION + " float(53), "
-                + COL_MAX_Z_ORIENTATION + " float(53), "
-                + COL_AVG_Z_ORIENTATION + " float(53), "
-                + COL_STD_Z_ORIENTATION + " float(53), "
-                + COL_VAR_Z_ORIENTATION + " float(53), "
-                + COL_HOLDING_POSITION + " float(53), "
-                + COL_USER_ID + " varchar(20))";
+                + " (id INTEGER PRIMARY KEY AUTOINCREMENT, ";
+
+        for(String head_feature : head_features) {
+            swipes_base += head_feature + " float(53), ";
+        }
+
+        for(String feature : DatabaseHelper.features) {
+            for (String metric : DatabaseHelper.metrics) {
+                for (String dimension : DatabaseHelper.dimensions) {
+                    if (dimension == "Z" && feature == "Velocity") { continue; }
+
+                    swipes_base += metric.toLowerCase() + "_" + dimension.toLowerCase() + "_" + feature.toLowerCase() + " float(53), ";
+                }
+            }
+        }
+
+        swipes_base += COL_HOLDING_POSITION + " float(53), " + COL_USER_ID + " varchar(20))";
 
         String createRealResultsTable = "CREATE TABLE " + REAL_RESULTS
                 + " (id INTEGER PRIMARY KEY AUTOINCREMENT, "
@@ -288,6 +194,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 + COL_ANGULAR_VELOCITY + " integer(1), "
                 + COL_ORIENTATION + " integer(1), "
                 + COL_SWIPE_DURATION + " integer(1), "
+                + COL_SWIPE_SHAPE + " integer(1), "
                 + COL_SWIPE_TOUCH_SIZE + " integer(1), "
                 + COL_SWIPE_START_END_POS + " integer(1), "
                 + COL_SWIPE_VELOCITY + " integer(1))";
@@ -356,7 +263,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         if (feature_count == 0) {
             ContentValues contentValues = new ContentValues();
 
-            String[] feature_cols = {COL_ACCELERATION, COL_ANGULAR_VELOCITY, COL_ORIENTATION, COL_SWIPE_DURATION, COL_SWIPE_TOUCH_SIZE, COL_SWIPE_START_END_POS, COL_SWIPE_VELOCITY};
+            String[] feature_cols = {COL_ACCELERATION, COL_ANGULAR_VELOCITY, COL_ORIENTATION, COL_SWIPE_DURATION, COL_SWIPE_SHAPE, COL_SWIPE_TOUCH_SIZE, COL_SWIPE_START_END_POS, COL_SWIPE_VELOCITY};
             for(int i = 0; i < feature_cols.length; i++) {
                 contentValues.put(feature_cols[i], 1);
             }
@@ -393,16 +300,15 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
 
-        contentValues.put(COL_DURATION, swipe.getDuration());
-        contentValues.put(COL_MIN_SIZE, swipe.getMinSize());
-        contentValues.put(COL_MAX_SIZE, swipe.getMaxSize());
-        contentValues.put(COL_AVG_SIZE, swipe.getAvgSize());
-        contentValues.put(COL_DOWN_SIZE, swipe.getDownSize());
-        contentValues.put(COL_UP_SIZE, swipe.getUpSize());
-        contentValues.put(COL_START_X, swipe.getStartX());
-        contentValues.put(COL_START_Y, swipe.getStartY());
-        contentValues.put(COL_END_X, swipe.getEndX());
-        contentValues.put(COL_END_Y, swipe.getEndY());
+        for(String head_feature : head_features) {
+            java.lang.reflect.Method cur_method = null;
+            try {
+                cur_method = swipe.getClass().getMethod("get" + head_feature.substring(0, 1).toUpperCase() + LOWER_UNDERSCORE.to(LOWER_CAMEL, head_feature.substring(1)));
+                contentValues.put(head_feature, (Double) cur_method.invoke(swipe));
+            } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+                e.printStackTrace();
+            }
+        }
 
         for(String feature : DatabaseHelper.features) {
             for(String metric : DatabaseHelper.metrics) {
@@ -471,19 +377,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         for(Swipe swipe : allSwipes) {
             double[] normalizedValues = swipe.getNormalizedValues(allSwipes);
             ContentValues contentValues = new ContentValues();
+            int values_idx = 0;
 
-            contentValues.put(COL_DURATION, normalizedValues[0]);
-            contentValues.put(COL_MIN_SIZE, normalizedValues[1]);
-            contentValues.put(COL_MAX_SIZE, normalizedValues[2]);
-            contentValues.put(COL_AVG_SIZE, normalizedValues[3]);
-            contentValues.put(COL_DOWN_SIZE, normalizedValues[4]);
-            contentValues.put(COL_UP_SIZE, normalizedValues[5]);
-            contentValues.put(COL_START_X, normalizedValues[6]);
-            contentValues.put(COL_START_Y, normalizedValues[7]);
-            contentValues.put(COL_END_X, normalizedValues[8]);
-            contentValues.put(COL_END_Y, normalizedValues[9]);
+            for(String head_feature : head_features) {
+                contentValues.put(head_feature, normalizedValues[values_idx]);
+                values_idx = values_idx + 1;
+            }
 
-            int values_idx = 10;
             for(int i = 0; i < features.length; i++) {
                 for (int j = 0; j < metrics.length; j++) {
                     for (int x = 0; x < dimensions.length; x++) {
@@ -499,7 +399,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             contentValues.put(COL_HOLDING_POSITION, swipe.getHoldingPosition());
             contentValues.put(COL_USER_ID, swipe.getUserId());
 
-            long result = db.insert(tableName, null, contentValues);
+            db.insert(tableName, null, contentValues);
         }
     }
 
@@ -512,16 +412,16 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         while(!cursor.isAfterLast()) {
             Swipe swipe = new Swipe();
-            swipe.setDuration(cursor.getDouble(cursor.getColumnIndex(COL_DURATION)));
-            swipe.setMinSize(cursor.getDouble(cursor.getColumnIndex(COL_MIN_SIZE)));
-            swipe.setMaxSize(cursor.getDouble(cursor.getColumnIndex(COL_MAX_SIZE)));
-            swipe.setAvgSize(cursor.getDouble(cursor.getColumnIndex(COL_AVG_SIZE)));
-            swipe.setDownSize(cursor.getDouble(cursor.getColumnIndex(COL_DOWN_SIZE)));
-            swipe.setUpSize(cursor.getDouble(cursor.getColumnIndex(COL_UP_SIZE)));
-            swipe.setStartX(cursor.getDouble(cursor.getColumnIndex(COL_START_X)));
-            swipe.setStartY(cursor.getDouble(cursor.getColumnIndex(COL_START_Y)));
-            swipe.setEndX(cursor.getDouble(cursor.getColumnIndex(COL_END_X)));
-            swipe.setEndY(cursor.getDouble(cursor.getColumnIndex(COL_END_Y)));
+
+            for(String head_feature : head_features) {
+                java.lang.reflect.Method cur_method = null;
+                try {
+                    cur_method = swipe.getClass().getMethod("set" + head_feature.substring(0, 1).toUpperCase() + LOWER_UNDERSCORE.to(LOWER_CAMEL, head_feature.substring(1)), double.class);
+                    cur_method.invoke(swipe, cursor.getDouble(cursor.getColumnIndex(head_feature)));
+                } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+                    e.printStackTrace();
+                }
+            }
 
             for(String feature : DatabaseHelper.features) {
                 for(String metric : DatabaseHelper.metrics) {
@@ -531,7 +431,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                         String col_name = metric.toLowerCase() + "_" + dimension.toLowerCase() + "_" + feature.toLowerCase();
 
                         java.lang.reflect.Method cur_method = null;
-                        Double cur_value = 0.0;
                         try {
                             cur_method = swipe.getClass().getMethod("set" + metric + dimension + feature, double.class);
                             cur_method.invoke(swipe, cursor.getDouble(cursor.getColumnIndex(col_name)));
@@ -700,7 +599,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return userData;
     }
 
-    public boolean saveFeatureData(int acceleration, int angular_velocity, int orientation, int swipe_duration, int swipe_touch_size, int swipe_start_end_pos, int swipe_velocity) {
+    public boolean saveFeatureData(int acceleration, int angular_velocity, int orientation, int swipe_duration, int swipe_shape, int swipe_touch_size, int swipe_start_end_pos, int swipe_velocity) {
         SQLiteDatabase db = this.getWritableDatabase();
         db.execSQL("DELETE FROM " + FEATURE_DATA);
 
@@ -710,6 +609,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         contentValues.put(COL_ANGULAR_VELOCITY, angular_velocity);
         contentValues.put(COL_ORIENTATION, orientation);
         contentValues.put(COL_SWIPE_DURATION, swipe_duration);
+        contentValues.put(COL_SWIPE_SHAPE, swipe_shape);
         contentValues.put(COL_SWIPE_TOUCH_SIZE, swipe_touch_size);
         contentValues.put(COL_SWIPE_START_END_POS, swipe_start_end_pos);
         contentValues.put(COL_SWIPE_VELOCITY, swipe_velocity);
@@ -731,6 +631,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         featureData.add(cursor.getInt(cursor.getColumnIndex(COL_ANGULAR_VELOCITY)));
         featureData.add(cursor.getInt(cursor.getColumnIndex(COL_ORIENTATION)));
         featureData.add(cursor.getInt(cursor.getColumnIndex(COL_SWIPE_DURATION)));
+        featureData.add(cursor.getInt(cursor.getColumnIndex(COL_SWIPE_SHAPE)));
         featureData.add(cursor.getInt(cursor.getColumnIndex(COL_SWIPE_TOUCH_SIZE)));
         featureData.add(cursor.getInt(cursor.getColumnIndex(COL_SWIPE_START_END_POS)));
         featureData.add(cursor.getInt(cursor.getColumnIndex(COL_SWIPE_VELOCITY)));

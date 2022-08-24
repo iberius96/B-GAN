@@ -70,6 +70,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private ArrayList<Float> sizes = null;
     private int duration = 0;
 
+    private double length = 0;
+
     private boolean isTrackingAccelerometer = false;
     private ArrayList<Float> xAccelerometers = null;
     private ArrayList<Float> yAccelerometers = null;
@@ -267,6 +269,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         switch(action) {
             case MotionEvent.ACTION_DOWN:
                 // initialization step
+                this.length = 0;
+
                 this.startTime = System.currentTimeMillis();
                 this.isTrackingAccelerometer = true;
                 this.isTrackingGyroscope = true;
@@ -282,6 +286,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 final int historySize = event.getHistorySize();
                 final int pointerCount = event.getPointerCount();
                 for (int h = 0; h < historySize; h++) {
+
+                    float hx = event.getHistoricalX(0, h);
+                    float hy = event.getHistoricalY(0, h);
+                    float dx = (hx - this.xLocations.get(this.xLocations.size() - 1));
+                    float dy = (hy - this.yLocations.get(this.yLocations.size() - 1));
+                    this.length += Math.sqrt(dx * dx + dy * dy);
+
                     for (int p = 0; p < pointerCount; p++) {
                         float newX = event.getHistoricalX(p, h);
                         float newY = event.getHistoricalY(p, h);
@@ -421,6 +432,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     public Swipe getSwipe() {
         double duration = this.duration;
 
+        double length = this.length;
+
         DoubleSummaryStatistics sizesStats = this.sizes.stream().mapToDouble(x -> (double) x).summaryStatistics();
         double minSize = sizesStats.getMin();
         double maxSize = sizesStats.getMax();
@@ -513,6 +526,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         Swipe newSwipe = new Swipe();
 
         newSwipe.setDuration(duration);
+
+        newSwipe.setLength(length);
 
         newSwipe.setMinSize(minSize);
         newSwipe.setMaxSize(maxSize);
@@ -740,14 +755,17 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         CheckBox swipeDurationCheckBox = popupView.findViewById(R.id.swipeDurationCheckBox);
         swipeDurationCheckBox.setChecked(featureData.get(3) == 1);
 
+        CheckBox swipeShapeCheckBox = popupView.findViewById(R.id.swipeShapeCheckBox);
+        swipeShapeCheckBox.setChecked(featureData.get(4) == 1);
+
         CheckBox swipeTouchSizeCheckBox = popupView.findViewById(R.id.swipeTouchSizeCheckBox);
-        swipeTouchSizeCheckBox.setChecked(featureData.get(4) == 1);
+        swipeTouchSizeCheckBox.setChecked(featureData.get(5) == 1);
 
         CheckBox swipeStartEndPosCheckBox = popupView.findViewById(R.id.swipeStartEndPosCheckBox);
-        swipeStartEndPosCheckBox.setChecked(featureData.get(5) == 1);
+        swipeStartEndPosCheckBox.setChecked(featureData.get(6) == 1);
 
         CheckBox swipeVelocityCheckBox = popupView.findViewById(R.id.swipeVelocityCheckBox);
-        swipeVelocityCheckBox.setChecked(featureData.get(6) == 1);
+        swipeVelocityCheckBox.setChecked(featureData.get(7) == 1);
 
         Button saveProfileButton = popupView.findViewById(R.id.saveProfileButton);
         saveProfileButton.setOnClickListener(new View.OnClickListener() {
@@ -757,6 +775,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     angularVelocityCheckBox.isChecked() ||
                     orientationCheckBox.isChecked() ||
                     swipeDurationCheckBox.isChecked() ||
+                    swipeShapeCheckBox.isChecked() ||
                     swipeTouchSizeCheckBox.isChecked() ||
                     swipeStartEndPosCheckBox.isChecked() ||
                     swipeVelocityCheckBox.isChecked()
@@ -766,6 +785,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                             angularVelocityCheckBox.isChecked() ? 1 : 0,
                             orientationCheckBox.isChecked() ? 1 : 0,
                             swipeDurationCheckBox.isChecked() ? 1 : 0,
+                            swipeShapeCheckBox.isChecked() ? 1 : 0,
                             swipeTouchSizeCheckBox.isChecked() ? 1 : 0,
                             swipeStartEndPosCheckBox.isChecked() ? 1 : 0,
                             swipeVelocityCheckBox.isChecked() ? 1 : 0
@@ -1096,15 +1116,19 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         boolean useAngularVelocity = featureData.get(1) == 1;
         boolean useOrientation = featureData.get(2) == 1;
         boolean useSwipeDuration = featureData.get(3) == 1;
-        boolean useSwipeSize = featureData.get(4) == 1;
-        boolean useSwipeStartEndPos = featureData.get(5) == 1;
-        boolean useSwipeVelocity = featureData.get(6) == 1;
+        boolean useSwipeShape = featureData.get(4) == 1;
+        boolean useSwipeSize = featureData.get(5) == 1;
+        boolean useSwipeStartEndPos = featureData.get(6) == 1;
+        boolean useSwipeVelocity = featureData.get(7) == 1;
 
         ArrayList<Attribute> attributes = new ArrayList<>();
 
         if(modelType != DatabaseHelper.ModelType.HOLD) {
             if (useSwipeDuration) {
                 attributes.add(new Attribute("duration"));
+            }
+            if (useSwipeShape) {
+                attributes.add(new Attribute("length"));
             }
             if (useSwipeSize) {
                 attributes.add(new Attribute("minSize"));

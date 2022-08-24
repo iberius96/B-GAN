@@ -1,5 +1,8 @@
 package it.unibz.swipegan;
 
+import static com.google.common.base.CaseFormat.LOWER_CAMEL;
+import static com.google.common.base.CaseFormat.LOWER_UNDERSCORE;
+
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -11,6 +14,7 @@ import weka.core.Instances;
 
 public class Swipe {
     private double duration;
+    private double length;
     private double minSize;
     private double maxSize;
     private double avgSize;
@@ -94,71 +98,36 @@ public class Swipe {
     }
 
     public Swipe(double[] swipeArray, double holdingPosition, String userId) {
-        this.duration = swipeArray[0];
-        this.minSize = swipeArray[1];
-        this.maxSize = swipeArray[2];
-        this.avgSize = swipeArray[3];
-        this.downSize = swipeArray[4];
-        this.upSize =  swipeArray[5];
-        this.startX = swipeArray[6];
-        this.startY = swipeArray[7];
-        this.endX = swipeArray[8];
-        this.endY = swipeArray[9];
-        this.minXVelocity = swipeArray[10];
-        this.maxXVelocity = swipeArray[11];
-        this.avgXVelocity = swipeArray[12];
-        this.stdXVelocity = swipeArray[13];
-        this.varXVelocity = swipeArray[14];
-        this.minYVelocity = swipeArray[15];
-        this.maxYVelocity = swipeArray[16];
-        this.avgYVelocity = swipeArray[17];
-        this.stdYVelocity = swipeArray[18];
-        this.varYVelocity = swipeArray[19];
-        this.minXAccelerometer = swipeArray[20];
-        this.maxXAccelerometer = swipeArray[21];
-        this.avgXAccelerometer = swipeArray[22];
-        this.stdXAccelerometer = swipeArray[23];
-        this.varXAccelerometer = swipeArray[24];
-        this.minYAccelerometer = swipeArray[25];
-        this.maxYAccelerometer = swipeArray[26];
-        this.avgYAccelerometer = swipeArray[27];
-        this.stdYAccelerometer = swipeArray[28];
-        this.varYAccelerometer = swipeArray[29];
-        this.minZAccelerometer = swipeArray[30];
-        this.maxZAccelerometer = swipeArray[31];
-        this.avgZAccelerometer = swipeArray[32];
-        this.stdZAccelerometer = swipeArray[33];
-        this.varZAccelerometer = swipeArray[34];
-        this.minXGyroscope = swipeArray[35];
-        this.maxXGyroscope = swipeArray[36];
-        this.avgXGyroscope = swipeArray[37];
-        this.stdXGyroscope = swipeArray[38];
-        this.varXGyroscope = swipeArray[39];
-        this.minYGyroscope = swipeArray[40];
-        this.maxYGyroscope = swipeArray[41];
-        this.avgYGyroscope = swipeArray[42];
-        this.stdYGyroscope = swipeArray[43];
-        this.varYGyroscope = swipeArray[44];
-        this.minZGyroscope = swipeArray[45];
-        this.maxZGyroscope = swipeArray[46];
-        this.avgZGyroscope = swipeArray[47];
-        this.stdZGyroscope = swipeArray[48];
-        this.varZGyroscope = swipeArray[49];
-        this.minXOrientation = swipeArray[50];
-        this.maxXOrientation = swipeArray[51];
-        this.avgXOrientation = swipeArray[52];
-        this.stdXOrientation = swipeArray[53];
-        this.varXOrientation = swipeArray[54];
-        this.minYOrientation = swipeArray[55];
-        this.maxYOrientation = swipeArray[56];
-        this.avgYOrientation = swipeArray[57];
-        this.stdYOrientation = swipeArray[58];
-        this.varYOrientation = swipeArray[59];
-        this.minZOrientation = swipeArray[60];
-        this.maxZOrientation = swipeArray[61];
-        this.avgZOrientation = swipeArray[62];
-        this.stdZOrientation = swipeArray[63];
-        this.varZOrientation = swipeArray[64];
+        int array_idx = 0;
+
+        for(String head_feature : DatabaseHelper.head_features) {
+            java.lang.reflect.Method cur_method = null;
+            try {
+                cur_method = this.getClass().getMethod("set" + head_feature.substring(0, 1).toUpperCase() + LOWER_UNDERSCORE.to(LOWER_CAMEL, head_feature.substring(1)), double.class);
+                cur_method.invoke(this, swipeArray[array_idx]);
+            } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+                e.printStackTrace();
+            }
+            array_idx = array_idx + 1;
+        }
+
+        for(String feature : DatabaseHelper.features) {
+            for(String metric : DatabaseHelper.metrics) {
+                for(String dimension : DatabaseHelper.dimensions) {
+                    if (dimension == "Z" && feature == "Velocity") { continue; }
+
+                    java.lang.reflect.Method cur_method = null;
+                    try {
+                        cur_method = this.getClass().getMethod("set" + metric + dimension + feature, double.class);
+                        cur_method.invoke(this, swipeArray[array_idx]);
+                    } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+                        e.printStackTrace();
+                    }
+                    array_idx = array_idx + 1;
+                }
+            }
+        }
+
         this.holdingPosition = holdingPosition;
         this.userId = userId;
     }
@@ -169,6 +138,14 @@ public class Swipe {
 
     public void setDuration(double duration) {
         this.duration = duration;
+    }
+
+    public double getLength() {
+        return length;
+    }
+
+    public void setLength(double length) {
+        this.length = length;
     }
 
     public double getMinSize() {
@@ -752,33 +729,22 @@ public class Swipe {
         Map<String, Double> map = new HashMap<String, Double>();
 
         for(Swipe swipe : allSwipes) {
-            map.put("MIN_DURATION", map.get("MIN_DURATION") == null || swipe.getDuration() < map.get("MIN_DURATION") ? swipe.getDuration() : map.get("MIN_DURATION"));
-            map.put("MAX_DURATION", map.get("MAX_DURATION") == null || swipe.getDuration() > map.get("MAX_DURATION") ? swipe.getDuration() : map.get("MAX_DURATION"));
+            for(String head_feature : DatabaseHelper.head_features) {
+                String min_key = "MIN_" + head_feature.toUpperCase();
+                String max_key = "MAX_" + head_feature.toUpperCase();
 
-            map.put("MIN_MIN_SIZE", map.get("MIN_MIN_SIZE") == null || swipe.getMinSize() < map.get("MIN_MIN_SIZE") ? swipe.getMinSize() : map.get("MIN_MIN_SIZE"));
-            map.put("MAX_MIN_SIZE", map.get("MAX_MIN_SIZE") == null || swipe.getMinSize() > map.get("MAX_MIN_SIZE") ? swipe.getMinSize() : map.get("MAX_MIN_SIZE"));
+                java.lang.reflect.Method cur_method = null;
+                Double cur_value = 0.0;
+                try {
+                    cur_method = swipe.getClass().getMethod("get" + head_feature.substring(0, 1).toUpperCase() + LOWER_UNDERSCORE.to(LOWER_CAMEL, head_feature.substring(1)));
+                    cur_value = (Double) cur_method.invoke(swipe);
+                } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+                    e.printStackTrace();
+                }
 
-            map.put("MIN_MAX_SIZE", map.get("MIN_MAX_SIZE") == null || swipe.getMaxSize() < map.get("MIN_MAX_SIZE") ? swipe.getMaxSize() : map.get("MIN_MAX_SIZE"));
-            map.put("MAX_MAX_SIZE", map.get("MAX_MAX_SIZE") == null || swipe.getMaxSize() > map.get("MAX_MAX_SIZE") ? swipe.getMaxSize() : map.get("MAX_MAX_SIZE"));
-
-            map.put("MIN_AVG_SIZE", map.get("MIN_AVG_SIZE") == null || swipe.getAvgSize() < map.get("MIN_AVG_SIZE") ? swipe.getAvgSize() : map.get("MIN_AVG_SIZE"));
-            map.put("MAX_AVG_SIZE", map.get("MAX_AVG_SIZE") == null || swipe.getAvgSize() > map.get("MAX_AVG_SIZE") ? swipe.getAvgSize() : map.get("MAX_AVG_SIZE"));
-
-            map.put("MIN_DOWN_SIZE", map.get("MIN_DOWN_SIZE") == null || swipe.getDownSize() < map.get("MIN_DOWN_SIZE") ? swipe.getDownSize() : map.get("MIN_DOWN_SIZE"));
-            map.put("MAX_DOWN_SIZE", map.get("MAX_DOWN_SIZE") == null || swipe.getDownSize() > map.get("MAX_DOWN_SIZE") ? swipe.getDownSize() : map.get("MAX_DOWN_SIZE"));
-
-            map.put("MIN_UP_SIZE", map.get("MIN_UP_SIZE") == null || swipe.getUpSize() < map.get("MIN_UP_SIZE") ? swipe.getUpSize() : map.get("MIN_UP_SIZE"));
-            map.put("MAX_UP_SIZE", map.get("MAX_UP_SIZE") == null || swipe.getUpSize() > map.get("MAX_UP_SIZE") ? swipe.getUpSize() : map.get("MAX_UP_SIZE"));
-
-            map.put("MIN_START_X", map.get("MIN_START_X") == null || swipe.getStartX() < map.get("MIN_START_X") ? swipe.getStartX() : map.get("MIN_START_X"));
-            map.put("MAX_START_X", map.get("MAX_START_X") == null || swipe.getStartX() > map.get("MAX_START_X") ? swipe.getStartX() : map.get("MAX_START_X"));
-            map.put("MIN_START_Y", map.get("MIN_START_Y") == null || swipe.getStartY() < map.get("MIN_START_Y") ? swipe.getStartY() : map.get("MIN_START_Y"));
-            map.put("MAX_START_Y", map.get("MAX_START_Y") == null || swipe.getStartY() > map.get("MAX_START_Y") ? swipe.getStartY() : map.get("MAX_START_Y"));
-
-            map.put("MIN_END_X", map.get("MIN_END_X") == null || swipe.getEndX() < map.get("MIN_END_X") ? swipe.getEndX() : map.get("MIN_END_X"));
-            map.put("MAX_END_X", map.get("MAX_END_X") == null || swipe.getEndX() > map.get("MAX_END_X") ? swipe.getEndX() : map.get("MAX_END_X"));
-            map.put("MIN_END_Y", map.get("MIN_END_Y") == null || swipe.getEndY() < map.get("MIN_END_Y") ? swipe.getEndY() : map.get("MIN_END_Y"));
-            map.put("MAX_END_Y", map.get("MAX_END_Y") == null || swipe.getEndY() > map.get("MAX_END_Y") ? swipe.getEndY() : map.get("MAX_END_Y"));
+                map.put(min_key, map.get(min_key) == null || cur_value < map.get(min_key) ? cur_value : map.get(min_key));
+                map.put(max_key, map.get(max_key) == null || cur_value > map.get(max_key) ? cur_value : map.get(max_key));
+            }
 
             for(String feature : DatabaseHelper.features) {
                 for(String metric : DatabaseHelper.metrics) {
@@ -812,16 +778,21 @@ public class Swipe {
 
         ArrayList<Double> ret = new ArrayList<Double>();
 
-        ret.add((this.duration - map.get("MIN_DURATION")) / (map.get("MAX_DURATION") - map.get("MIN_DURATION")));
-        ret.add((this.minSize - map.get("MIN_MIN_SIZE")) / (map.get("MAX_MIN_SIZE") - map.get("MIN_MIN_SIZE")));
-        ret.add((this.maxSize - map.get("MIN_MAX_SIZE")) / (map.get("MAX_MAX_SIZE") - map.get("MIN_MAX_SIZE")));
-        ret.add((this.avgSize - map.get("MIN_AVG_SIZE")) / (map.get("MAX_AVG_SIZE") - map.get("MIN_AVG_SIZE")));
-        ret.add((this.downSize - map.get("MIN_DOWN_SIZE")) / (map.get("MAX_DOWN_SIZE") - map.get("MIN_DOWN_SIZE")));
-        ret.add((this.upSize - map.get("MIN_UP_SIZE")) / (map.get("MAX_UP_SIZE") - map.get("MIN_UP_SIZE")));
-        ret.add((this.startX - map.get("MIN_START_X")) / (map.get("MAX_START_X") - map.get("MIN_START_X")));
-        ret.add((this.startY - map.get("MIN_START_Y")) / (map.get("MAX_START_Y") - map.get("MIN_START_Y")));
-        ret.add((this.endX - map.get("MIN_END_X")) / (map.get("MAX_END_X") - map.get("MIN_END_X")));
-        ret.add((this.endY - map.get("MIN_END_Y")) / (map.get("MAX_END_Y") - map.get("MIN_END_Y")));
+        for(String head_feature : DatabaseHelper.head_features) {
+            String min_key = "MIN_" + head_feature.toUpperCase();
+            String max_key = "MAX_" + head_feature.toUpperCase();
+
+            java.lang.reflect.Method cur_method = null;
+            Double cur_value = 0.0;
+            try {
+                cur_method = this.getClass().getMethod("get" + head_feature.substring(0, 1).toUpperCase() + LOWER_UNDERSCORE.to(LOWER_CAMEL, head_feature.substring(1)));
+                cur_value = (Double) cur_method.invoke(this);
+            } catch (IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
+                e.printStackTrace();
+            }
+
+            ret.add((cur_value - map.get(min_key)) / (map.get(max_key) - map.get(min_key)));
+        }
 
         for(String feature : DatabaseHelper.features) {
             for(String metric : DatabaseHelper.metrics) {
@@ -859,18 +830,22 @@ public class Swipe {
         Map<String, Double> map = getMinMaxValues(allSwipes);
 
         Swipe swipe = new Swipe();
-        swipe.setDuration(values[0] * (map.get("MAX_DURATION") - map.get("MIN_DURATION")) + map.get("MIN_DURATION"));
-        swipe.setMinSize(values[1] * (map.get("MAX_MIN_SIZE") - map.get("MIN_MIN_SIZE")) + map.get("MIN_MIN_SIZE"));
-        swipe.setMaxSize(values[2] * (map.get("MAX_MAX_SIZE") - map.get("MIN_MAX_SIZE")) + map.get("MIN_MAX_SIZE"));
-        swipe.setAvgSize(values[3] * (map.get("MAX_AVG_SIZE") - map.get("MIN_AVG_SIZE")) + map.get("MIN_AVG_SIZE"));
-        swipe.setDownSize(values[4] * (map.get("MAX_DOWN_SIZE") - map.get("MIN_DOWN_SIZE")) + map.get("MIN_DOWN_SIZE"));
-        swipe.setUpSize(values[5] * (map.get("MAX_UP_SIZE") - map.get("MIN_UP_SIZE")) + map.get("MIN_UP_SIZE"));
-        swipe.setStartX(values[6] * (map.get("MAX_START_X") - map.get("MIN_START_X")) + map.get("MIN_START_X"));
-        swipe.setStartY(values[7] * (map.get("MAX_START_Y") - map.get("MIN_START_Y")) + map.get("MIN_START_Y"));
-        swipe.setEndX(values[8] * (map.get("MAX_END_X") - map.get("MIN_END_X")) + map.get("MIN_END_X"));
-        swipe.setEndY(values[9] * (map.get("MAX_END_Y") - map.get("MIN_END_Y")) + map.get("MIN_END_Y"));
+        Integer values_idx = 0;
 
-        Integer values_idx = 10;
+        for(String head_feature : DatabaseHelper.head_features) {
+            String min_key = "MIN_" + head_feature.toUpperCase();
+            String max_key = "MAX_" + head_feature.toUpperCase();
+
+            java.lang.reflect.Method cur_method = null;
+            try {
+                cur_method = swipe.getClass().getMethod("set" + head_feature.substring(0, 1).toUpperCase() + LOWER_UNDERSCORE.to(LOWER_CAMEL, head_feature.substring(1)), double.class);
+                cur_method.invoke(swipe, values[values_idx] * (map.get(max_key) - map.get(min_key)) + map.get(min_key));
+            } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+                e.printStackTrace();
+            }
+            values_idx = values_idx + 1;
+        }
+
         for(String feature : DatabaseHelper.features) {
             for(String metric : DatabaseHelper.metrics) {
                 for(String dimension : DatabaseHelper.dimensions) {
@@ -892,7 +867,6 @@ public class Swipe {
         }
 
         swipe.setHoldingPosition(holdingPosition);
-
         swipe.setUserId(userId);
 
         return swipe;
@@ -902,6 +876,7 @@ public class Swipe {
     public String toString() {
         return "Swipe{" +
                 "duration=" + duration +
+                "\n length=" + length +
                 "\n minSize=" + minSize +
                 "\n maxSize=" + maxSize +
                 "\n avgSize=" + avgSize +
@@ -977,15 +952,19 @@ public class Swipe {
         boolean useAngularVelocity = featureData.get(1) == 1;
         boolean useOrientation = featureData.get(2) == 1;
         boolean useSwipeDuration = featureData.get(3) == 1;
-        boolean useSwipeSize = featureData.get(4) == 1;
-        boolean useSwipeStartEndPos = featureData.get(5) == 1;
-        boolean useSwipeVelocity = featureData.get(6) == 1;
+        boolean useSwipeShape = featureData.get(4) == 1;
+        boolean useSwipeSize = featureData.get(5) == 1;
+        boolean useSwipeStartEndPos = featureData.get(6) == 1;
+        boolean useSwipeVelocity = featureData.get(7) == 1;
 
         ArrayList<Double> featureSet = new ArrayList<>();
 
         if(modelType != DatabaseHelper.ModelType.HOLD) {
             if (useSwipeDuration) {
                 featureSet.add(this.getDuration());
+            }
+            if (useSwipeShape) {
+                featureSet.add(this.getLength());
             }
             if (useSwipeSize) {
                 featureSet.add(this.getMinSize());

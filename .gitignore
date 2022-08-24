@@ -15,3 +15,8 @@
 local.properties
 analysis/data
 *checkpoint.ipynb
+caches/
+daemon/
+native/
+wrapper/
+.tmp/
