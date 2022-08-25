@@ -16,17 +16,16 @@ import android.hardware.SensorManager;
 import android.os.BatteryManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.CpuUsageInfo;
 import android.os.Debug;
 import android.os.Environment;
 import android.os.Handler;
-import android.os.HardwarePropertiesManager;
 import android.os.Looper;
 import android.os.StrictMode;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
@@ -36,6 +35,7 @@ import android.widget.PopupWindow;
 import android.widget.ProgressBar;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
+import android.widget.Spinner;
 import android.widget.Switch;
 import android.widget.TextView;
 
@@ -320,6 +320,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 float newX = event.getX(pointerId);
                 float newY = event.getY(pointerId);
                 this.xVelocityTranslation.add(newX - this.xLocations.get(this.xLocations.size() - 1));
+
                 this.yVelocityTranslation.add(newY - this.yLocations.get(this.yLocations.size() - 1));
                 this.xLocations.add(newX);
                 this.yLocations.add(newY);
@@ -434,6 +435,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         double length = this.length;
 
+        Double[] segmentsX = this.getSegments(this.xLocations);
+        Double[] segmentsY = this.getSegments(this.yLocations);
+
         DoubleSummaryStatistics sizesStats = this.sizes.stream().mapToDouble(x -> (double) x).summaryStatistics();
         double minSize = sizesStats.getMin();
         double maxSize = sizesStats.getMax();
@@ -529,6 +533,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         newSwipe.setLength(length);
 
+        newSwipe.setSegmentsX(segmentsX);
+        newSwipe.setSegmentsY(segmentsY);
+
         newSwipe.setMinSize(minSize);
         newSwipe.setMaxSize(maxSize);
         newSwipe.setAvgSize(avgSize);
@@ -617,6 +624,21 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         System.out.println("--------------------------------------------New Swipe---------------------------------------------------------------");
         System.out.println(newSwipe);
         return newSwipe;
+    }
+
+    public Double[] getSegments(ArrayList<Float> locations) {
+        Integer segments = this.dbHelper.getFeatureData().get(5);
+        Double[] segment_vals = new Double[segments];
+
+        // To generate x segments, a minimum of x+1 locations are required
+        // If the selected nr of segments exceeds the available locations, the maximum nr of segments for the current swipe is used instead
+        Integer collectable_segments = segments + 1 > locations.size() ? locations.size() - 1 : segments;
+
+        for(int i = 0; i < collectable_segments; i++) {
+            // TODO: Finish implementation
+        }
+
+        return segment_vals;
     }
 
     public void disableUserInteraction() {
@@ -758,14 +780,20 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         CheckBox swipeShapeCheckBox = popupView.findViewById(R.id.swipeShapeCheckBox);
         swipeShapeCheckBox.setChecked(featureData.get(4) == 1);
 
+        Spinner swipeSegmentSpinner = (Spinner) popupView.findViewById(R.id.swipeSegmentsSpinner);
+        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this, R.array.swipe_segments, android.R.layout.simple_spinner_item);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        swipeSegmentSpinner.setAdapter(adapter);
+        swipeSegmentSpinner.setSelection(((ArrayAdapter<String>) swipeSegmentSpinner.getAdapter()).getPosition(featureData.get(5).toString()));
+
         CheckBox swipeTouchSizeCheckBox = popupView.findViewById(R.id.swipeTouchSizeCheckBox);
-        swipeTouchSizeCheckBox.setChecked(featureData.get(5) == 1);
+        swipeTouchSizeCheckBox.setChecked(featureData.get(6) == 1);
 
         CheckBox swipeStartEndPosCheckBox = popupView.findViewById(R.id.swipeStartEndPosCheckBox);
-        swipeStartEndPosCheckBox.setChecked(featureData.get(6) == 1);
+        swipeStartEndPosCheckBox.setChecked(featureData.get(7) == 1);
 
         CheckBox swipeVelocityCheckBox = popupView.findViewById(R.id.swipeVelocityCheckBox);
-        swipeVelocityCheckBox.setChecked(featureData.get(7) == 1);
+        swipeVelocityCheckBox.setChecked(featureData.get(8) == 1);
 
         Button saveProfileButton = popupView.findViewById(R.id.saveProfileButton);
         saveProfileButton.setOnClickListener(new View.OnClickListener() {
@@ -786,6 +814,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                             orientationCheckBox.isChecked() ? 1 : 0,
                             swipeDurationCheckBox.isChecked() ? 1 : 0,
                             swipeShapeCheckBox.isChecked() ? 1 : 0,
+                            swipeShapeCheckBox.isChecked() ? Integer.parseInt((String) swipeSegmentSpinner.getSelectedItem()) : 0,
                             swipeTouchSizeCheckBox.isChecked() ? 1 : 0,
                             swipeStartEndPosCheckBox.isChecked() ? 1 : 0,
                             swipeVelocityCheckBox.isChecked() ? 1 : 0
@@ -1129,6 +1158,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             }
             if (useSwipeShape) {
                 attributes.add(new Attribute("length"));
+                attributes.add(new Attribute("segments_x"));
+                attributes.add(new Attribute("segments_y"));
             }
             if (useSwipeSize) {
                 attributes.add(new Attribute("minSize"));

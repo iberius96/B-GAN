@@ -67,6 +67,16 @@
         app:layout_constraintTop_toBottomOf="@+id/holdTitleTextView" />
 
     <TextView
+        android:id="@+id/swipeSegmentTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="6dp"
+        android:text="Nr. of segments:"
+        app:layout_constraintStart_toEndOf="@+id/swipeShapeCheckBox"
+        app:layout_constraintTop_toBottomOf="@+id/swipeDurationCheckBox" />
+
+    <TextView
         android:id="@+id/swipeDescTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -173,5 +183,12 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/swipeVelocityCheckBox" />
+
+    <Spinner
+        android:id="@+id/swipeSegmentsSpinner"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toEndOf="@+id/swipeSegmentTextView"
+        app:layout_constraintTop_toBottomOf="@+id/swipeDurationCheckBox" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

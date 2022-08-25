@@ -56,6 +56,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final String COL_DURATION = "duration";
     private static final String COL_LENGTH = "length";
+    private static final String COL_SEGMENTS_X = "segments_x";
+    private static final String COL_SEGMENTS_Y = "segments_y";
     private static final String COL_MIN_SIZE = "min_size";
     private static final String COL_MAX_SIZE = "max_size";
     private static final String COL_AVG_SIZE = "avg_size";
@@ -91,6 +93,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String COL_ORIENTATION = "orientation";
     private static final String COL_SWIPE_DURATION = "swipe_duration";
     private static final String COL_SWIPE_SHAPE = "swipe_shape";
+    private static final String COL_SWIPE_SHAPE_SEGMENTS = "swipe_shape_segments";
     private static final String COL_SWIPE_TOUCH_SIZE = "swipe_touch_size";
     private static final String COL_SWIPE_START_END_POS = "swipe_start_end_pos";
     private static final String COL_SWIPE_VELOCITY = "swipe_velocity";
@@ -106,6 +109,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public static final String[] head_features = {
             COL_DURATION,
             COL_LENGTH,
+            COL_SEGMENTS_X, COL_SEGMENTS_Y,
             COL_MIN_SIZE, COL_MAX_SIZE, COL_AVG_SIZE, COL_DOWN_SIZE, COL_UP_SIZE,
             COL_START_X, COL_START_Y,
             COL_END_X, COL_END_Y,
@@ -132,7 +136,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 + " (id INTEGER PRIMARY KEY AUTOINCREMENT, ";
 
         for(String head_feature : head_features) {
-            swipes_base += head_feature + " float(53), ";
+            if(head_feature == COL_SEGMENTS_X || head_feature == COL_SEGMENTS_Y) {
+                swipes_base += head_feature + " varchar(255), ";
+            } else {
+                swipes_base += head_feature + " float(53), ";
+            }
         }
 
         for(String feature : DatabaseHelper.features) {
@@ -195,6 +203,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 + COL_ORIENTATION + " integer(1), "
                 + COL_SWIPE_DURATION + " integer(1), "
                 + COL_SWIPE_SHAPE + " integer(1), "
+                + COL_SWIPE_SHAPE_SEGMENTS + " integer(2), "
                 + COL_SWIPE_TOUCH_SIZE + " integer(1), "
                 + COL_SWIPE_START_END_POS + " integer(1), "
                 + COL_SWIPE_VELOCITY + " integer(1))";
@@ -263,9 +272,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         if (feature_count == 0) {
             ContentValues contentValues = new ContentValues();
 
-            String[] feature_cols = {COL_ACCELERATION, COL_ANGULAR_VELOCITY, COL_ORIENTATION, COL_SWIPE_DURATION, COL_SWIPE_SHAPE, COL_SWIPE_TOUCH_SIZE, COL_SWIPE_START_END_POS, COL_SWIPE_VELOCITY};
-            for(int i = 0; i < feature_cols.length; i++) {
-                contentValues.put(feature_cols[i], 1);
+            String[] feature_cols = {COL_ACCELERATION, COL_ANGULAR_VELOCITY, COL_ORIENTATION, COL_SWIPE_DURATION, COL_SWIPE_SHAPE, COL_SWIPE_SHAPE_SEGMENTS, COL_SWIPE_TOUCH_SIZE, COL_SWIPE_START_END_POS, COL_SWIPE_VELOCITY};
+            for(String feature_col : feature_cols) {
+                if (feature_col == COL_SWIPE_SHAPE_SEGMENTS) {
+                    contentValues.put(feature_col, 10);
+                } else {
+                    contentValues.put(feature_col, 1);
+                }
             }
             db.insert(FEATURE_DATA, null, contentValues);
         }
@@ -599,7 +612,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return userData;
     }
 
-    public boolean saveFeatureData(int acceleration, int angular_velocity, int orientation, int swipe_duration, int swipe_shape, int swipe_touch_size, int swipe_start_end_pos, int swipe_velocity) {
+    public boolean saveFeatureData(int acceleration, int angular_velocity, int orientation, int swipe_duration, int swipe_shape, int swipe_shape_segments, int swipe_touch_size, int swipe_start_end_pos, int swipe_velocity) {
         SQLiteDatabase db = this.getWritableDatabase();
         db.execSQL("DELETE FROM " + FEATURE_DATA);
 
@@ -610,6 +623,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         contentValues.put(COL_ORIENTATION, orientation);
         contentValues.put(COL_SWIPE_DURATION, swipe_duration);
         contentValues.put(COL_SWIPE_SHAPE, swipe_shape);
+        contentValues.put(COL_SWIPE_SHAPE_SEGMENTS, swipe_shape_segments);
         contentValues.put(COL_SWIPE_TOUCH_SIZE, swipe_touch_size);
         contentValues.put(COL_SWIPE_START_END_POS, swipe_start_end_pos);
         contentValues.put(COL_SWIPE_VELOCITY, swipe_velocity);
@@ -632,6 +646,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         featureData.add(cursor.getInt(cursor.getColumnIndex(COL_ORIENTATION)));
         featureData.add(cursor.getInt(cursor.getColumnIndex(COL_SWIPE_DURATION)));
         featureData.add(cursor.getInt(cursor.getColumnIndex(COL_SWIPE_SHAPE)));
+        featureData.add(cursor.getInt(cursor.getColumnIndex(COL_SWIPE_SHAPE_SEGMENTS)));
         featureData.add(cursor.getInt(cursor.getColumnIndex(COL_SWIPE_TOUCH_SIZE)));
         featureData.add(cursor.getInt(cursor.getColumnIndex(COL_SWIPE_START_END_POS)));
         featureData.add(cursor.getInt(cursor.getColumnIndex(COL_SWIPE_VELOCITY)));

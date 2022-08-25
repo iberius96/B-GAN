@@ -29,7 +29,7 @@ public class GAN {
     private static final int LATENT_DIM = 12;
     public static final int NUM_EPOCHS = 4_000;
     public static final int NUM_LAYER_UNITS = 8;
-    public static final int NUM_TRAIN_FEATURES = 66;
+    public static final int NUM_TRAIN_FEATURES = 66; // TODO: Change to account for x and y segments
 
     private MultiLayerNetwork generator;
     private MultiLayerNetwork discriminator;
