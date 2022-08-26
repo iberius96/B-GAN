@@ -45,6 +45,8 @@ import androidx.core.app.ActivityCompat;
 
 import com.google.android.material.snackbar.Snackbar;
 
+import org.apache.commons.math3.util.Precision;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -435,8 +437,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         double length = this.length;
 
-        Double[] segmentsX = this.getSegments(this.xLocations);
-        Double[] segmentsY = this.getSegments(this.yLocations);
+        double[] segmentsX = this.getSegmentsOffset(this.xLocations);
+        double[] segmentsY = this.getSegmentsOffset(this.yLocations);
 
         DoubleSummaryStatistics sizesStats = this.sizes.stream().mapToDouble(x -> (double) x).summaryStatistics();
         double minSize = sizesStats.getMin();
@@ -626,19 +628,32 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         return newSwipe;
     }
 
-    public Double[] getSegments(ArrayList<Float> locations) {
+    public double[] getSegmentsOffset(ArrayList<Float> locations) {
         Integer segments = this.dbHelper.getFeatureData().get(5);
-        Double[] segment_vals = new Double[segments];
 
         // To generate x segments, a minimum of x+1 locations are required
         // If the selected nr of segments exceeds the available locations, the maximum nr of segments for the current swipe is used instead
         Integer collectable_segments = segments + 1 > locations.size() ? locations.size() - 1 : segments;
 
-        for(int i = 0; i < collectable_segments; i++) {
-            // TODO: Finish implementation
+        float interval_size = (float) locations.size() / collectable_segments;
+        Integer[] locs_idx = new Integer[collectable_segments + 1];
+        Integer curr_loc = 1;
+        for(int i = 0; i < locs_idx.length; i++) {
+            locs_idx[i] = curr_loc - 1; // e.g. Point 1, locations idx 0
+            curr_loc += Math.round(interval_size);
         }
 
-        return segment_vals;
+        locs_idx[locs_idx.length - 1] = locations.size() - 1; // Ensure that last idx corresponds to final location
+
+        ArrayList<Float> segments_locs = new ArrayList<>();
+        for(Integer idx : locs_idx) { segments_locs.add(locations.get(idx)); }
+
+        double[] ret = new double[segments];
+        for(int i = 0; i < collectable_segments; i++) {
+            ret[i] = (segments_locs.get(i + 1) - segments_locs.get(i)) / segments_locs.get(segments_locs.size() - 1);
+        }
+
+        return ret;
     }
 
     public void disableUserInteraction() {

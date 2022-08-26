@@ -15,8 +15,8 @@ import weka.core.Instances;
 public class Swipe {
     private double duration;
     private double length;
-    private Double[] segmentsX;
-    private Double[] segmentsY;
+    private double[] segmentsX;
+    private double[] segmentsY;
     private double minSize;
     private double maxSize;
     private double avgSize;
@@ -150,19 +150,19 @@ public class Swipe {
         this.length = length;
     }
 
-    public Double[] getSegmentsX() {
+    public double[] getSegmentsX() {
         return segmentsX;
     }
 
-    public void setSegmentsX(Double[] segmentsX) {
+    public void setSegmentsX(double[] segmentsX) {
         this.segmentsX = segmentsX;
     }
 
-    public Double[] getSegmentsY() {
+    public double[] getSegmentsY() {
         return segmentsY;
     }
 
-    public void setSegmentsY(Double[] segmentsY) {
+    public void setSegmentsY(double[] segmentsY) {
         this.segmentsY = segmentsY;
     }
 
