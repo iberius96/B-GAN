@@ -19,6 +19,7 @@ import java.io.OutputStreamWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Objects;
 
@@ -56,8 +57,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final String COL_DURATION = "duration";
     private static final String COL_LENGTH = "length";
-    private static final String COL_SEGMENTS_X = "segments_x";
-    private static final String COL_SEGMENTS_Y = "segments_y";
+    public static final String COL_SEGMENTS_X = "segments_x";
+    public static final String COL_SEGMENTS_Y = "segments_y";
     private static final String COL_MIN_SIZE = "min_size";
     private static final String COL_MAX_SIZE = "max_size";
     private static final String COL_AVG_SIZE = "avg_size";
@@ -317,7 +318,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             java.lang.reflect.Method cur_method = null;
             try {
                 cur_method = swipe.getClass().getMethod("get" + head_feature.substring(0, 1).toUpperCase() + LOWER_UNDERSCORE.to(LOWER_CAMEL, head_feature.substring(1)));
-                contentValues.put(head_feature, (Double) cur_method.invoke(swipe));
+                if(head_feature == COL_SEGMENTS_X || head_feature == COL_SEGMENTS_Y) {
+                    contentValues.put(head_feature, Arrays.toString((double[]) cur_method.invoke(swipe)));
+                } else {
+                    contentValues.put(head_feature, (Double) cur_method.invoke(swipe));
+                }
             } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
                 e.printStackTrace();
             }
@@ -393,8 +398,20 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             int values_idx = 0;
 
             for(String head_feature : head_features) {
-                contentValues.put(head_feature, normalizedValues[values_idx]);
-                values_idx = values_idx + 1;
+                if(head_feature == DatabaseHelper.COL_SEGMENTS_X || head_feature == DatabaseHelper.COL_SEGMENTS_Y) {
+                    String segment_str = "[";
+                    for(int i = 0; i < this.getFeatureData().get(5); i++) {
+                        segment_str += normalizedValues[values_idx] + ",";
+                        values_idx = values_idx + 1;
+                    }
+                    segment_str = segment_str.substring(0, segment_str.length() - 1);
+                    segment_str += "]";
+
+                    contentValues.put(head_feature, segment_str);
+                } else {
+                    contentValues.put(head_feature, normalizedValues[values_idx]);
+                    values_idx = values_idx + 1;
+                }
             }
 
             for(int i = 0; i < features.length; i++) {
@@ -429,8 +446,15 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             for(String head_feature : head_features) {
                 java.lang.reflect.Method cur_method = null;
                 try {
-                    cur_method = swipe.getClass().getMethod("set" + head_feature.substring(0, 1).toUpperCase() + LOWER_UNDERSCORE.to(LOWER_CAMEL, head_feature.substring(1)), double.class);
-                    cur_method.invoke(swipe, cursor.getDouble(cursor.getColumnIndex(head_feature)));
+                    if(head_feature == COL_SEGMENTS_X || head_feature == COL_SEGMENTS_Y) {
+                        cur_method = swipe.getClass().getMethod("set" + head_feature.substring(0, 1).toUpperCase() + LOWER_UNDERSCORE.to(LOWER_CAMEL, head_feature.substring(1)), double[].class);
+                        String cursor_str = cursor.getString(cursor.getColumnIndex(head_feature));
+                        String[] cursor_array = cursor_str.replace("[", "").replace("]","").split(",");
+                        cur_method.invoke(swipe, Arrays.stream(cursor_array).mapToDouble(Double::parseDouble).toArray());
+                    } else {
+                        cur_method = swipe.getClass().getMethod("set" + head_feature.substring(0, 1).toUpperCase() + LOWER_UNDERSCORE.to(LOWER_CAMEL, head_feature.substring(1)), double.class);
+                        cur_method.invoke(swipe, cursor.getDouble(cursor.getColumnIndex(head_feature)));
+                    }
                 } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
                     e.printStackTrace();
                 }
@@ -726,7 +750,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                     int colCounts = curCSV.getColumnCount();
                     String[] arrStr = new String[colCounts];
                     for (int i = 0; i < colCounts; i++) {
-                        if (colNames[i].equals(COL_USER_ID) || colNames[i].equals(COL_NICKNAME) || colNames[i].equals(COL_NICKNAME) || colNames[i].equals(COL_MODEL_TYPE)) {
+                        if (colNames[i].equals(COL_USER_ID) ||
+                                colNames[i].equals(COL_NICKNAME) ||
+                                colNames[i].equals(COL_NICKNAME) ||
+                                colNames[i].equals(COL_MODEL_TYPE) ||
+                                colNames[i].equals(COL_SEGMENTS_X) ||
+                                colNames[i].equals(COL_SEGMENTS_Y)) {
                             arrStr[i] = curCSV.getString(i);
                         } else {
                             arrStr[i] = Double.toString(curCSV.getDouble(i));
@@ -752,7 +781,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                         int colCounts = curCSV.getColumnCount();
                         String[] arrStr = new String[colCounts];
                         for (int i = 0; i < colCounts; i++) {
-                            if (colNames[i].equals(COL_USER_ID) || colNames[i].equals(COL_NICKNAME) || colNames[i].equals(COL_NICKNAME) || colNames[i].equals(COL_MODEL_TYPE)) {
+                            if (colNames[i].equals(COL_USER_ID) ||
+                                    colNames[i].equals(COL_NICKNAME) ||
+                                    colNames[i].equals(COL_NICKNAME) ||
+                                    colNames[i].equals(COL_MODEL_TYPE) ||
+                                    colNames[i].equals(COL_SEGMENTS_X) ||
+                                    colNames[i].equals(COL_SEGMENTS_Y)) {
                                 arrStr[i] = curCSV.getString(i);
                             } else {
                                 arrStr[i] = Double.toString(curCSV.getDouble(i));

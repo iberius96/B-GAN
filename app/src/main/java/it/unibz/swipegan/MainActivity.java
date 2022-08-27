@@ -45,8 +45,6 @@ import androidx.core.app.ActivityCompat;
 
 import com.google.android.material.snackbar.Snackbar;
 
-import org.apache.commons.math3.util.Precision;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -635,22 +633,20 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         // If the selected nr of segments exceeds the available locations, the maximum nr of segments for the current swipe is used instead
         Integer collectable_segments = segments + 1 > locations.size() ? locations.size() - 1 : segments;
 
-        float interval_size = (float) locations.size() / collectable_segments;
+        float interval_size = (float) (locations.size() - 1) / collectable_segments;
         Integer[] locs_idx = new Integer[collectable_segments + 1];
-        Integer curr_loc = 1;
+        float curr_loc = 0;
         for(int i = 0; i < locs_idx.length; i++) {
-            locs_idx[i] = curr_loc - 1; // e.g. Point 1, locations idx 0
-            curr_loc += Math.round(interval_size);
+            locs_idx[i] = Math.round(curr_loc);
+            curr_loc += interval_size;
         }
-
-        locs_idx[locs_idx.length - 1] = locations.size() - 1; // Ensure that last idx corresponds to final location
 
         ArrayList<Float> segments_locs = new ArrayList<>();
         for(Integer idx : locs_idx) { segments_locs.add(locations.get(idx)); }
 
         double[] ret = new double[segments];
         for(int i = 0; i < collectable_segments; i++) {
-            ret[i] = (segments_locs.get(i + 1) - segments_locs.get(i)) / segments_locs.get(segments_locs.size() - 1);
+            ret[i] = (segments_locs.get(i + 1) - segments_locs.get(i)) / Math.abs((segments_locs.get(segments_locs.size() - 1) - segments_locs.get(0)));
         }
 
         return ret;
@@ -799,7 +795,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this, R.array.swipe_segments, android.R.layout.simple_spinner_item);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         swipeSegmentSpinner.setAdapter(adapter);
-        swipeSegmentSpinner.setSelection(((ArrayAdapter<String>) swipeSegmentSpinner.getAdapter()).getPosition(featureData.get(5).toString()));
+
+        if(featureData.get(5) == 0) {
+            swipeSegmentSpinner.setSelection(((ArrayAdapter<String>) swipeSegmentSpinner.getAdapter()).getPosition("10"));
+        } else {
+            swipeSegmentSpinner.setSelection(((ArrayAdapter<String>) swipeSegmentSpinner.getAdapter()).getPosition(featureData.get(5).toString()));
+        }
+        Integer initial_segment_selection = Integer.parseInt((String) swipeSegmentSpinner.getSelectedItem());
 
         CheckBox swipeTouchSizeCheckBox = popupView.findViewById(R.id.swipeTouchSizeCheckBox);
         swipeTouchSizeCheckBox.setChecked(featureData.get(6) == 1);
@@ -829,11 +831,16 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                             orientationCheckBox.isChecked() ? 1 : 0,
                             swipeDurationCheckBox.isChecked() ? 1 : 0,
                             swipeShapeCheckBox.isChecked() ? 1 : 0,
-                            swipeShapeCheckBox.isChecked() ? Integer.parseInt((String) swipeSegmentSpinner.getSelectedItem()) : 0,
+                            Integer.parseInt((String) swipeSegmentSpinner.getSelectedItem()),
                             swipeTouchSizeCheckBox.isChecked() ? 1 : 0,
                             swipeStartEndPosCheckBox.isChecked() ? 1 : 0,
                             swipeVelocityCheckBox.isChecked() ? 1 : 0
                     );
+
+                    if(Integer.parseInt((String) swipeSegmentSpinner.getSelectedItem()) != initial_segment_selection) {
+                        dbHelper.resetDB(false);
+                        inputTextView.setText("Inputs 0 (min 5)");
+                    }
 
                     popupWindow.dismiss();
                 } else {
@@ -1173,8 +1180,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             }
             if (useSwipeShape) {
                 attributes.add(new Attribute("length"));
-                attributes.add(new Attribute("segments_x"));
-                attributes.add(new Attribute("segments_y"));
+
+                for(String dimension : new String[]{"x", "y"}) {
+                    for(int i = 0; i < dbHelper.getFeatureData().get(5); i++) {
+                        attributes.add(new Attribute("segments_" + dimension + "_" + i));
+                    }
+                }
             }
             if (useSwipeSize) {
                 attributes.add(new Attribute("minSize"));

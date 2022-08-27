@@ -4,9 +4,12 @@ import static com.google.common.base.CaseFormat.LOWER_CAMEL;
 import static com.google.common.base.CaseFormat.LOWER_UNDERSCORE;
 
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import weka.core.DenseInstance;
 import weka.core.Instance;
@@ -752,16 +755,24 @@ public class Swipe {
                 String max_key = "MAX_" + head_feature.toUpperCase();
 
                 java.lang.reflect.Method cur_method = null;
-                Double cur_value = 0.0;
                 try {
                     cur_method = swipe.getClass().getMethod("get" + head_feature.substring(0, 1).toUpperCase() + LOWER_UNDERSCORE.to(LOWER_CAMEL, head_feature.substring(1)));
-                    cur_value = (Double) cur_method.invoke(swipe);
+
+                    if(head_feature == DatabaseHelper.COL_SEGMENTS_X || head_feature == DatabaseHelper.COL_SEGMENTS_Y) {
+                        double[] segment_vals = (double[]) cur_method.invoke(swipe);
+
+                        for(int i = 0; i < segment_vals.length; i++) {
+                            map.put(min_key + "_" + i, map.get(min_key + "_" + i) == null || segment_vals[i] < map.get(min_key + "_" + i) ? segment_vals[i] : map.get(min_key + "_" + i));
+                            map.put(max_key + "_" + i, map.get(max_key + "_" + i) == null || segment_vals[i] > map.get(max_key + "_" + i) ? segment_vals[i] : map.get(max_key + "_" + i));
+                        }
+                    } else {
+                        Double cur_value = (Double) cur_method.invoke(swipe);
+                        map.put(min_key, map.get(min_key) == null || cur_value < map.get(min_key) ? cur_value : map.get(min_key));
+                        map.put(max_key, map.get(max_key) == null || cur_value > map.get(max_key) ? cur_value : map.get(max_key));
+                    }
                 } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
                     e.printStackTrace();
                 }
-
-                map.put(min_key, map.get(min_key) == null || cur_value < map.get(min_key) ? cur_value : map.get(min_key));
-                map.put(max_key, map.get(max_key) == null || cur_value > map.get(max_key) ? cur_value : map.get(max_key));
             }
 
             for(String feature : DatabaseHelper.features) {
@@ -801,15 +812,22 @@ public class Swipe {
             String max_key = "MAX_" + head_feature.toUpperCase();
 
             java.lang.reflect.Method cur_method = null;
-            Double cur_value = 0.0;
             try {
                 cur_method = this.getClass().getMethod("get" + head_feature.substring(0, 1).toUpperCase() + LOWER_UNDERSCORE.to(LOWER_CAMEL, head_feature.substring(1)));
-                cur_value = (Double) cur_method.invoke(this);
+
+                if(head_feature == DatabaseHelper.COL_SEGMENTS_X || head_feature == DatabaseHelper.COL_SEGMENTS_Y) {
+                    double[] segment_vals = (double[]) cur_method.invoke(this);
+
+                    for(int i = 0; i < segment_vals.length; i++) {
+                        ret.add((segment_vals[i] - map.get(min_key + "_" + i)) / (map.get(max_key + "_" + i) - map.get(min_key + "_" + i)));
+                    }
+                } else {
+                    Double cur_value = (Double) cur_method.invoke(this);
+                    ret.add((cur_value - map.get(min_key)) / (map.get(max_key) - map.get(min_key)));
+                }
             } catch (IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
                 e.printStackTrace();
             }
-
-            ret.add((cur_value - map.get(min_key)) / (map.get(max_key) - map.get(min_key)));
         }
 
         for(String feature : DatabaseHelper.features) {
@@ -854,14 +872,30 @@ public class Swipe {
             String min_key = "MIN_" + head_feature.toUpperCase();
             String max_key = "MAX_" + head_feature.toUpperCase();
 
-            java.lang.reflect.Method cur_method = null;
+            Method cur_method = null;
             try {
-                cur_method = swipe.getClass().getMethod("set" + head_feature.substring(0, 1).toUpperCase() + LOWER_UNDERSCORE.to(LOWER_CAMEL, head_feature.substring(1)), double.class);
-                cur_method.invoke(swipe, values[values_idx] * (map.get(max_key) - map.get(min_key)) + map.get(min_key));
+                if(head_feature == DatabaseHelper.COL_SEGMENTS_X || head_feature == DatabaseHelper.COL_SEGMENTS_Y) {
+                    Integer segments_size = map.entrySet()
+                            .stream()
+                            .filter(x -> x.getKey().contains(head_feature))
+                            .collect(Collectors.toMap(x -> x.getKey(), x -> x.getValue())).size();
+
+                    double[] normalized_segments = new double[segments_size];
+                    for(int i = 0; i < segments_size; i++) {
+                        normalized_segments[i] = values[values_idx] * (map.get(max_key + "_" + i) - map.get(min_key + "_" + i)) + map.get(min_key + "_" + i);
+                        values_idx = values_idx + 1;
+                    }
+
+                    cur_method = swipe.getClass().getMethod("set" + head_feature.substring(0, 1).toUpperCase() + LOWER_UNDERSCORE.to(LOWER_CAMEL, head_feature.substring(1)), double[].class);
+                    cur_method.invoke(swipe, normalized_segments);
+                } else {
+                    cur_method = swipe.getClass().getMethod("set" + head_feature.substring(0, 1).toUpperCase() + LOWER_UNDERSCORE.to(LOWER_CAMEL, head_feature.substring(1)), double.class);
+                    cur_method.invoke(swipe, values[values_idx] * (map.get(max_key) - map.get(min_key)) + map.get(min_key));
+                    values_idx = values_idx + 1;
+                }
             } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
                 e.printStackTrace();
             }
-            values_idx = values_idx + 1;
         }
 
         for(String feature : DatabaseHelper.features) {
@@ -872,7 +906,7 @@ public class Swipe {
                     String min_key = "MIN_" + metric.toUpperCase() + "_" + dimension + "_" + feature.toUpperCase();
                     String max_key = "MAX_" + metric.toUpperCase() + "_" + dimension + "_" + feature.toUpperCase();
 
-                    java.lang.reflect.Method cur_method = null;
+                    Method cur_method = null;
                     try {
                         cur_method = swipe.getClass().getMethod("set" + metric + dimension + feature, double.class);
                         cur_method.invoke(swipe, values[values_idx] * (map.get(max_key) - map.get(min_key)) + map.get(min_key));

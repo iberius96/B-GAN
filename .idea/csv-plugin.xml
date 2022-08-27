@@ -45,14 +45,35 @@
             </Attribute>
           </value>
         </entry>
-        <entry key="$USER_HOME$/Library/Caches/Google/AndroidStudio2021.2/device-explorer/Pixel_5_API_30 [emulator-5554]/storage/emulated/0/Download/SwipeGAN/2022-08-26_12-02_realResults.csv">
+        <entry key="$USER_HOME$/Library/Caches/Google/AndroidStudio2021.2/device-explorer/samsung-sm_g991b-R5CR809X1NW/sdcard/Download/SwipeGAN/2022-08-27_19-58_realSwipes.csv">
           <value>
             <Attribute>
               <option name="separator" value="," />
             </Attribute>
           </value>
         </entry>
-        <entry key="$USER_HOME$/Library/Caches/Google/AndroidStudio2021.2/device-explorer/Pixel_5_API_30 [emulator-5554]/storage/emulated/0/Download/SwipeGAN/2022-08-26_12-02_testSwipes.csv">
+        <entry key="$USER_HOME$/Library/Caches/Google/AndroidStudio2021.2/device-explorer/samsung-sm_g991b-R5CR809X1NW/sdcard/Download/SwipeGAN/2022-08-27_20-09_testSwipes.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="$USER_HOME$/Library/Caches/Google/AndroidStudio2021.2/device-explorer/samsung-sm_g991b-R5CR809X1NW/sdcard/Download/SwipeGAN/2022-08-27_20-12_realSwipes.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="$USER_HOME$/Library/Caches/Google/AndroidStudio2021.2/device-explorer/samsung-sm_g991b-R5CR809X1NW/storage/emulated/0/Download/SwipeGAN/2022-08-27_19-10_realSwipes.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="$USER_HOME$/Library/Caches/Google/AndroidStudio2021.2/device-explorer/samsung-sm_g991b-R5CR809X1NW/storage/emulated/0/Download/SwipeGAN/2022-08-27_19-10_testSwipes.csv">
           <value>
             <Attribute>
               <option name="separator" value="," />
