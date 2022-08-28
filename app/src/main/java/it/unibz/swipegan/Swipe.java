@@ -877,8 +877,8 @@ public class Swipe {
                 if(head_feature == DatabaseHelper.COL_SEGMENTS_X || head_feature == DatabaseHelper.COL_SEGMENTS_Y) {
                     Integer segments_size = map.entrySet()
                             .stream()
-                            .filter(x -> x.getKey().contains(head_feature))
-                            .collect(Collectors.toMap(x -> x.getKey(), x -> x.getValue())).size();
+                            .filter(x -> x.getKey().contains(head_feature.toUpperCase()))
+                            .collect(Collectors.toMap(x -> x.getKey(), x -> x.getValue())).size() / 2;
 
                     double[] normalized_segments = new double[segments_size];
                     for(int i = 0; i < segments_size; i++) {
