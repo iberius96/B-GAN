@@ -46,7 +46,7 @@ public class GAN {
         return new Layer[]{
                 new DenseLayer.Builder()
                         .nIn(LATENT_DIM)
-                        .nOut(NUM_LAYER_UNITS)// try 64
+                        .nOut(NUM_LAYER_UNITS) // try 64
                         .weightInit(WeightInit.RELU_UNIFORM)
                         .activation(Activation.RELU)
                         .build(),
