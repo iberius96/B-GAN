@@ -66,6 +66,27 @@
             </Attribute>
           </value>
         </entry>
+        <entry key="$USER_HOME$/Library/Caches/Google/AndroidStudio2021.2/device-explorer/samsung-sm_g991b-R5CR809X1NW/sdcard/Download/SwipeGAN/2022-08-28_22-14_realSwipes.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="$USER_HOME$/Library/Caches/Google/AndroidStudio2021.2/device-explorer/samsung-sm_g991b-R5CR809X1NW/sdcard/Download/SwipeGAN/2022-08-28_22-24_realSwipes.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="$USER_HOME$/Library/Caches/Google/AndroidStudio2021.2/device-explorer/samsung-sm_g991b-R5CR809X1NW/sdcard/Download/SwipeGAN/2022-08-28_22-24_realSwipesNormalized.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
       </map>
     </option>
   </component>

@@ -205,8 +205,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             StrictMode.setVmPolicy(builder.build());
         }
 
-        new Thread(() -> this.gan = new GAN()).start();
-
+        Integer segments = this.dbHelper.getFeatureData().get(5);
+        if(segments == 0) {
+            new Thread(() -> this.gan = new GAN(DatabaseHelper.DEFAULT_SEGMENTS)).start();
+        } else {
+            new Thread(() -> this.gan = new GAN(segments)).start();
+        }
     }
 
     @Override
@@ -797,7 +801,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         swipeSegmentSpinner.setAdapter(adapter);
 
         if(featureData.get(5) == 0) {
-            swipeSegmentSpinner.setSelection(((ArrayAdapter<String>) swipeSegmentSpinner.getAdapter()).getPosition("10"));
+            swipeSegmentSpinner.setSelection(((ArrayAdapter<String>) swipeSegmentSpinner.getAdapter()).getPosition(String.valueOf(DatabaseHelper.DEFAULT_SEGMENTS)));
         } else {
             swipeSegmentSpinner.setSelection(((ArrayAdapter<String>) swipeSegmentSpinner.getAdapter()).getPosition(featureData.get(5).toString()));
         }
@@ -813,17 +817,24 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         swipeVelocityCheckBox.setChecked(featureData.get(8) == 1);
 
         Button saveProfileButton = popupView.findViewById(R.id.saveProfileButton);
-        saveProfileButton.setOnClickListener(new View.OnClickListener() {
+        class MyListener implements View.OnClickListener {
+            private MainActivity mainActivity;
+
+            public MyListener(MainActivity mainActivity) {
+                super();
+                this.mainActivity = mainActivity;
+            }
+
             @Override
             public void onClick(View v) {
                 if( accelerationCheckBox.isChecked() ||
-                    angularVelocityCheckBox.isChecked() ||
-                    orientationCheckBox.isChecked() ||
-                    swipeDurationCheckBox.isChecked() ||
-                    swipeShapeCheckBox.isChecked() ||
-                    swipeTouchSizeCheckBox.isChecked() ||
-                    swipeStartEndPosCheckBox.isChecked() ||
-                    swipeVelocityCheckBox.isChecked()
+                        angularVelocityCheckBox.isChecked() ||
+                        orientationCheckBox.isChecked() ||
+                        swipeDurationCheckBox.isChecked() ||
+                        swipeShapeCheckBox.isChecked() ||
+                        swipeTouchSizeCheckBox.isChecked() ||
+                        swipeStartEndPosCheckBox.isChecked() ||
+                        swipeVelocityCheckBox.isChecked()
                 ) {
                     dbHelper.saveFeatureData(
                             accelerationCheckBox.isChecked() ? 1 : 0,
@@ -837,9 +848,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                             swipeVelocityCheckBox.isChecked() ? 1 : 0
                     );
 
-                    if(Integer.parseInt((String) swipeSegmentSpinner.getSelectedItem()) != initial_segment_selection) {
+                    Integer cur_segment_selection = Integer.parseInt((String) swipeSegmentSpinner.getSelectedItem());
+                    if(cur_segment_selection != initial_segment_selection) {
                         dbHelper.resetDB(false);
                         inputTextView.setText("Inputs 0 (min 5)");
+                        new Thread(() -> mainActivity.gan = new GAN(cur_segment_selection)).start();
                     }
 
                     popupWindow.dismiss();
@@ -852,7 +865,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     builder.show();
                 }
             }
-        });
+        }
+        saveProfileButton.setOnClickListener(new MyListener(this));
 
         Button cancelButton = popupView.findViewById(R.id.cancelButton);
         cancelButton.setOnClickListener(new View.OnClickListener() {

@@ -29,13 +29,14 @@ public class GAN {
     private static final int LATENT_DIM = 12;
     public static final int NUM_EPOCHS = 4_000;
     public static final int NUM_LAYER_UNITS = 8;
-    public static final int NUM_TRAIN_FEATURES = 86; // TODO: Change to account for x and y segments
+    public static int NUM_TRAIN_FEATURES = DatabaseHelper.BASE_FEATURES;
 
     private MultiLayerNetwork generator;
     private MultiLayerNetwork discriminator;
     private MultiLayerNetwork gan;
 
-    public GAN() {
+    public GAN(Integer segments) {
+        this.setSegmentFeatures(segments);
         this.makeGenerator();
         this.makeDiscriminator();
         this.makeGAN();
@@ -206,5 +207,9 @@ public class GAN {
         }
 
         return fakeSwipes;
+    }
+
+    public void setSegmentFeatures(Integer segmentFeatures) {
+        this.NUM_TRAIN_FEATURES = DatabaseHelper.BASE_FEATURES + (segmentFeatures * 2); // Increment for both X and Y axis
     }
 }

@@ -127,6 +127,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         FULL
     };
 
+    public static final Integer BASE_FEATURES = 66; // TODO: Change this hardcoded value
+    public static final Integer DEFAULT_SEGMENTS = 10;
+
     public DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, 1);
     }
@@ -276,7 +279,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             String[] feature_cols = {COL_ACCELERATION, COL_ANGULAR_VELOCITY, COL_ORIENTATION, COL_SWIPE_DURATION, COL_SWIPE_SHAPE, COL_SWIPE_SHAPE_SEGMENTS, COL_SWIPE_TOUCH_SIZE, COL_SWIPE_START_END_POS, COL_SWIPE_VELOCITY};
             for(String feature_col : feature_cols) {
                 if (feature_col == COL_SWIPE_SHAPE_SEGMENTS) {
-                    contentValues.put(feature_col, 10);
+                    contentValues.put(feature_col, DEFAULT_SEGMENTS);
                 } else {
                     contentValues.put(feature_col, 1);
                 }
