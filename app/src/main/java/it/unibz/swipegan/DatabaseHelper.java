@@ -98,6 +98,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String COL_SWIPE_TOUCH_SIZE = "swipe_touch_size";
     private static final String COL_SWIPE_START_END_POS = "swipe_start_end_pos";
     private static final String COL_SWIPE_VELOCITY = "swipe_velocity";
+    private static final String COL_KEYSTROKE = "keystroke";
+    private static final String COL_PIN_LENGTH = "pin_length";
 
     private static final String COL_MIN_CPU_TEMP = "min_cpu_temp";
     private static final String COL_MAX_CPU_TEMP = "max_cpu_temp";
@@ -129,6 +131,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     public static final Integer BASE_FEATURES = 66; // TODO: Change this hardcoded value
     public static final Integer DEFAULT_SEGMENTS = 10;
+    public static final Integer DEFAULT_PIN_LENGTH = 8;
 
     public DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, 1);
@@ -210,7 +213,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 + COL_SWIPE_SHAPE_SEGMENTS + " integer(2), "
                 + COL_SWIPE_TOUCH_SIZE + " integer(1), "
                 + COL_SWIPE_START_END_POS + " integer(1), "
-                + COL_SWIPE_VELOCITY + " integer(1))";
+                + COL_SWIPE_VELOCITY + " integer(1),"
+                + COL_KEYSTROKE + " integer(1),"
+                + COL_PIN_LENGTH + " integer(1))";
 
         String createResourceDataTable = "CREATE TABLE " + RESOURCE_DATA
                 + " (id INTEGER PRIMARY KEY AUTOINCREMENT, "
@@ -276,10 +281,15 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         if (feature_count == 0) {
             ContentValues contentValues = new ContentValues();
 
-            String[] feature_cols = {COL_ACCELERATION, COL_ANGULAR_VELOCITY, COL_ORIENTATION, COL_SWIPE_DURATION, COL_SWIPE_SHAPE, COL_SWIPE_SHAPE_SEGMENTS, COL_SWIPE_TOUCH_SIZE, COL_SWIPE_START_END_POS, COL_SWIPE_VELOCITY};
+            String[] feature_cols = {
+                    COL_ACCELERATION, COL_ANGULAR_VELOCITY, COL_ORIENTATION,
+                    COL_SWIPE_DURATION, COL_SWIPE_SHAPE, COL_SWIPE_SHAPE_SEGMENTS, COL_SWIPE_TOUCH_SIZE, COL_SWIPE_START_END_POS, COL_SWIPE_VELOCITY,
+                    COL_KEYSTROKE, COL_PIN_LENGTH};
             for(String feature_col : feature_cols) {
                 if (feature_col == COL_SWIPE_SHAPE_SEGMENTS) {
                     contentValues.put(feature_col, DEFAULT_SEGMENTS);
+                } else if(feature_col == COL_PIN_LENGTH) {
+                    contentValues.put(feature_col, DEFAULT_PIN_LENGTH);
                 } else {
                     contentValues.put(feature_col, 1);
                 }
@@ -639,7 +649,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return userData;
     }
 
-    public boolean saveFeatureData(int acceleration, int angular_velocity, int orientation, int swipe_duration, int swipe_shape, int swipe_shape_segments, int swipe_touch_size, int swipe_start_end_pos, int swipe_velocity) {
+    public boolean saveFeatureData(
+            int acceleration, int angular_velocity, int orientation,
+            int swipe_duration, int swipe_shape, int swipe_shape_segments, int swipe_touch_size, int swipe_start_end_pos, int swipe_velocity,
+            int keystroke, int pin_length) {
         SQLiteDatabase db = this.getWritableDatabase();
         db.execSQL("DELETE FROM " + FEATURE_DATA);
 
@@ -654,6 +667,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         contentValues.put(COL_SWIPE_TOUCH_SIZE, swipe_touch_size);
         contentValues.put(COL_SWIPE_START_END_POS, swipe_start_end_pos);
         contentValues.put(COL_SWIPE_VELOCITY, swipe_velocity);
+        contentValues.put(COL_KEYSTROKE, keystroke);
+        contentValues.put(COL_PIN_LENGTH, pin_length);
 
         long result = db.insert(FEATURE_DATA, null, contentValues);
         return result != -1;
@@ -677,6 +692,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         featureData.add(cursor.getInt(cursor.getColumnIndex(COL_SWIPE_TOUCH_SIZE)));
         featureData.add(cursor.getInt(cursor.getColumnIndex(COL_SWIPE_START_END_POS)));
         featureData.add(cursor.getInt(cursor.getColumnIndex(COL_SWIPE_VELOCITY)));
+        featureData.add(cursor.getInt(cursor.getColumnIndex(COL_KEYSTROKE)));
+        featureData.add(cursor.getInt(cursor.getColumnIndex(COL_PIN_LENGTH)));
 
         cursor.close();
 

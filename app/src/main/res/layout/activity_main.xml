@@ -188,4 +188,107 @@
             android:text="Walking" />
     </RadioGroup>
 
+    <Button
+        android:id="@+id/keystrokeButton1"
+        android:layout_width="100dp"
+        android:layout_height="75dp"
+        android:layout_marginEnd="20dp"
+        android:text="1"
+        app:layout_constraintEnd_toStartOf="@+id/keystrokeButton2"
+        app:layout_constraintTop_toTopOf="@+id/swipeImageView" />
+
+    <Button
+        android:id="@+id/keystrokeButton3"
+        android:layout_width="100dp"
+        android:layout_height="75dp"
+        android:layout_marginStart="20dp"
+        android:text="3"
+        app:layout_constraintStart_toEndOf="@+id/keystrokeButton2"
+        app:layout_constraintTop_toTopOf="@+id/swipeImageView" />
+
+    <Button
+        android:id="@+id/keystrokeButton4"
+        android:layout_width="100dp"
+        android:layout_height="75dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginEnd="20dp"
+        android:text="4"
+        app:layout_constraintEnd_toStartOf="@+id/keystrokeButton2"
+        app:layout_constraintTop_toBottomOf="@+id/keystrokeButton2" />
+
+    <Button
+        android:id="@+id/keystrokeButton7"
+        android:layout_width="100dp"
+        android:layout_height="75dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginEnd="20dp"
+        android:text="7"
+        app:layout_constraintEnd_toStartOf="@+id/keystrokeButton5"
+        app:layout_constraintTop_toBottomOf="@+id/keystrokeButton5" />
+
+    <Button
+        android:id="@+id/keystrokeButton0"
+        android:layout_width="100dp"
+        android:layout_height="75dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginEnd="20dp"
+        android:text="0"
+        app:layout_constraintEnd_toStartOf="@+id/keystrokeButton9"
+        app:layout_constraintStart_toEndOf="@+id/keystrokeButton7"
+        app:layout_constraintTop_toBottomOf="@+id/keystrokeButton8" />
+
+    <Button
+        android:id="@+id/keystrokeButton9"
+        android:layout_width="100dp"
+        android:layout_height="75dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="20dp"
+        android:text="9"
+        app:layout_constraintStart_toEndOf="@+id/keystrokeButton5"
+        app:layout_constraintTop_toBottomOf="@+id/keystrokeButton5" />
+
+    <Button
+        android:id="@+id/keystrokeButton8"
+        android:layout_width="100dp"
+        android:layout_height="75dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginEnd="20dp"
+        android:text="8"
+        app:layout_constraintEnd_toStartOf="@+id/keystrokeButton6"
+        app:layout_constraintStart_toEndOf="@+id/keystrokeButton4"
+        app:layout_constraintTop_toBottomOf="@+id/keystrokeButton5" />
+
+    <Button
+        android:id="@+id/keystrokeButton5"
+        android:layout_width="100dp"
+        android:layout_height="75dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginEnd="20dp"
+        android:text="5"
+        app:layout_constraintEnd_toStartOf="@+id/keystrokeButton3"
+        app:layout_constraintStart_toEndOf="@+id/keystrokeButton1"
+        app:layout_constraintTop_toBottomOf="@+id/keystrokeButton2" />
+
+    <Button
+        android:id="@+id/keystrokeButton6"
+        android:layout_width="100dp"
+        android:layout_height="75dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="20dp"
+        android:text="6"
+        app:layout_constraintStart_toEndOf="@+id/keystrokeButton2"
+        app:layout_constraintTop_toBottomOf="@+id/keystrokeButton2" />
+
+    <Button
+        android:id="@+id/keystrokeButton2"
+        android:layout_width="100dp"
+        android:layout_height="75dp"
+        android:text="2"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/swipeImageView" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -8,6 +8,7 @@ import android.app.ActivityManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
+import android.content.res.Resources;
 import android.graphics.Color;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -46,6 +47,9 @@ import androidx.core.app.ActivityCompat;
 import com.google.android.material.snackbar.Snackbar;
 
 import java.io.File;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.DoubleSummaryStatistics;
@@ -114,6 +118,18 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private RadioButton standingRadioButton;
     private RadioButton walkingRadioButton;
     private RadioGroup holdingPositionRadioGroup;
+    private Button keystrokeButton0;
+    private Button keystrokeButton1;
+    private Button keystrokeButton2;
+    private Button keystrokeButton3;
+    private Button keystrokeButton4;
+    private Button keystrokeButton5;
+    private Button keystrokeButton6;
+    private Button keystrokeButton7;
+    private Button keystrokeButton8;
+    private Button keystrokeButton9;
+
+    private static final Integer NUMPAD_SIZE = 10;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -138,6 +154,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         this.sittingRadioButton = findViewById(R.id.sittingRadioButton);
         this.standingRadioButton = findViewById(R.id.standingRadioButton);
         this.walkingRadioButton = findViewById(R.id.walkingRadioButton);
+
+        this.setNumpadVisibility(View.INVISIBLE);
+
         this.sittingRadioButton.setChecked(true);
 
         this.sittingRadioButton.setOnCheckedChangeListener((radioButtonView, isChecked) -> {
@@ -796,9 +815,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         swipeShapeCheckBox.setChecked(featureData.get(4) == 1);
 
         Spinner swipeSegmentSpinner = (Spinner) popupView.findViewById(R.id.swipeSegmentsSpinner);
-        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this, R.array.swipe_segments, android.R.layout.simple_spinner_item);
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        swipeSegmentSpinner.setAdapter(adapter);
+        ArrayAdapter<CharSequence> swipeSegmentdapter = ArrayAdapter.createFromResource(this, R.array.swipe_segments, android.R.layout.simple_spinner_item);
+        swipeSegmentdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        swipeSegmentSpinner.setAdapter(swipeSegmentdapter);
 
         if(featureData.get(5) == 0) {
             swipeSegmentSpinner.setSelection(((ArrayAdapter<String>) swipeSegmentSpinner.getAdapter()).getPosition(String.valueOf(DatabaseHelper.DEFAULT_SEGMENTS)));
@@ -815,6 +834,19 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         CheckBox swipeVelocityCheckBox = popupView.findViewById(R.id.swipeVelocityCheckBox);
         swipeVelocityCheckBox.setChecked(featureData.get(8) == 1);
+
+        CheckBox keystrokeCheckBox = popupView.findViewById(R.id.keystrokeCheckBox);
+        keystrokeCheckBox.setChecked(featureData.get(9) == 1);
+
+        Spinner keystrokeLengthSpinner = (Spinner) popupView.findViewById(R.id.keystrokeLengthSpinner);
+        ArrayAdapter<CharSequence> keystrokeLengthAdapter = ArrayAdapter.createFromResource(this, R.array.pin_length, android.R.layout.simple_spinner_item);
+        keystrokeLengthAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        keystrokeLengthSpinner.setAdapter(keystrokeLengthAdapter);
+        if(featureData.get(10) == 0) {
+            keystrokeLengthSpinner.setSelection(((ArrayAdapter<String>) keystrokeLengthSpinner.getAdapter()).getPosition(String.valueOf(DatabaseHelper.DEFAULT_PIN_LENGTH)));
+        } else {
+            keystrokeLengthSpinner.setSelection(((ArrayAdapter<String>) keystrokeLengthSpinner.getAdapter()).getPosition(featureData.get(10).toString()));
+        }
 
         Button saveProfileButton = popupView.findViewById(R.id.saveProfileButton);
         class MyListener implements View.OnClickListener {
@@ -834,7 +866,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                         swipeShapeCheckBox.isChecked() ||
                         swipeTouchSizeCheckBox.isChecked() ||
                         swipeStartEndPosCheckBox.isChecked() ||
-                        swipeVelocityCheckBox.isChecked()
+                        swipeVelocityCheckBox.isChecked() ||
+                        keystrokeCheckBox.isChecked()
                 ) {
                     dbHelper.saveFeatureData(
                             accelerationCheckBox.isChecked() ? 1 : 0,
@@ -845,7 +878,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                             Integer.parseInt((String) swipeSegmentSpinner.getSelectedItem()),
                             swipeTouchSizeCheckBox.isChecked() ? 1 : 0,
                             swipeStartEndPosCheckBox.isChecked() ? 1 : 0,
-                            swipeVelocityCheckBox.isChecked() ? 1 : 0
+                            swipeVelocityCheckBox.isChecked() ? 1 : 0,
+                            keystrokeCheckBox.isChecked() ? 1 : 0,
+                            Integer.parseInt((String) keystrokeLengthSpinner.getSelectedItem())
                     );
 
                     Integer cur_segment_selection = Integer.parseInt((String) swipeSegmentSpinner.getSelectedItem());
@@ -898,6 +933,21 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 holdingPositionRadioGroup.setVisibility(View.VISIBLE);
             }
         });
+    }
+
+    private void setNumpadVisibility(Integer visibility) {
+        for(int i = 0; i < NUMPAD_SIZE; i++) {
+            try {
+                Field class_var = this.getClass().getDeclaredField("keystrokeButton" + String.valueOf(i));
+                int res_id = getResources().getIdentifier("keystrokeButton" + String.valueOf(i), "id", this.getPackageName());
+                class_var.set(this, findViewById(res_id));
+
+                Method cur_method = class_var.getType().getMethod("setVisibility", int.class);
+                cur_method.invoke(class_var.get(this), visibility);
+            } catch (NoSuchFieldException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     public void resetData(View view) {
