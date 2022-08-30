@@ -21,6 +21,8 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
 import static com.google.common.base.CaseFormat.LOWER_CAMEL;
@@ -83,23 +85,23 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String COL_CLASSIFIER_SAMPLES = "CLASSIFIER_SAMPLES";
     private static final String COL_MODEL_TYPE = "MODEL_TYPE";
 
-    private static final String COL_NICKNAME = "nickname";
-    private static final String COL_GENDER = "gender";
-    private static final String COL_AGE = "age";
-    private static final String COL_NATIONALITY = "nationality";
-    private static final String COL_HOLDING_HAND = "holding_hand";
+    public static final String COL_NICKNAME = "nickname";
+    public static final String COL_GENDER = "gender";
+    public static final String COL_AGE = "age";
+    public static final String COL_NATIONALITY = "nationality";
+    public static final String COL_HOLDING_HAND = "holding_hand";
 
-    private static final String COL_ACCELERATION = "acceleration";
-    private static final String COL_ANGULAR_VELOCITY = "angular_velocity";
-    private static final String COL_ORIENTATION = "orientation";
-    private static final String COL_SWIPE_DURATION = "swipe_duration";
-    private static final String COL_SWIPE_SHAPE = "swipe_shape";
-    private static final String COL_SWIPE_SHAPE_SEGMENTS = "swipe_shape_segments";
-    private static final String COL_SWIPE_TOUCH_SIZE = "swipe_touch_size";
-    private static final String COL_SWIPE_START_END_POS = "swipe_start_end_pos";
-    private static final String COL_SWIPE_VELOCITY = "swipe_velocity";
-    private static final String COL_KEYSTROKE = "keystroke";
-    private static final String COL_PIN_LENGTH = "pin_length";
+    public static final String COL_ACCELERATION = "acceleration";
+    public static final String COL_ANGULAR_VELOCITY = "angular_velocity";
+    public static final String COL_ORIENTATION = "orientation";
+    public static final String COL_SWIPE_DURATION = "swipe_duration";
+    public static final String COL_SWIPE_SHAPE = "swipe_shape";
+    public static final String COL_SWIPE_SHAPE_SEGMENTS = "swipe_shape_segments";
+    public static final String COL_SWIPE_TOUCH_SIZE = "swipe_touch_size";
+    public static final String COL_SWIPE_START_END_POS = "swipe_start_end_pos";
+    public static final String COL_SWIPE_VELOCITY = "swipe_velocity";
+    public static final String COL_KEYSTROKE = "keystroke";
+    public static final String COL_PIN_LENGTH = "pin_length";
 
     private static final String COL_MIN_CPU_TEMP = "min_cpu_temp";
     private static final String COL_MAX_CPU_TEMP = "max_cpu_temp";
@@ -413,7 +415,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             for(String head_feature : head_features) {
                 if(head_feature == DatabaseHelper.COL_SEGMENTS_X || head_feature == DatabaseHelper.COL_SEGMENTS_Y) {
                     String segment_str = "[";
-                    for(int i = 0; i < this.getFeatureData().get(5); i++) {
+                    for(int i = 0; i < this.getFeatureData().get(COL_SWIPE_SHAPE_SEGMENTS); i++) {
                         segment_str += normalizedValues[values_idx] + ",";
                         values_idx = values_idx + 1;
                     }
@@ -629,20 +631,20 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return result != -1;
     }
 
-    public ArrayList<String> getUserData() {
+    public Map<String, String> getUserData() {
         SQLiteDatabase db = this.getReadableDatabase();
         String query = "SELECT * FROM " + USER_DATA;
 
         Cursor cursor = db.rawQuery(query, null);
         cursor.moveToFirst();
 
-        ArrayList<String> userData = new ArrayList<>();
+        Map<String, String> userData = new HashMap<>();
 
-        userData.add(cursor.getString(cursor.getColumnIndex(COL_NICKNAME)));
-        userData.add(Double.toString(cursor.getDouble(cursor.getColumnIndex(COL_GENDER))));
-        userData.add(Double.toString(cursor.getDouble(cursor.getColumnIndex(COL_AGE))));
-        userData.add(cursor.getString(cursor.getColumnIndex(COL_NATIONALITY)));
-        userData.add(Double.toString(cursor.getDouble(cursor.getColumnIndex(COL_HOLDING_HAND))));
+        userData.put(COL_NICKNAME, cursor.getString(cursor.getColumnIndex(COL_NICKNAME)));
+        userData.put(COL_GENDER, Double.toString(cursor.getDouble(cursor.getColumnIndex(COL_GENDER))));
+        userData.put(COL_AGE, Double.toString(cursor.getDouble(cursor.getColumnIndex(COL_AGE))));
+        userData.put(COL_NATIONALITY, cursor.getString(cursor.getColumnIndex(COL_NATIONALITY)));
+        userData.put(COL_HOLDING_HAND, Double.toString(cursor.getDouble(cursor.getColumnIndex(COL_HOLDING_HAND))));
 
         cursor.close();
 
@@ -674,26 +676,26 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return result != -1;
     }
 
-    public ArrayList<Integer> getFeatureData() {
+    public Map<String, Integer> getFeatureData() {
         SQLiteDatabase db = this.getReadableDatabase();
         String query = "SELECT * FROM " + FEATURE_DATA;
 
         Cursor cursor = db.rawQuery(query, null);
         cursor.moveToFirst();
 
-        ArrayList<Integer> featureData = new ArrayList<>();
+        Map<String, Integer> featureData = new HashMap<>();
 
-        featureData.add(cursor.getInt(cursor.getColumnIndex(COL_ACCELERATION)));
-        featureData.add(cursor.getInt(cursor.getColumnIndex(COL_ANGULAR_VELOCITY)));
-        featureData.add(cursor.getInt(cursor.getColumnIndex(COL_ORIENTATION)));
-        featureData.add(cursor.getInt(cursor.getColumnIndex(COL_SWIPE_DURATION)));
-        featureData.add(cursor.getInt(cursor.getColumnIndex(COL_SWIPE_SHAPE)));
-        featureData.add(cursor.getInt(cursor.getColumnIndex(COL_SWIPE_SHAPE_SEGMENTS)));
-        featureData.add(cursor.getInt(cursor.getColumnIndex(COL_SWIPE_TOUCH_SIZE)));
-        featureData.add(cursor.getInt(cursor.getColumnIndex(COL_SWIPE_START_END_POS)));
-        featureData.add(cursor.getInt(cursor.getColumnIndex(COL_SWIPE_VELOCITY)));
-        featureData.add(cursor.getInt(cursor.getColumnIndex(COL_KEYSTROKE)));
-        featureData.add(cursor.getInt(cursor.getColumnIndex(COL_PIN_LENGTH)));
+        featureData.put(COL_ACCELERATION, cursor.getInt(cursor.getColumnIndex(COL_ACCELERATION)));
+        featureData.put(COL_ANGULAR_VELOCITY, cursor.getInt(cursor.getColumnIndex(COL_ANGULAR_VELOCITY)));
+        featureData.put(COL_ORIENTATION, cursor.getInt(cursor.getColumnIndex(COL_ORIENTATION)));
+        featureData.put(COL_SWIPE_DURATION, cursor.getInt(cursor.getColumnIndex(COL_SWIPE_DURATION)));
+        featureData.put(COL_SWIPE_SHAPE, cursor.getInt(cursor.getColumnIndex(COL_SWIPE_SHAPE)));
+        featureData.put(COL_SWIPE_SHAPE_SEGMENTS, cursor.getInt(cursor.getColumnIndex(COL_SWIPE_SHAPE_SEGMENTS)));
+        featureData.put(COL_SWIPE_TOUCH_SIZE, cursor.getInt(cursor.getColumnIndex(COL_SWIPE_TOUCH_SIZE)));
+        featureData.put(COL_SWIPE_START_END_POS, cursor.getInt(cursor.getColumnIndex(COL_SWIPE_START_END_POS)));
+        featureData.put(COL_SWIPE_VELOCITY, cursor.getInt(cursor.getColumnIndex(COL_SWIPE_VELOCITY)));
+        featureData.put(COL_KEYSTROKE, cursor.getInt(cursor.getColumnIndex(COL_KEYSTROKE)));
+        featureData.put(COL_PIN_LENGTH, cursor.getInt(cursor.getColumnIndex(COL_PIN_LENGTH)));
 
         cursor.close();
 

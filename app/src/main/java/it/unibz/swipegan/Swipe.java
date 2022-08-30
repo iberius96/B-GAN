@@ -1001,15 +1001,15 @@ public class Swipe {
     }
 
     public Instance getAsWekaInstance(Instances dataSet, boolean isTrainInstance, DatabaseHelper dbHelper, DatabaseHelper.ModelType modelType){
-        ArrayList<Integer> featureData = dbHelper.getFeatureData();
-        boolean useAcceleration = featureData.get(0) == 1;
-        boolean useAngularVelocity = featureData.get(1) == 1;
-        boolean useOrientation = featureData.get(2) == 1;
-        boolean useSwipeDuration = featureData.get(3) == 1;
-        boolean useSwipeShape = featureData.get(4) == 1;
-        boolean useSwipeSize = featureData.get(5) == 1;
-        boolean useSwipeStartEndPos = featureData.get(6) == 1;
-        boolean useSwipeVelocity = featureData.get(7) == 1;
+        Map<String, Integer> featureData = dbHelper.getFeatureData();
+        boolean useAcceleration = featureData.get(DatabaseHelper.COL_ACCELERATION) == 1;
+        boolean useAngularVelocity = featureData.get(DatabaseHelper.COL_ANGULAR_VELOCITY) == 1;
+        boolean useOrientation = featureData.get(DatabaseHelper.COL_ORIENTATION) == 1;
+        boolean useSwipeDuration = featureData.get(DatabaseHelper.COL_SWIPE_DURATION) == 1;
+        boolean useSwipeShape = featureData.get(DatabaseHelper.COL_SWIPE_SHAPE) == 1;
+        boolean useSwipeSize = featureData.get(DatabaseHelper.COL_SWIPE_TOUCH_SIZE) == 1;
+        boolean useSwipeStartEndPos = featureData.get(DatabaseHelper.COL_SWIPE_START_END_POS) == 1;
+        boolean useSwipeVelocity = featureData.get(DatabaseHelper.COL_SWIPE_VELOCITY) == 1;
 
         ArrayList<Double> featureSet = new ArrayList<>();
 
