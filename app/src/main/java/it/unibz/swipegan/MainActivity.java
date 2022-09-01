@@ -67,8 +67,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private boolean isTrainingMode = true;
     private boolean isTrainingClassifier = false;
     private boolean isTrackingSwipe = true;
-    private int keystrokeCount = 0;
-    private Swipe pendingSwipe = null;
     private int holdingPosition = 0;
 
     private ArrayList<Float> xLocations = null;
@@ -105,7 +103,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     private DatabaseHelper dbHelper;
 
-    private OneClassClassifier oneClassClassifiers[] = new OneClassClassifier[3];
+    private OneClassClassifier oneClassClassifiers[] = new OneClassClassifier[4];
     private GAN gan;
 
     private Button ganButton;
@@ -132,6 +130,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private Button keystrokeButton7;
     private Button keystrokeButton8;
     private Button keystrokeButton9;
+
+    private int keystrokeCount = 0;
+    private long keystrokeStartTime = 0;
+    private Swipe pendingSwipe = null;
 
     private static final Integer NUMPAD_SIZE = 10;
 
@@ -230,11 +232,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         }
 
         Integer segments = this.dbHelper.getFeatureData().get(DatabaseHelper.COL_SWIPE_SHAPE_SEGMENTS);
-        if(segments == 0) {
-            new Thread(() -> this.gan = new GAN(DatabaseHelper.DEFAULT_SEGMENTS)).start();
-        } else {
-            new Thread(() -> this.gan = new GAN(segments)).start();
-        }
+        Integer pinLength = this.dbHelper.getFeatureData().get(DatabaseHelper.COL_KEYSTROKE) == 1 ? this.dbHelper.getFeatureData().get(DatabaseHelper.COL_PIN_LENGTH) : 0;
+        new Thread(() -> this.gan = new GAN(segments, pinLength)).start();
     }
 
     @Override
@@ -387,14 +386,14 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
                     if(this.dbHelper.getFeatureData().get(DatabaseHelper.COL_KEYSTROKE) == 1) {
                         this.isTrackingSwipe = false;
-                        this.keystrokeCount = 0;
+                        this.resetKeystrokeValues();
                         this.setNumpadVisibility(View.VISIBLE);
                     }
                 }
-                this.resetValues();
+                this.resetSwipeValues();
                 break;
             case MotionEvent.ACTION_CANCEL:
-                this.resetValues();
+                this.resetSwipeValues();
                 break;
         }
     }
@@ -405,6 +404,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         outputMessage += "\n";
 
         for(DatabaseHelper.ModelType modelType : DatabaseHelper.ModelType.values()) {
+            if(modelType == DatabaseHelper.ModelType.KEYSTROKE && this.dbHelper.getFeatureData().get(DatabaseHelper.COL_KEYSTROKE) == 0) {
+                continue;
+            }
+
             long startTime = System.nanoTime();
             double prediction = this.getPredictionFrom(swipe, modelType);
             long endTime = System.nanoTime();
@@ -457,7 +460,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         return prediction;
     }
 
-    public void resetValues() {
+    private void resetSwipeValues() {
         this.xLocations.clear();
         this.yLocations.clear();
         this.xVelocityTranslation.clear();
@@ -855,7 +858,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         } else {
             swipeSegmentSpinner.setSelection(((ArrayAdapter<String>) swipeSegmentSpinner.getAdapter()).getPosition(featureData.get(DatabaseHelper.COL_SWIPE_SHAPE_SEGMENTS).toString()));
         }
-        Integer initial_segment_selection = Integer.parseInt((String) swipeSegmentSpinner.getSelectedItem());
+        Integer initialSegmentSelection = Integer.parseInt((String) swipeSegmentSpinner.getSelectedItem());
 
         CheckBox swipeTouchSizeCheckBox = popupView.findViewById(R.id.swipeTouchSizeCheckBox);
         swipeTouchSizeCheckBox.setChecked(featureData.get(DatabaseHelper.COL_SWIPE_TOUCH_SIZE) == 1);
@@ -868,6 +871,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         CheckBox keystrokeCheckBox = popupView.findViewById(R.id.keystrokeCheckBox);
         keystrokeCheckBox.setChecked(featureData.get(DatabaseHelper.COL_KEYSTROKE) == 1);
+        boolean initialKeystrokeEnabled = keystrokeCheckBox.isChecked();
 
         Spinner keystrokeLengthSpinner = (Spinner) popupView.findViewById(R.id.keystrokeLengthSpinner);
         ArrayAdapter<CharSequence> keystrokeLengthAdapter = ArrayAdapter.createFromResource(this, R.array.pin_length, android.R.layout.simple_spinner_item);
@@ -914,11 +918,18 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                             Integer.parseInt((String) keystrokeLengthSpinner.getSelectedItem())
                     );
 
-                    Integer cur_segment_selection = Integer.parseInt((String) swipeSegmentSpinner.getSelectedItem());
-                    if(cur_segment_selection != initial_segment_selection) {
+                    Integer curSegmentSelection = Integer.parseInt((String) swipeSegmentSpinner.getSelectedItem());
+                    Integer curPinLength = Integer.parseInt((String) keystrokeLengthSpinner.getSelectedItem());
+                    boolean curKeystrokeEnabled = keystrokeCheckBox.isChecked();
+
+                    if((curSegmentSelection != initialSegmentSelection) || (curKeystrokeEnabled != initialKeystrokeEnabled)) {
                         dbHelper.resetDB(false);
                         inputTextView.setText("Inputs 0");
-                        new Thread(() -> mainActivity.gan = new GAN(cur_segment_selection)).start();
+                        new Thread(() -> mainActivity.gan = new GAN(curSegmentSelection, curPinLength)).start();
+
+                        if(curKeystrokeEnabled != initialKeystrokeEnabled) {
+                            dbHelper.generateSwipesTables(null, true, curKeystrokeEnabled);
+                        }
                     }
 
                     popupWindow.dismiss();
@@ -997,38 +1008,51 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             try {
                 Field class_var = this.getClass().getDeclaredField("keystrokeButton" + String.valueOf(i));
 
-                Method cur_method = class_var.getType().getMethod("setOnClickListener", View.OnClickListener.class);
-                cur_method.invoke(class_var.get(this), new KeystrokeButtonListener(this));
+                Method cur_method = class_var.getType().getMethod("setOnTouchListener", View.OnTouchListener.class);
+                cur_method.invoke(class_var.get(this), new KeystrokeOnTouchListener(this));
             } catch (NoSuchFieldException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
                 e.printStackTrace();
             }
         }
     }
 
-    class KeystrokeButtonListener implements View.OnClickListener {
+    class KeystrokeOnTouchListener implements View.OnTouchListener {
         private MainActivity mainActivity;
 
-        public KeystrokeButtonListener(MainActivity mainActivity) {
+        public KeystrokeOnTouchListener(MainActivity mainActivity) {
             super();
             this.mainActivity = mainActivity;
         }
 
         @Override
-        public void onClick(View v) {
-            this.mainActivity.keystrokeCount += 1;
+        public boolean onTouch(View v, MotionEvent event) {
+            if (event.getAction() == MotionEvent.ACTION_DOWN){
+                this.mainActivity.keystrokeStartTime = System.nanoTime();
+            } else if (event.getAction() == MotionEvent.ACTION_UP) {
+                double keystrokeDuration = (double) (System.nanoTime() - this.mainActivity.keystrokeStartTime) / 1_000_000_000;
+                this.mainActivity.pendingSwipe.addKeystrokeDuration(keystrokeDuration, this.mainActivity.keystrokeCount, this.mainActivity.dbHelper.getFeatureData().get(DatabaseHelper.COL_PIN_LENGTH));
 
-            if(this.mainActivity.keystrokeCount == this.mainActivity.dbHelper.getFeatureData().get(DatabaseHelper.COL_PIN_LENGTH)) {
-                this.mainActivity.isTrackingSwipe = true;
-                this.mainActivity.setNumpadVisibility(View.INVISIBLE);
+                this.mainActivity.keystrokeCount += 1;
 
-                if(this.mainActivity.isTrainingMode) {
-                    this.mainActivity.dbHelper.addTrainRecord(this.mainActivity.pendingSwipe);
-                    this.mainActivity.inputTextView.setText("Inputs " + this.mainActivity.dbHelper.getRecordsCount("REAL_SWIPES"));
-                } else {
-                    this.mainActivity.processTestRecord(this.mainActivity.pendingSwipe);
+                if(this.mainActivity.keystrokeCount == this.mainActivity.dbHelper.getFeatureData().get(DatabaseHelper.COL_PIN_LENGTH)) {
+                    this.mainActivity.isTrackingSwipe = true;
+                    this.mainActivity.setNumpadVisibility(View.INVISIBLE);
+
+                    if(this.mainActivity.isTrainingMode) {
+                        this.mainActivity.dbHelper.addTrainRecord(this.mainActivity.pendingSwipe);
+                        this.mainActivity.inputTextView.setText("Inputs " + this.mainActivity.dbHelper.getRecordsCount("REAL_SWIPES"));
+                    } else {
+                        this.mainActivity.processTestRecord(this.mainActivity.pendingSwipe);
+                    }
                 }
             }
+
+            return true;
         }
+    }
+
+    private void resetKeystrokeValues() {
+        this.keystrokeCount = 0;
     }
 
     public void resetData(View view) {
@@ -1051,6 +1075,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             ArrayList<double[]> attackerTestingData = this.dbHelper.getTestingData("Attacker");
 
             for(DatabaseHelper.ModelType modelType : DatabaseHelper.ModelType.values()) {
+                if(modelType == DatabaseHelper.ModelType.KEYSTROKE && this.dbHelper.getFeatureData().get(DatabaseHelper.COL_KEYSTROKE) == 0) {
+                    continue;
+                }
+
                 int cur_idx = modelType.ordinal();
 
                 System.out.println(Arrays.toString(attackerTestingData.stream().mapToDouble(x -> x[cur_idx]).toArray()));
@@ -1063,7 +1091,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 double averageSwipeDuration = testSwipes.stream().mapToDouble(Swipe::getDuration).average().getAsDouble() / 1_000.0;
 
                 userTestingData.addAll(attackerTestingData);
-                double avgTestTime = userTestingData.stream().mapToDouble(x -> x[cur_idx+3]).average().getAsDouble();
+                double avgTestTime = userTestingData.stream().mapToDouble(x -> x[cur_idx+4]).average().getAsDouble();
 
                 int classifierSamples = this.dbHelper.getRecordsCount("REAL_SWIPES");
                 this.dbHelper.saveTestResults(instances, TAR, FRR, TRR, FAR, averageSwipeDuration, avgTestTime, classifierSamples, modelType);
@@ -1177,10 +1205,18 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     resourceMonitor.stop(dbHelper, "GAN");
 
                     for(DatabaseHelper.ModelType modelType : DatabaseHelper.ModelType.values()) {
+                        if(modelType == DatabaseHelper.ModelType.KEYSTROKE && this.dbHelper.getFeatureData().get(DatabaseHelper.COL_KEYSTROKE) == 0) {
+                            continue;
+                        }
+
                         uiHandler.post(() -> {progressTextView.setText("Training " + modelType.name() + " classifier");});
                         trainClassifierWith(swipes, true, ganTime, modelType); }
                 } else {
                     for(DatabaseHelper.ModelType modelType : DatabaseHelper.ModelType.values()) {
+                        if(modelType == DatabaseHelper.ModelType.KEYSTROKE && this.dbHelper.getFeatureData().get(DatabaseHelper.COL_KEYSTROKE) == 0) {
+                            continue;
+                        }
+
                         uiHandler.post(() -> {progressTextView.setText("Training " + modelType.name() + " classifier");});
                         trainClassifierWith(swipes, false, 0.0, modelType); }
                 }
@@ -1319,7 +1355,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         ArrayList<Attribute> attributes = new ArrayList<>();
 
-        if(modelType != DatabaseHelper.ModelType.HOLD) {
+        if(modelType == DatabaseHelper.ModelType.SWIPE || modelType == DatabaseHelper.ModelType.FULL) {
             if (useSwipeDuration) {
                 attributes.add(new Attribute("duration"));
             }
@@ -1358,7 +1394,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 attributes.add(new Attribute("varYVelocity"));
             }
         }
-        if(modelType != DatabaseHelper.ModelType.SWIPE) {
+        if(modelType == DatabaseHelper.ModelType.HOLD || modelType == DatabaseHelper.ModelType.FULL) {
             if (useAcceleration) {
                 attributes.add(new Attribute("minXAccelerometer"));
                 attributes.add(new Attribute("maxXAccelerometer"));
@@ -1409,6 +1445,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 attributes.add(new Attribute("avgZOrientation"));
                 attributes.add(new Attribute("stdZOrientation"));
                 attributes.add(new Attribute("varZOrientation"));
+            }
+        }
+        if(dbHelper.getFeatureData().get(DatabaseHelper.COL_KEYSTROKE) == 1 && (modelType == DatabaseHelper.ModelType.KEYSTROKE || modelType == DatabaseHelper.ModelType.FULL)) {
+            for(int i = 0; i < dbHelper.getFeatureData().get(DatabaseHelper.COL_PIN_LENGTH); i++) {
+                attributes.add(new Attribute("keystrokeDuration_" + i));
             }
         }
 

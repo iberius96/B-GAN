@@ -84,6 +84,10 @@ public class Swipe {
     private double avgZOrientation;
     private double varZOrientation;
     private double stdZOrientation;
+
+    //Keystroke features
+    private double[] keystrokeDurations;
+
     private double holdingPosition;
     private String userId;
 
@@ -681,6 +685,22 @@ public class Swipe {
         this.varZOrientation = varZOrientation;
     }
 
+    public double[] getKeystrokeDurations() {
+        return this.keystrokeDurations;
+    }
+
+    public void addKeystrokeDuration(double duration, int curKeystroke, int pinLength) {
+        if(this.keystrokeDurations == null) {
+            this.keystrokeDurations = new double[pinLength];
+        }
+
+        this.keystrokeDurations[curKeystroke] = duration;
+    }
+
+    public void setKeystrokeDurations(double[] keystrokeDurations) {
+        this.keystrokeDurations = keystrokeDurations;
+    }
+
     public double getHoldingPosition() {
         return holdingPosition;
     }
@@ -995,12 +1015,13 @@ public class Swipe {
                 "\n avgZOrientation=" + avgZOrientation +
                 "\n stdZOrientation=" + stdZOrientation +
                 "\n varZOrientation=" + varZOrientation +
+                "\n keystrokeDurations=" + keystrokeDurations +
                 "\n holdingPosition=" + holdingPosition +
                 "\n userId=" + userId +
                 '}';
     }
 
-    public Instance getAsWekaInstance(Instances dataSet, boolean isTrainInstance, DatabaseHelper dbHelper, DatabaseHelper.ModelType modelType){
+    public Instance getAsWekaInstance(Instances dataSet, boolean isTrainInstance, DatabaseHelper dbHelper, DatabaseHelper.ModelType modelType) {
         Map<String, Integer> featureData = dbHelper.getFeatureData();
         boolean useAcceleration = featureData.get(DatabaseHelper.COL_ACCELERATION) == 1;
         boolean useAngularVelocity = featureData.get(DatabaseHelper.COL_ANGULAR_VELOCITY) == 1;
@@ -1010,10 +1031,11 @@ public class Swipe {
         boolean useSwipeSize = featureData.get(DatabaseHelper.COL_SWIPE_TOUCH_SIZE) == 1;
         boolean useSwipeStartEndPos = featureData.get(DatabaseHelper.COL_SWIPE_START_END_POS) == 1;
         boolean useSwipeVelocity = featureData.get(DatabaseHelper.COL_SWIPE_VELOCITY) == 1;
+        boolean useKeystroke = featureData.get(DatabaseHelper.COL_KEYSTROKE) == 1;
 
         ArrayList<Double> featureSet = new ArrayList<>();
 
-        if(modelType != DatabaseHelper.ModelType.HOLD) {
+        if(modelType == DatabaseHelper.ModelType.SWIPE || modelType == DatabaseHelper.ModelType.FULL) {
             if (useSwipeDuration) {
                 featureSet.add(this.getDuration());
             }
@@ -1048,7 +1070,7 @@ public class Swipe {
                 featureSet.add(this.getVarYVelocity());
             }
         }
-        if(modelType != DatabaseHelper.ModelType.SWIPE) {
+        if(modelType == DatabaseHelper.ModelType.HOLD || modelType == DatabaseHelper.ModelType.FULL) {
             if (useAcceleration) {
                 featureSet.add(this.getMinXAccelerometer());
                 featureSet.add(this.getMaxXAccelerometer());
@@ -1099,6 +1121,11 @@ public class Swipe {
                 featureSet.add(this.getAvgZOrientation());
                 featureSet.add(this.getStdZOrientation());
                 featureSet.add(this.getVarZOrientation());
+            }
+        }
+        if(modelType == DatabaseHelper.ModelType.KEYSTROKE || modelType == DatabaseHelper.ModelType.FULL) {
+            if(useKeystroke) {
+                for(Double keystrokeDuration : this.getKeystrokeDurations()) { featureSet.add(keystrokeDuration); }
             }
         }
 
