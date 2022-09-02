@@ -45,6 +45,48 @@
             </Attribute>
           </value>
         </entry>
+        <entry key="$USER_HOME$/Library/Caches/Google/AndroidStudio2021.2/device-explorer/samsung-sm_g991b-R5CR809X1NW/storage/self/primary/Download/SwipeGAN/2022-09-02_19-08_realSwipes.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="$USER_HOME$/Library/Caches/Google/AndroidStudio2021.2/device-explorer/samsung-sm_g991b-R5CR809X1NW/storage/self/primary/Download/SwipeGAN/2022-09-02_19-23_realSwipes.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="$USER_HOME$/Library/Caches/Google/AndroidStudio2021.2/device-explorer/samsung-sm_g991b-R5CR809X1NW/storage/self/primary/Download/SwipeGAN/2022-09-02_19-23_testSwipes.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="$USER_HOME$/Library/Caches/Google/AndroidStudio2021.2/device-explorer/samsung-sm_g991b-R5CR809X1NW/storage/self/primary/Download/SwipeGAN/2022-09-02_19-25_realSwipes.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="$USER_HOME$/Library/Caches/Google/AndroidStudio2021.2/device-explorer/samsung-sm_g991b-R5CR809X1NW/storage/self/primary/Download/SwipeGAN/2022-09-02_19-32_realSwipes.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="$USER_HOME$/Library/Caches/Google/AndroidStudio2021.2/device-explorer/samsung-sm_g991b-R5CR809X1NW/storage/self/primary/Download/SwipeGAN/2022-09-02_19-32_testSwipes.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
       </map>
     </option>
   </component>
