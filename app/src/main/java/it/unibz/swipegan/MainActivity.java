@@ -882,6 +882,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         } else {
             keystrokeLengthSpinner.setSelection(((ArrayAdapter<String>) keystrokeLengthSpinner.getAdapter()).getPosition(featureData.get(DatabaseHelper.COL_PIN_LENGTH).toString()));
         }
+        Integer initialPinLength = Integer.parseInt((String) keystrokeLengthSpinner.getSelectedItem());
 
         Button saveProfileButton = popupView.findViewById(R.id.saveProfileButton);
         class MyListener implements View.OnClickListener {
@@ -922,7 +923,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     Integer curPinLength = Integer.parseInt((String) keystrokeLengthSpinner.getSelectedItem());
                     boolean curKeystrokeEnabled = keystrokeCheckBox.isChecked();
 
-                    if((curSegmentSelection != initialSegmentSelection) || (curKeystrokeEnabled != initialKeystrokeEnabled)) {
+                    if((curSegmentSelection != initialSegmentSelection) || (curKeystrokeEnabled != initialKeystrokeEnabled) || (curPinLength != initialPinLength)) {
                         dbHelper.resetDB(false);
                         inputTextView.setText("Inputs 0");
                         new Thread(() -> mainActivity.gan = new GAN(curSegmentSelection, curPinLength)).start();

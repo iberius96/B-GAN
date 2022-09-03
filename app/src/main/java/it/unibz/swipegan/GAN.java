@@ -215,6 +215,6 @@ public class GAN {
     }
 
     public void setKeystrokeFeatures(Integer pinLength) {
-        this.NUM_TRAIN_FEATURES += pinLength; // Increment for both X and Y axis
+        this.NUM_TRAIN_FEATURES += pinLength;
     }
 }
