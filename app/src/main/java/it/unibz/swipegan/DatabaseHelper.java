@@ -119,7 +119,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     // Keystrokes columns
     public static final String COL_KEYSTROKE_DURATIONS = "keystroke_durations";
-    public static final String COL_KEYSTROKE_INTERVALS = "keystroke_intervals";
+    private static final String COL_KEYSTROKE_INTERVALS = "keystroke_intervals";
+    private static final String COL_KEYSTROKE_START_INTERVALS = "keystroke_start_intervals";
+    private static final String COL_KEYSTROKE_END_INTERVALS = "keystroke_end_intervals";
 
     public static final String[] head_features = {
             COL_DURATION,
@@ -137,7 +139,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     public static final String[] keystroke_features = {
             COL_KEYSTROKE_DURATIONS,
-            COL_KEYSTROKE_INTERVALS
+            COL_KEYSTROKE_INTERVALS,
+            COL_KEYSTROKE_START_INTERVALS,
+            COL_KEYSTROKE_END_INTERVALS
     };
 
     public static enum ModelType {
@@ -518,9 +522,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                     e.printStackTrace();
                 }
 
-                Integer feature_length = this.getFeatureData().get(COL_PIN_LENGTH);
-                if(keystroke_feature == COL_KEYSTROKE_INTERVALS) {
-                    feature_length = (this.getFeatureData().get(COL_PIN_LENGTH) - 1);
+                Integer feature_length = (this.getFeatureData().get(COL_PIN_LENGTH) - 1);
+                if(keystroke_feature == COL_KEYSTROKE_DURATIONS) {
+                    feature_length = this.getFeatureData().get(COL_PIN_LENGTH);
                 }
 
                 String keystroke_str = "[";
@@ -890,7 +894,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                                 colNames[i].equals(COL_SEGMENTS_X) ||
                                 colNames[i].equals(COL_SEGMENTS_Y) ||
                                 colNames[i].equals(COL_KEYSTROKE_DURATIONS) ||
-                                colNames[i].equals(COL_KEYSTROKE_INTERVALS)) {
+                                colNames[i].equals(COL_KEYSTROKE_INTERVALS) ||
+                                colNames[i].equals(COL_KEYSTROKE_START_INTERVALS) ||
+                                colNames[i].equals(COL_KEYSTROKE_END_INTERVALS)) {
                             arrStr[i] = curCSV.getString(i);
                         } else {
                             arrStr[i] = Double.toString(curCSV.getDouble(i));
@@ -923,7 +929,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                                     colNames[i].equals(COL_SEGMENTS_X) ||
                                     colNames[i].equals(COL_SEGMENTS_Y) ||
                                     colNames[i].equals(COL_KEYSTROKE_DURATIONS) ||
-                                    colNames[i].equals(COL_KEYSTROKE_INTERVALS)) {
+                                    colNames[i].equals(COL_KEYSTROKE_INTERVALS) ||
+                                    colNames[i].equals(COL_KEYSTROKE_START_INTERVALS) ||
+                                    colNames[i].equals(COL_KEYSTROKE_END_INTERVALS)) {
                                 arrStr[i] = curCSV.getString(i);
                             } else {
                                 arrStr[i] = Double.toString(curCSV.getDouble(i));

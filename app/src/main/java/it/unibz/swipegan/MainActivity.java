@@ -1031,14 +1031,26 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         @Override
         public boolean onTouch(View v, MotionEvent event) {
             if (event.getAction() == MotionEvent.ACTION_DOWN){
+                long prevStartTime = this.mainActivity.keystrokeStartTime;
                 this.mainActivity.keystrokeStartTime = System.nanoTime();
+
+                if(prevStartTime != 0) {
+                    double keystrokeStartInterval = (double) (this.mainActivity.keystrokeStartTime - prevStartTime) / 1_000_000_000;
+                    this.mainActivity.pendingSwipe.addKeystrokeStartInterval(keystrokeStartInterval, this.mainActivity.keystrokeCount - 1, this.mainActivity.dbHelper.getFeatureData().get(DatabaseHelper.COL_PIN_LENGTH));
+                }
 
                 if(this.mainActivity.keystrokeCount != 0) {
                     double keystrokeInterval = (double) (this.mainActivity.keystrokeStartTime - this.mainActivity.keystrokeEndTime) / 1_000_000_000;
                     this.mainActivity.pendingSwipe.addKeystrokeInterval(keystrokeInterval, this.mainActivity.keystrokeCount - 1, this.mainActivity.dbHelper.getFeatureData().get(DatabaseHelper.COL_PIN_LENGTH));
                 }
             } else if (event.getAction() == MotionEvent.ACTION_UP) {
+                long prevEndTime = this.mainActivity.keystrokeEndTime;
                 this.mainActivity.keystrokeEndTime = System.nanoTime();
+
+                if(prevEndTime != 0) {
+                    double keystrokeEndInterval = (double) (this.mainActivity.keystrokeEndTime - prevEndTime) / 1_000_000_000;
+                    this.mainActivity.pendingSwipe.addKeystrokeEndInterval(keystrokeEndInterval, this.mainActivity.keystrokeCount - 1, this.mainActivity.dbHelper.getFeatureData().get(DatabaseHelper.COL_PIN_LENGTH));
+                }
 
                 double keystrokeDuration = (double) (this.mainActivity.keystrokeEndTime - this.mainActivity.keystrokeStartTime) / 1_000_000_000;
                 this.mainActivity.pendingSwipe.addKeystrokeDuration(keystrokeDuration, this.mainActivity.keystrokeCount, this.mainActivity.dbHelper.getFeatureData().get(DatabaseHelper.COL_PIN_LENGTH));
@@ -1064,6 +1076,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     private void resetKeystrokeValues() {
         this.keystrokeCount = 0;
+        this.keystrokeStartTime = 0;
+        this.keystrokeEndTime = 0;
     }
 
     public void resetData(View view) {
@@ -1460,11 +1474,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         }
         if(dbHelper.getFeatureData().get(DatabaseHelper.COL_KEYSTROKE) == 1 && (modelType == DatabaseHelper.ModelType.KEYSTROKE || modelType == DatabaseHelper.ModelType.FULL)) {
             for(String keystroke_feature : DatabaseHelper.keystroke_features) {
-                Integer feature_size = keystroke_feature == DatabaseHelper.COL_KEYSTROKE_INTERVALS ? dbHelper.getFeatureData().get(DatabaseHelper.COL_PIN_LENGTH) - 1 : dbHelper.getFeatureData().get(DatabaseHelper.COL_PIN_LENGTH);
+                Integer feature_size = keystroke_feature == DatabaseHelper.COL_KEYSTROKE_DURATIONS ? dbHelper.getFeatureData().get(DatabaseHelper.COL_PIN_LENGTH) : dbHelper.getFeatureData().get(DatabaseHelper.COL_PIN_LENGTH) - 1;
                 for (int i = 0; i < feature_size; i++) {
                     attributes.add(new Attribute( LOWER_UNDERSCORE.to(LOWER_CAMEL, keystroke_feature) + "_" + i));
                 }
-
             }
         }
 

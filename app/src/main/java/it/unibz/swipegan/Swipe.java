@@ -88,6 +88,8 @@ public class Swipe {
     //Keystroke features
     private double[] keystrokeDurations;
     private double[] keystrokeIntervals;
+    private double[] keystrokeStartIntervals;
+    private double[] keystrokeEndIntervals;
 
     private double holdingPosition;
     private String userId;
@@ -718,6 +720,38 @@ public class Swipe {
         this.keystrokeIntervals = keystrokeIntervals;
     }
 
+    public double[] getKeystrokeStartIntervals() {
+        return this.keystrokeStartIntervals;
+    }
+
+    public void addKeystrokeStartInterval(double startInterval, int curKeystroke, int pinLength) {
+        if(this.keystrokeStartIntervals == null) {
+            this.keystrokeStartIntervals = new double[pinLength - 1];
+        }
+
+        this.keystrokeStartIntervals[curKeystroke] = startInterval;
+    }
+
+    public void setKeystrokeStartIntervals(double[] keystrokeStartIntervals) {
+        this.keystrokeStartIntervals = keystrokeStartIntervals;
+    }
+
+    public double[] getKeystrokeEndIntervals() {
+        return this.keystrokeEndIntervals;
+    }
+
+    public void addKeystrokeEndInterval(double endInterval, int curKeystroke, int pinLength) {
+        if(this.keystrokeEndIntervals == null) {
+            this.keystrokeEndIntervals = new double[pinLength - 1];
+        }
+
+        this.keystrokeEndIntervals[curKeystroke] = endInterval;
+    }
+
+    public void setKeystrokeEndIntervals(double[] keystrokeEndIntervals) {
+        this.keystrokeEndIntervals = keystrokeEndIntervals;
+    }
+
     public double getHoldingPosition() {
         return holdingPosition;
     }
@@ -1099,6 +1133,8 @@ public class Swipe {
                 "\n varZOrientation=" + varZOrientation +
                 "\n keystrokeDurations=" + keystrokeDurations +
                 "\n keystrokeIntervals=" + keystrokeIntervals +
+                "\n keystrokeStartIntervals=" + keystrokeStartIntervals +
+                "\n keystrokeEndIntervals=" + keystrokeEndIntervals +
                 "\n holdingPosition=" + holdingPosition +
                 "\n userId=" + userId +
                 '}';
@@ -1210,6 +1246,8 @@ public class Swipe {
             if(useKeystroke) {
                 for(Double keystrokeDuration : this.getKeystrokeDurations()) { featureSet.add(keystrokeDuration); }
                 for(Double keystrokeInterval : this.getKeystrokeIntervals()) { featureSet.add(keystrokeInterval); }
+                for(Double keystrokeStartInterval : this.getKeystrokeStartIntervals()) { featureSet.add(keystrokeStartInterval); }
+                for(Double keystrokeEndInterval : this.getKeystrokeEndIntervals()) { featureSet.add(keystrokeEndInterval); }
             }
         }
 
