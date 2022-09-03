@@ -215,6 +215,12 @@ public class GAN {
     }
 
     public void setKeystrokeFeatures(Integer pinLength) {
-        this.NUM_TRAIN_FEATURES += pinLength;
+        for(String keystroke_feature : DatabaseHelper.keystroke_features) {
+            if(keystroke_feature == DatabaseHelper.COL_KEYSTROKE_INTERVALS) {
+                this.NUM_TRAIN_FEATURES += (pinLength - 1);
+            } else {
+                this.NUM_TRAIN_FEATURES += pinLength;
+            }
+        }
     }
 }

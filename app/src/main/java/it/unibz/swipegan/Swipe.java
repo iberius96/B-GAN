@@ -87,6 +87,7 @@ public class Swipe {
 
     //Keystroke features
     private double[] keystrokeDurations;
+    private double[] keystrokeIntervals;
 
     private double holdingPosition;
     private String userId;
@@ -701,6 +702,22 @@ public class Swipe {
         this.keystrokeDurations = keystrokeDurations;
     }
 
+    public double[] getKeystrokeIntervals() {
+        return this.keystrokeIntervals;
+    }
+
+    public void addKeystrokeInterval(double interval, int curKeystroke, int pinLength) {
+        if(this.keystrokeIntervals == null) {
+            this.keystrokeIntervals = new double[pinLength - 1];
+        }
+
+        this.keystrokeIntervals[curKeystroke] = interval;
+    }
+
+    public void setKeystrokeIntervals(double[] keystrokeIntervals) {
+        this.keystrokeIntervals = keystrokeIntervals;
+    }
+
     public double getHoldingPosition() {
         return holdingPosition;
     }
@@ -1081,6 +1098,7 @@ public class Swipe {
                 "\n stdZOrientation=" + stdZOrientation +
                 "\n varZOrientation=" + varZOrientation +
                 "\n keystrokeDurations=" + keystrokeDurations +
+                "\n keystrokeIntervals=" + keystrokeIntervals +
                 "\n holdingPosition=" + holdingPosition +
                 "\n userId=" + userId +
                 '}';
@@ -1191,6 +1209,7 @@ public class Swipe {
         if(modelType == DatabaseHelper.ModelType.KEYSTROKE || modelType == DatabaseHelper.ModelType.FULL) {
             if(useKeystroke) {
                 for(Double keystrokeDuration : this.getKeystrokeDurations()) { featureSet.add(keystrokeDuration); }
+                for(Double keystrokeInterval : this.getKeystrokeIntervals()) { featureSet.add(keystrokeInterval); }
             }
         }
 
