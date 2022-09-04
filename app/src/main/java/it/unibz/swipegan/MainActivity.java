@@ -393,7 +393,16 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                         this.setNumpadVisibility(View.VISIBLE);
                     }
                 }
-                this.resetSwipeValues();
+
+                if(this.dbHelper.getFeatureData().get(DatabaseHelper.COL_KEYSTROKE) == 0) {
+                    this.resetSwipeValues();
+                } else {
+                    // Stop hold tracking until start of keystroke gesture
+                    this.isTrackingAccelerometer = false;
+                    this.isTrackingGyroscope = false;
+                    this.isTrackingMagnetometer = false;
+                }
+
                 break;
             case MotionEvent.ACTION_CANCEL:
                 this.resetSwipeValues();
@@ -524,6 +533,54 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         double varYVelocity = this.yVelocityTranslation.stream().map(i -> i - avgYVelocity).map(i -> i*i).mapToDouble(i -> i).average().getAsDouble();
         double stdYVelocity = Math.sqrt(varYVelocity);
 
+        Swipe newSwipe = new Swipe();
+
+        newSwipe.setDuration(duration);
+
+        newSwipe.setLength(length);
+
+        newSwipe.setSegmentsX(segmentsX);
+        newSwipe.setSegmentsY(segmentsY);
+
+        newSwipe.setMinSize(minSize);
+        newSwipe.setMaxSize(maxSize);
+        newSwipe.setAvgSize(avgSize);
+        newSwipe.setDownSize(downSize);
+        newSwipe.setUpSize(upSize);
+
+        newSwipe.setStartX(startX);
+        newSwipe.setStartY(startY);
+        newSwipe.setEndX(endX);
+        newSwipe.setEndY(endY);
+
+        newSwipe.setMinXVelocity(minXVelocity);
+        newSwipe.setMaxXVelocity(maxXVelocity);
+        newSwipe.setAvgXVelocity(avgXVelocity);
+        newSwipe.setStdXVelocity(stdXVelocity);
+        newSwipe.setVarXVelocity(varXVelocity);
+
+        newSwipe.setMinYVelocity(minYVelocity);
+        newSwipe.setMaxYVelocity(maxYVelocity);
+        newSwipe.setAvgYVelocity(avgYVelocity);
+        newSwipe.setStdYVelocity(stdYVelocity);
+        newSwipe.setVarYVelocity(varYVelocity);
+
+        this.setHoldFeatures(newSwipe);
+
+        if (this.isTrainingMode) {
+            newSwipe.setHoldingPosition(this.holdingPosition);
+        } else {
+            newSwipe.setHoldingPosition(0);
+        }
+
+        newSwipe.setUserId(this.attackSwitch.isChecked() ? "Attacker" : "User");
+
+        System.out.println("--------------------------------------------New Swipe---------------------------------------------------------------");
+        System.out.println(newSwipe);
+        return newSwipe;
+    }
+
+    public void setHoldFeatures(Swipe swipe) {
         DoubleSummaryStatistics xAccelerometerStats = this.xAccelerometers.stream().mapToDouble(x -> (double) x).summaryStatistics();
         double minXAccelerometer = xAccelerometerStats.getMin();
         double maxXAccelerometer = xAccelerometerStats.getMax();
@@ -587,103 +644,59 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         double varZOrientation = this.zOrientations.stream().map(i -> i - avgZOrientation).map(i -> i*i).mapToDouble(i -> i).average().getAsDouble();
         double stdZOrientation = Math.sqrt(varZOrientation);
 
-        Swipe newSwipe = new Swipe();
+        swipe.setMinXAccelerometer(minXAccelerometer);
+        swipe.setMaxXAccelerometer(maxXAccelerometer);
+        swipe.setAvgXAccelerometer(avgXAccelerometer);
+        swipe.setStdXAccelerometer(stdXAccelerometer);
+        swipe.setVarXAccelerometer(varXAccelerometer);
 
-        newSwipe.setDuration(duration);
+        swipe.setMinYAccelerometer(minYAccelerometer);
+        swipe.setMaxYAccelerometer(maxYAccelerometer);
+        swipe.setAvgYAccelerometer(avgYAccelerometer);
+        swipe.setStdYAccelerometer(stdYAccelerometer);
+        swipe.setVarYAccelerometer(varYAccelerometer);
 
-        newSwipe.setLength(length);
+        swipe.setMinZAccelerometer(minZAccelerometer);
+        swipe.setMaxZAccelerometer(maxZAccelerometer);
+        swipe.setAvgZAccelerometer(avgZAccelerometer);
+        swipe.setStdZAccelerometer(stdZAccelerometer);
+        swipe.setVarZAccelerometer(varZAccelerometer);
 
-        newSwipe.setSegmentsX(segmentsX);
-        newSwipe.setSegmentsY(segmentsY);
+        swipe.setMinXGyroscope(minXGyroscope);
+        swipe.setMaxXGyroscope(maxXGyroscope);
+        swipe.setAvgXGyroscope(avgXGyroscope);
+        swipe.setStdXGyroscope(stdXGyroscope);
+        swipe.setVarXGyroscope(varXGyroscope);
 
-        newSwipe.setMinSize(minSize);
-        newSwipe.setMaxSize(maxSize);
-        newSwipe.setAvgSize(avgSize);
-        newSwipe.setDownSize(downSize);
-        newSwipe.setUpSize(upSize);
+        swipe.setMinYGyroscope(minYGyroscope);
+        swipe.setMaxYGyroscope(maxYGyroscope);
+        swipe.setAvgYGyroscope(avgYGyroscope);
+        swipe.setStdYGyroscope(stdYGyroscope);
+        swipe.setVarYGyroscope(varYGyroscope);
 
-        newSwipe.setStartX(startX);
-        newSwipe.setStartY(startY);
-        newSwipe.setEndX(endX);
-        newSwipe.setEndY(endY);
+        swipe.setMinZGyroscope(minZGyroscope);
+        swipe.setMaxZGyroscope(maxZGyroscope);
+        swipe.setAvgZGyroscope(avgZGyroscope);
+        swipe.setStdZGyroscope(stdZGyroscope);
+        swipe.setVarZGyroscope(varZGyroscope);
 
-        newSwipe.setMinXVelocity(minXVelocity);
-        newSwipe.setMaxXVelocity(maxXVelocity);
-        newSwipe.setAvgXVelocity(avgXVelocity);
-        newSwipe.setStdXVelocity(stdXVelocity);
-        newSwipe.setVarXVelocity(varXVelocity);
+        swipe.setMinXOrientation(minXOrientation);
+        swipe.setMaxXOrientation(maxXOrientation);
+        swipe.setAvgXOrientation(avgXOrientation);
+        swipe.setStdXOrientation(stdXOrientation);
+        swipe.setVarXOrientation(varXOrientation);
 
-        newSwipe.setMinYVelocity(minYVelocity);
-        newSwipe.setMaxYVelocity(maxYVelocity);
-        newSwipe.setAvgYVelocity(avgYVelocity);
-        newSwipe.setStdYVelocity(stdYVelocity);
-        newSwipe.setVarYVelocity(varYVelocity);
+        swipe.setMinYOrientation(minYOrientation);
+        swipe.setMaxYOrientation(maxYOrientation);
+        swipe.setAvgYOrientation(avgYOrientation);
+        swipe.setStdYOrientation(stdYOrientation);
+        swipe.setVarYOrientation(varYOrientation);
 
-        newSwipe.setMinXAccelerometer(minXAccelerometer);
-        newSwipe.setMaxXAccelerometer(maxXAccelerometer);
-        newSwipe.setAvgXAccelerometer(avgXAccelerometer);
-        newSwipe.setStdXAccelerometer(stdXAccelerometer);
-        newSwipe.setVarXAccelerometer(varXAccelerometer);
-
-        newSwipe.setMinYAccelerometer(minYAccelerometer);
-        newSwipe.setMaxYAccelerometer(maxYAccelerometer);
-        newSwipe.setAvgYAccelerometer(avgYAccelerometer);
-        newSwipe.setStdYAccelerometer(stdYAccelerometer);
-        newSwipe.setVarYAccelerometer(varYAccelerometer);
-
-        newSwipe.setMinZAccelerometer(minZAccelerometer);
-        newSwipe.setMaxZAccelerometer(maxZAccelerometer);
-        newSwipe.setAvgZAccelerometer(avgZAccelerometer);
-        newSwipe.setStdZAccelerometer(stdZAccelerometer);
-        newSwipe.setVarZAccelerometer(varZAccelerometer);
-
-        newSwipe.setMinXGyroscope(minXGyroscope);
-        newSwipe.setMaxXGyroscope(maxXGyroscope);
-        newSwipe.setAvgXGyroscope(avgXGyroscope);
-        newSwipe.setStdXGyroscope(stdXGyroscope);
-        newSwipe.setVarXGyroscope(varXGyroscope);
-
-        newSwipe.setMinYGyroscope(minYGyroscope);
-        newSwipe.setMaxYGyroscope(maxYGyroscope);
-        newSwipe.setAvgYGyroscope(avgYGyroscope);
-        newSwipe.setStdYGyroscope(stdYGyroscope);
-        newSwipe.setVarYGyroscope(varYGyroscope);
-
-        newSwipe.setMinZGyroscope(minZGyroscope);
-        newSwipe.setMaxZGyroscope(maxZGyroscope);
-        newSwipe.setAvgZGyroscope(avgZGyroscope);
-        newSwipe.setStdZGyroscope(stdZGyroscope);
-        newSwipe.setVarZGyroscope(varZGyroscope);
-
-        newSwipe.setMinXOrientation(minXOrientation);
-        newSwipe.setMaxXOrientation(maxXOrientation);
-        newSwipe.setAvgXOrientation(avgXOrientation);
-        newSwipe.setStdXOrientation(stdXOrientation);
-        newSwipe.setVarXOrientation(varXOrientation);
-
-        newSwipe.setMinYOrientation(minYOrientation);
-        newSwipe.setMaxYOrientation(maxYOrientation);
-        newSwipe.setAvgYOrientation(avgYOrientation);
-        newSwipe.setStdYOrientation(stdYOrientation);
-        newSwipe.setVarYOrientation(varYOrientation);
-
-        newSwipe.setMinZOrientation(minZOrientation);
-        newSwipe.setMaxZOrientation(maxZOrientation);
-        newSwipe.setAvgZOrientation(avgZOrientation);
-        newSwipe.setStdZOrientation(stdZOrientation);
-        newSwipe.setVarZOrientation(varZOrientation);
-
-        if (this.isTrainingMode) {
-            newSwipe.setHoldingPosition(this.holdingPosition);
-        } else {
-            newSwipe.setHoldingPosition(0);
-        }
-
-        newSwipe.setUserId(this.attackSwitch.isChecked() ? "Attacker" : "User");
-
-        System.out.println("--------------------------------------------New Swipe---------------------------------------------------------------");
-        System.out.println(newSwipe);
-        return newSwipe;
+        swipe.setMinZOrientation(minZOrientation);
+        swipe.setMaxZOrientation(maxZOrientation);
+        swipe.setAvgZOrientation(avgZOrientation);
+        swipe.setStdZOrientation(stdZOrientation);
+        swipe.setVarZOrientation(varZOrientation);
     }
 
     public double[] getSegmentsOffset(ArrayList<Float> locations) {
@@ -1030,44 +1043,56 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         @Override
         public boolean onTouch(View v, MotionEvent event) {
-            if (event.getAction() == MotionEvent.ACTION_DOWN){
-                long prevStartTime = this.mainActivity.keystrokeStartTime;
-                this.mainActivity.keystrokeStartTime = System.nanoTime();
-
-                if(prevStartTime != 0) {
-                    double keystrokeStartInterval = (double) (this.mainActivity.keystrokeStartTime - prevStartTime) / 1_000_000_000;
-                    this.mainActivity.pendingSwipe.addKeystrokeStartInterval(keystrokeStartInterval, this.mainActivity.keystrokeCount - 1, this.mainActivity.dbHelper.getFeatureData().get(DatabaseHelper.COL_PIN_LENGTH));
-                }
-
-                if(this.mainActivity.keystrokeCount != 0) {
-                    double keystrokeInterval = (double) (this.mainActivity.keystrokeStartTime - this.mainActivity.keystrokeEndTime) / 1_000_000_000;
-                    this.mainActivity.pendingSwipe.addKeystrokeInterval(keystrokeInterval, this.mainActivity.keystrokeCount - 1, this.mainActivity.dbHelper.getFeatureData().get(DatabaseHelper.COL_PIN_LENGTH));
-                }
-            } else if (event.getAction() == MotionEvent.ACTION_UP) {
-                long prevEndTime = this.mainActivity.keystrokeEndTime;
-                this.mainActivity.keystrokeEndTime = System.nanoTime();
-
-                if(prevEndTime != 0) {
-                    double keystrokeEndInterval = (double) (this.mainActivity.keystrokeEndTime - prevEndTime) / 1_000_000_000;
-                    this.mainActivity.pendingSwipe.addKeystrokeEndInterval(keystrokeEndInterval, this.mainActivity.keystrokeCount - 1, this.mainActivity.dbHelper.getFeatureData().get(DatabaseHelper.COL_PIN_LENGTH));
-                }
-
-                double keystrokeDuration = (double) (this.mainActivity.keystrokeEndTime - this.mainActivity.keystrokeStartTime) / 1_000_000_000;
-                this.mainActivity.pendingSwipe.addKeystrokeDuration(keystrokeDuration, this.mainActivity.keystrokeCount, this.mainActivity.dbHelper.getFeatureData().get(DatabaseHelper.COL_PIN_LENGTH));
-
-                this.mainActivity.keystrokeCount += 1;
-
-                if(this.mainActivity.keystrokeCount == this.mainActivity.dbHelper.getFeatureData().get(DatabaseHelper.COL_PIN_LENGTH)) {
-                    this.mainActivity.isTrackingSwipe = true;
-                    this.mainActivity.setNumpadVisibility(View.INVISIBLE);
-
-                    if(this.mainActivity.isTrainingMode) {
-                        this.mainActivity.dbHelper.addTrainRecord(this.mainActivity.pendingSwipe);
-                        this.mainActivity.inputTextView.setText("Inputs " + this.mainActivity.dbHelper.getRecordsCount("REAL_SWIPES"));
-                    } else {
-                        this.mainActivity.processTestRecord(this.mainActivity.pendingSwipe);
+            switch(event.getAction()) {
+                case MotionEvent.ACTION_DOWN:
+                    if(this.mainActivity.keystrokeCount == 0) {
+                        this.mainActivity.isTrackingAccelerometer = true;
+                        this.mainActivity.isTrackingGyroscope = true;
+                        this.mainActivity.isTrackingMagnetometer = true;
                     }
-                }
+
+                    long prevStartTime = this.mainActivity.keystrokeStartTime;
+                    this.mainActivity.keystrokeStartTime = System.nanoTime();
+
+                    if(prevStartTime != 0) {
+                        double keystrokeStartInterval = (double) (this.mainActivity.keystrokeStartTime - prevStartTime) / 1_000_000_000;
+                        this.mainActivity.pendingSwipe.addKeystrokeStartInterval(keystrokeStartInterval, this.mainActivity.keystrokeCount - 1, this.mainActivity.dbHelper.getFeatureData().get(DatabaseHelper.COL_PIN_LENGTH));
+                    }
+
+                    if(this.mainActivity.keystrokeCount != 0) {
+                        double keystrokeInterval = (double) (this.mainActivity.keystrokeStartTime - this.mainActivity.keystrokeEndTime) / 1_000_000_000;
+                        this.mainActivity.pendingSwipe.addKeystrokeInterval(keystrokeInterval, this.mainActivity.keystrokeCount - 1, this.mainActivity.dbHelper.getFeatureData().get(DatabaseHelper.COL_PIN_LENGTH));
+                    }
+                    break;
+
+                case MotionEvent.ACTION_UP:
+                    long prevEndTime = this.mainActivity.keystrokeEndTime;
+                    this.mainActivity.keystrokeEndTime = System.nanoTime();
+
+                    if(prevEndTime != 0) {
+                        double keystrokeEndInterval = (double) (this.mainActivity.keystrokeEndTime - prevEndTime) / 1_000_000_000;
+                        this.mainActivity.pendingSwipe.addKeystrokeEndInterval(keystrokeEndInterval, this.mainActivity.keystrokeCount - 1, this.mainActivity.dbHelper.getFeatureData().get(DatabaseHelper.COL_PIN_LENGTH));
+                    }
+
+                    double keystrokeDuration = (double) (this.mainActivity.keystrokeEndTime - this.mainActivity.keystrokeStartTime) / 1_000_000_000;
+                    this.mainActivity.pendingSwipe.addKeystrokeDuration(keystrokeDuration, this.mainActivity.keystrokeCount, this.mainActivity.dbHelper.getFeatureData().get(DatabaseHelper.COL_PIN_LENGTH));
+
+                    this.mainActivity.keystrokeCount += 1;
+
+                    if(this.mainActivity.keystrokeCount == this.mainActivity.dbHelper.getFeatureData().get(DatabaseHelper.COL_PIN_LENGTH)) {
+                        this.mainActivity.setHoldFeatures(this.mainActivity.pendingSwipe);
+                        this.mainActivity.resetSwipeValues();
+                        this.mainActivity.isTrackingSwipe = true;
+                        this.mainActivity.setNumpadVisibility(View.INVISIBLE);
+
+                        if(this.mainActivity.isTrainingMode) {
+                            this.mainActivity.dbHelper.addTrainRecord(this.mainActivity.pendingSwipe);
+                            this.mainActivity.inputTextView.setText("Inputs " + this.mainActivity.dbHelper.getRecordsCount("REAL_SWIPES"));
+                        } else {
+                            this.mainActivity.processTestRecord(this.mainActivity.pendingSwipe);
+                        }
+                    }
+                    break;
             }
 
             return true;
