@@ -2,12 +2,15 @@ package it.unibz.swipegan;
 
 import static android.Manifest.permission.READ_EXTERNAL_STORAGE;
 import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
+import static com.google.common.base.CaseFormat.LOWER_CAMEL;
+import static com.google.common.base.CaseFormat.LOWER_UNDERSCORE;
 import static it.unibz.swipegan.GAN.NUM_EPOCHS;
 
 import android.app.ActivityManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
+import android.content.res.Resources;
 import android.graphics.Color;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -46,9 +49,13 @@ import androidx.core.app.ActivityCompat;
 import com.google.android.material.snackbar.Snackbar;
 
 import java.io.File;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.DoubleSummaryStatistics;
+import java.util.Map;
 import java.util.Random;
 
 import weka.classifiers.evaluation.Evaluation;
@@ -61,6 +68,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private long startTime = 0;
     private boolean isTrainingMode = true;
     private boolean isTrainingClassifier = false;
+    private boolean isTrackingSwipe = true;
     private int holdingPosition = 0;
 
     private ArrayList<Float> xLocations = null;
@@ -97,7 +105,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     private DatabaseHelper dbHelper;
 
-    private OneClassClassifier oneClassClassifiers[] = new OneClassClassifier[3];
+    private OneClassClassifier oneClassClassifiers[] = new OneClassClassifier[4];
     private GAN gan;
 
     private Button ganButton;
@@ -114,6 +122,23 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private RadioButton standingRadioButton;
     private RadioButton walkingRadioButton;
     private RadioGroup holdingPositionRadioGroup;
+    private Button keystrokeButton0;
+    private Button keystrokeButton1;
+    private Button keystrokeButton2;
+    private Button keystrokeButton3;
+    private Button keystrokeButton4;
+    private Button keystrokeButton5;
+    private Button keystrokeButton6;
+    private Button keystrokeButton7;
+    private Button keystrokeButton8;
+    private Button keystrokeButton9;
+
+    private int keystrokeCount = 0;
+    private long keystrokeStartTime = 0;
+    private long keystrokeEndTime = 0;
+    private Swipe pendingSwipe = null;
+
+    private static final Integer NUMPAD_SIZE = 10;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -138,6 +163,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         this.sittingRadioButton = findViewById(R.id.sittingRadioButton);
         this.standingRadioButton = findViewById(R.id.standingRadioButton);
         this.walkingRadioButton = findViewById(R.id.walkingRadioButton);
+
+        this.setNumpadVisibility(View.INVISIBLE);
+        this.setKeystrokeButtonsEventListener();
+
         this.sittingRadioButton.setChecked(true);
 
         this.sittingRadioButton.setOnCheckedChangeListener((radioButtonView, isChecked) -> {
@@ -170,7 +199,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         new Thread(() -> {
             this.dbHelper = new DatabaseHelper(this);
             int recordsCount = this.dbHelper.getRecordsCount("REAL_SWIPES");
-            runOnUiThread(()-> inputTextView.setText("Inputs " + recordsCount + " (min 5)"));
+            runOnUiThread(()-> inputTextView.setText("Inputs " + recordsCount));
         }).start();
 
         this.xLocations = new ArrayList<>();
@@ -205,12 +234,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             StrictMode.setVmPolicy(builder.build());
         }
 
-        Integer segments = this.dbHelper.getFeatureData().get(5);
-        if(segments == 0) {
-            new Thread(() -> this.gan = new GAN(DatabaseHelper.DEFAULT_SEGMENTS)).start();
-        } else {
-            new Thread(() -> this.gan = new GAN(segments)).start();
-        }
+        Integer segments = this.dbHelper.getFeatureData().get(DatabaseHelper.COL_SWIPE_SHAPE_SEGMENTS);
+        Integer pinLength = this.dbHelper.getFeatureData().get(DatabaseHelper.COL_KEYSTROKE) == 1 ? this.dbHelper.getFeatureData().get(DatabaseHelper.COL_PIN_LENGTH) : 0;
+        new Thread(() -> this.gan = new GAN(segments, pinLength)).start();
     }
 
     @Override
@@ -266,6 +292,14 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             return super.onTouchEvent(event);
         }
 
+        if(this.isTrackingSwipe) {
+            this.handleSwipeEvent(event);
+        }
+
+        return super.onTouchEvent(event);
+    }
+
+    private void handleSwipeEvent(MotionEvent event) {
         int index = event.getActionIndex();
         int action = event.getActionMasked();
         int pointerId = event.getPointerId(index);
@@ -336,58 +370,89 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     Swipe swipe = this.getSwipe();
                     if(this.isTrainingMode) {
                         this.saveButton.setVisibility(View.INVISIBLE);
-                        this.dbHelper.addTrainRecord(swipe);
-                        int recordsCount = this.dbHelper.getRecordsCount("REAL_SWIPES");
-                        this.inputTextView.setText("Inputs " + recordsCount + " (min 5)");
-                    } else {
-                        String outputMessage = "";
-                        outputMessage += String.format("%1$-15s %2$-16s %3$-18s", "Inputs", "Prediction", "Test time");
-                        outputMessage += "\n";
 
-                        for(DatabaseHelper.ModelType modelType : DatabaseHelper.ModelType.values()) {
-                            long startTime = System.nanoTime();
-                            double prediction = this.getPredictionFrom(swipe, modelType);
-                            long endTime = System.nanoTime();
-                            double testingTime = (double) (endTime - startTime) / 1_000_000_000;
-
-                            double authenticationValue;
-                            if (this.attackSwitch.isChecked()) {
-                                authenticationValue = prediction != 0.0 ? 1.0 : 0.0;
-                            } else {
-                                authenticationValue = prediction == 0.0 ? 1.0 : 0.0;
-                            }
-
-                            int classifierSamples = this.dbHelper.getRecordsCount("REAL_SWIPES");
-
-                            swipe.setAuthentication(authenticationValue, modelType);
-                            swipe.setAuthenticationTime(testingTime, modelType);
-                            swipe.setClassifierSamples(classifierSamples);
-
-                            outputMessage += String.format("%1$-18s", String.format("%02d", classifierSamples));
-                            outputMessage += String.format("%1$-18s", prediction == 0.0 ? "Accepted" : "Rejected");
-                            outputMessage += String.format("%1$-18s", String.format("%.4f", testingTime));
-                            outputMessage += "\n";
-
-                            if(modelType == DatabaseHelper.ModelType.FULL) {
-                                if (prediction == 0.0) {
-                                    this.showSnackBar("Authentication: ACCEPTED", "#238823");
-                                } else {
-                                    this.showSnackBar("Authentication: REJECTED", "#D2222D");
-                                }
-                            }
+                        if(this.dbHelper.getFeatureData().get(DatabaseHelper.COL_KEYSTROKE) == 0) {
+                            this.dbHelper.addTrainRecord(swipe);
+                        } else {
+                            this.pendingSwipe = swipe;
                         }
-                        this.dbHelper.addTestRecord(swipe);
+
+                        int recordsCount = this.dbHelper.getRecordsCount("REAL_SWIPES");
+                        this.inputTextView.setText("Inputs " + recordsCount);
+                    } else {
+                        if(this.dbHelper.getFeatureData().get(DatabaseHelper.COL_KEYSTROKE) == 0) {
+                            this.processTestRecord(swipe);
+                        } else {
+                            this.pendingSwipe = swipe;
+                        }
                     }
 
+                    if(this.dbHelper.getFeatureData().get(DatabaseHelper.COL_KEYSTROKE) == 1) {
+                        this.isTrackingSwipe = false;
+                        this.resetKeystrokeValues();
+                        this.setNumpadVisibility(View.VISIBLE);
+                    }
                 }
-                this.resetValues();
+
+                if(this.dbHelper.getFeatureData().get(DatabaseHelper.COL_KEYSTROKE) == 0) {
+                    this.resetSwipeValues();
+                } else {
+                    // Stop hold tracking until start of keystroke gesture
+                    this.isTrackingAccelerometer = false;
+                    this.isTrackingGyroscope = false;
+                    this.isTrackingMagnetometer = false;
+                }
+
                 break;
             case MotionEvent.ACTION_CANCEL:
-                this.resetValues();
+                this.resetSwipeValues();
                 break;
         }
+    }
 
-        return super.onTouchEvent(event);
+    private void processTestRecord(Swipe swipe) {
+        String outputMessage = "";
+        outputMessage += String.format("%1$-15s %2$-16s %3$-18s", "Inputs", "Prediction", "Test time");
+        outputMessage += "\n";
+
+        for(DatabaseHelper.ModelType modelType : DatabaseHelper.ModelType.values()) {
+            if(modelType == DatabaseHelper.ModelType.KEYSTROKE && this.dbHelper.getFeatureData().get(DatabaseHelper.COL_KEYSTROKE) == 0) {
+                continue;
+            }
+
+            long startTime = System.nanoTime();
+            double prediction = this.getPredictionFrom(swipe, modelType);
+            long endTime = System.nanoTime();
+            double testingTime = (double) (endTime - startTime) / 1_000_000_000;
+
+            double authenticationValue;
+            if (this.attackSwitch.isChecked()) {
+                authenticationValue = prediction != 0.0 ? 1.0 : 0.0;
+            } else {
+                authenticationValue = prediction == 0.0 ? 1.0 : 0.0;
+            }
+
+            int classifierSamples = this.dbHelper.getRecordsCount("REAL_SWIPES");
+
+            swipe.setAuthentication(authenticationValue, modelType);
+            swipe.setAuthenticationTime(testingTime, modelType);
+            swipe.setClassifierSamples(classifierSamples);
+
+            outputMessage += String.format("%1$-18s", String.format("%02d", classifierSamples));
+            outputMessage += String.format("%1$-18s", prediction == 0.0 ? "Accepted" : "Rejected");
+            outputMessage += String.format("%1$-18s", String.format("%.4f", testingTime));
+            outputMessage += "\n";
+
+            if(modelType == DatabaseHelper.ModelType.FULL) {
+                if (prediction == 0.0) {
+                    this.showSnackBar("Authentication: ACCEPTED", "#238823");
+                } else {
+                    this.showSnackBar("Authentication: REJECTED", "#D2222D");
+                }
+            }
+        }
+
+        this.dbHelper.addTestRecord(swipe);
     }
 
     private double getPredictionFrom(Swipe swipe, DatabaseHelper.ModelType modelType) {
@@ -407,7 +472,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         return prediction;
     }
 
-    public void resetValues() {
+    private void resetSwipeValues() {
         this.xLocations.clear();
         this.yLocations.clear();
         this.xVelocityTranslation.clear();
@@ -468,6 +533,54 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         double varYVelocity = this.yVelocityTranslation.stream().map(i -> i - avgYVelocity).map(i -> i*i).mapToDouble(i -> i).average().getAsDouble();
         double stdYVelocity = Math.sqrt(varYVelocity);
 
+        Swipe newSwipe = new Swipe();
+
+        newSwipe.setDuration(duration);
+
+        newSwipe.setLength(length);
+
+        newSwipe.setSegmentsX(segmentsX);
+        newSwipe.setSegmentsY(segmentsY);
+
+        newSwipe.setMinSize(minSize);
+        newSwipe.setMaxSize(maxSize);
+        newSwipe.setAvgSize(avgSize);
+        newSwipe.setDownSize(downSize);
+        newSwipe.setUpSize(upSize);
+
+        newSwipe.setStartX(startX);
+        newSwipe.setStartY(startY);
+        newSwipe.setEndX(endX);
+        newSwipe.setEndY(endY);
+
+        newSwipe.setMinXVelocity(minXVelocity);
+        newSwipe.setMaxXVelocity(maxXVelocity);
+        newSwipe.setAvgXVelocity(avgXVelocity);
+        newSwipe.setStdXVelocity(stdXVelocity);
+        newSwipe.setVarXVelocity(varXVelocity);
+
+        newSwipe.setMinYVelocity(minYVelocity);
+        newSwipe.setMaxYVelocity(maxYVelocity);
+        newSwipe.setAvgYVelocity(avgYVelocity);
+        newSwipe.setStdYVelocity(stdYVelocity);
+        newSwipe.setVarYVelocity(varYVelocity);
+
+        this.setHoldFeatures(newSwipe);
+
+        if (this.isTrainingMode) {
+            newSwipe.setHoldingPosition(this.holdingPosition);
+        } else {
+            newSwipe.setHoldingPosition(0);
+        }
+
+        newSwipe.setUserId(this.attackSwitch.isChecked() ? "Attacker" : "User");
+
+        System.out.println("--------------------------------------------New Swipe---------------------------------------------------------------");
+        System.out.println(newSwipe);
+        return newSwipe;
+    }
+
+    public void setHoldFeatures(Swipe swipe) {
         DoubleSummaryStatistics xAccelerometerStats = this.xAccelerometers.stream().mapToDouble(x -> (double) x).summaryStatistics();
         double minXAccelerometer = xAccelerometerStats.getMin();
         double maxXAccelerometer = xAccelerometerStats.getMax();
@@ -531,107 +644,63 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         double varZOrientation = this.zOrientations.stream().map(i -> i - avgZOrientation).map(i -> i*i).mapToDouble(i -> i).average().getAsDouble();
         double stdZOrientation = Math.sqrt(varZOrientation);
 
-        Swipe newSwipe = new Swipe();
+        swipe.setMinXAccelerometer(minXAccelerometer);
+        swipe.setMaxXAccelerometer(maxXAccelerometer);
+        swipe.setAvgXAccelerometer(avgXAccelerometer);
+        swipe.setStdXAccelerometer(stdXAccelerometer);
+        swipe.setVarXAccelerometer(varXAccelerometer);
 
-        newSwipe.setDuration(duration);
+        swipe.setMinYAccelerometer(minYAccelerometer);
+        swipe.setMaxYAccelerometer(maxYAccelerometer);
+        swipe.setAvgYAccelerometer(avgYAccelerometer);
+        swipe.setStdYAccelerometer(stdYAccelerometer);
+        swipe.setVarYAccelerometer(varYAccelerometer);
 
-        newSwipe.setLength(length);
+        swipe.setMinZAccelerometer(minZAccelerometer);
+        swipe.setMaxZAccelerometer(maxZAccelerometer);
+        swipe.setAvgZAccelerometer(avgZAccelerometer);
+        swipe.setStdZAccelerometer(stdZAccelerometer);
+        swipe.setVarZAccelerometer(varZAccelerometer);
 
-        newSwipe.setSegmentsX(segmentsX);
-        newSwipe.setSegmentsY(segmentsY);
+        swipe.setMinXGyroscope(minXGyroscope);
+        swipe.setMaxXGyroscope(maxXGyroscope);
+        swipe.setAvgXGyroscope(avgXGyroscope);
+        swipe.setStdXGyroscope(stdXGyroscope);
+        swipe.setVarXGyroscope(varXGyroscope);
 
-        newSwipe.setMinSize(minSize);
-        newSwipe.setMaxSize(maxSize);
-        newSwipe.setAvgSize(avgSize);
-        newSwipe.setDownSize(downSize);
-        newSwipe.setUpSize(upSize);
+        swipe.setMinYGyroscope(minYGyroscope);
+        swipe.setMaxYGyroscope(maxYGyroscope);
+        swipe.setAvgYGyroscope(avgYGyroscope);
+        swipe.setStdYGyroscope(stdYGyroscope);
+        swipe.setVarYGyroscope(varYGyroscope);
 
-        newSwipe.setStartX(startX);
-        newSwipe.setStartY(startY);
-        newSwipe.setEndX(endX);
-        newSwipe.setEndY(endY);
+        swipe.setMinZGyroscope(minZGyroscope);
+        swipe.setMaxZGyroscope(maxZGyroscope);
+        swipe.setAvgZGyroscope(avgZGyroscope);
+        swipe.setStdZGyroscope(stdZGyroscope);
+        swipe.setVarZGyroscope(varZGyroscope);
 
-        newSwipe.setMinXVelocity(minXVelocity);
-        newSwipe.setMaxXVelocity(maxXVelocity);
-        newSwipe.setAvgXVelocity(avgXVelocity);
-        newSwipe.setStdXVelocity(stdXVelocity);
-        newSwipe.setVarXVelocity(varXVelocity);
+        swipe.setMinXOrientation(minXOrientation);
+        swipe.setMaxXOrientation(maxXOrientation);
+        swipe.setAvgXOrientation(avgXOrientation);
+        swipe.setStdXOrientation(stdXOrientation);
+        swipe.setVarXOrientation(varXOrientation);
 
-        newSwipe.setMinYVelocity(minYVelocity);
-        newSwipe.setMaxYVelocity(maxYVelocity);
-        newSwipe.setAvgYVelocity(avgYVelocity);
-        newSwipe.setStdYVelocity(stdYVelocity);
-        newSwipe.setVarYVelocity(varYVelocity);
+        swipe.setMinYOrientation(minYOrientation);
+        swipe.setMaxYOrientation(maxYOrientation);
+        swipe.setAvgYOrientation(avgYOrientation);
+        swipe.setStdYOrientation(stdYOrientation);
+        swipe.setVarYOrientation(varYOrientation);
 
-        newSwipe.setMinXAccelerometer(minXAccelerometer);
-        newSwipe.setMaxXAccelerometer(maxXAccelerometer);
-        newSwipe.setAvgXAccelerometer(avgXAccelerometer);
-        newSwipe.setStdXAccelerometer(stdXAccelerometer);
-        newSwipe.setVarXAccelerometer(varXAccelerometer);
-
-        newSwipe.setMinYAccelerometer(minYAccelerometer);
-        newSwipe.setMaxYAccelerometer(maxYAccelerometer);
-        newSwipe.setAvgYAccelerometer(avgYAccelerometer);
-        newSwipe.setStdYAccelerometer(stdYAccelerometer);
-        newSwipe.setVarYAccelerometer(varYAccelerometer);
-
-        newSwipe.setMinZAccelerometer(minZAccelerometer);
-        newSwipe.setMaxZAccelerometer(maxZAccelerometer);
-        newSwipe.setAvgZAccelerometer(avgZAccelerometer);
-        newSwipe.setStdZAccelerometer(stdZAccelerometer);
-        newSwipe.setVarZAccelerometer(varZAccelerometer);
-
-        newSwipe.setMinXGyroscope(minXGyroscope);
-        newSwipe.setMaxXGyroscope(maxXGyroscope);
-        newSwipe.setAvgXGyroscope(avgXGyroscope);
-        newSwipe.setStdXGyroscope(stdXGyroscope);
-        newSwipe.setVarXGyroscope(varXGyroscope);
-
-        newSwipe.setMinYGyroscope(minYGyroscope);
-        newSwipe.setMaxYGyroscope(maxYGyroscope);
-        newSwipe.setAvgYGyroscope(avgYGyroscope);
-        newSwipe.setStdYGyroscope(stdYGyroscope);
-        newSwipe.setVarYGyroscope(varYGyroscope);
-
-        newSwipe.setMinZGyroscope(minZGyroscope);
-        newSwipe.setMaxZGyroscope(maxZGyroscope);
-        newSwipe.setAvgZGyroscope(avgZGyroscope);
-        newSwipe.setStdZGyroscope(stdZGyroscope);
-        newSwipe.setVarZGyroscope(varZGyroscope);
-
-        newSwipe.setMinXOrientation(minXOrientation);
-        newSwipe.setMaxXOrientation(maxXOrientation);
-        newSwipe.setAvgXOrientation(avgXOrientation);
-        newSwipe.setStdXOrientation(stdXOrientation);
-        newSwipe.setVarXOrientation(varXOrientation);
-
-        newSwipe.setMinYOrientation(minYOrientation);
-        newSwipe.setMaxYOrientation(maxYOrientation);
-        newSwipe.setAvgYOrientation(avgYOrientation);
-        newSwipe.setStdYOrientation(stdYOrientation);
-        newSwipe.setVarYOrientation(varYOrientation);
-
-        newSwipe.setMinZOrientation(minZOrientation);
-        newSwipe.setMaxZOrientation(maxZOrientation);
-        newSwipe.setAvgZOrientation(avgZOrientation);
-        newSwipe.setStdZOrientation(stdZOrientation);
-        newSwipe.setVarZOrientation(varZOrientation);
-
-        if (this.isTrainingMode) {
-            newSwipe.setHoldingPosition(this.holdingPosition);
-        } else {
-            newSwipe.setHoldingPosition(0);
-        }
-
-        newSwipe.setUserId(this.attackSwitch.isChecked() ? "Attacker" : "User");
-
-        System.out.println("--------------------------------------------New Swipe---------------------------------------------------------------");
-        System.out.println(newSwipe);
-        return newSwipe;
+        swipe.setMinZOrientation(minZOrientation);
+        swipe.setMaxZOrientation(maxZOrientation);
+        swipe.setAvgZOrientation(avgZOrientation);
+        swipe.setStdZOrientation(stdZOrientation);
+        swipe.setVarZOrientation(varZOrientation);
     }
 
     public double[] getSegmentsOffset(ArrayList<Float> locations) {
-        Integer segments = this.dbHelper.getFeatureData().get(5);
+        Integer segments = this.dbHelper.getFeatureData().get(DatabaseHelper.COL_SWIPE_SHAPE_SEGMENTS);
 
         // To generate x segments, a minimum of x+1 locations are required
         // If the selected nr of segments exceeds the available locations, the maximum nr of segments for the current swipe is used instead
@@ -704,17 +773,17 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         popupWindow.showAtLocation(view, Gravity.CENTER, 0, 0);
         hideMainActivity(popupWindow);
 
-        ArrayList<String> userData = dbHelper.getUserData();
+        Map<String, String> userData = dbHelper.getUserData();
 
         EditText nicknameEditText = popupView.findViewById(R.id.nicknameEditText);
-        nicknameEditText.setText(userData.get(0));
+        nicknameEditText.setText(userData.get(DatabaseHelper.COL_NICKNAME));
 
         RadioGroup genderRadioGroup = popupView.findViewById(R.id.genderRadioGroup);
         ArrayList<Integer> genderRadioGroupIndices = new ArrayList<Integer>();
         genderRadioGroupIndices.add(new Integer(R.id.genderNoneRadioButton));
         genderRadioGroupIndices.add(new Integer(R.id.genderMaleRadioButton));
         genderRadioGroupIndices.add(new Integer(R.id.genderFemaleRadioButton));
-        int genderIdx = (int) Double.parseDouble(userData.get(1));
+        int genderIdx = (int) Double.parseDouble(userData.get(DatabaseHelper.COL_GENDER));
         genderRadioGroup.check(genderRadioGroupIndices.get(genderIdx));
 
         RadioGroup ageRadioGroup = popupView.findViewById(R.id.ageRadioGroup);
@@ -724,11 +793,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         ageRadioGroupIndices.add(new Integer(R.id.age40RadioButton));
         ageRadioGroupIndices.add(new Integer(R.id.age60RadioButton));
         ageRadioGroupIndices.add(new Integer(R.id.age80RadioButton));
-        int ageIdx = (int) Double.parseDouble(userData.get(2));
+        int ageIdx = (int) Double.parseDouble(userData.get(DatabaseHelper.COL_AGE));
         ageRadioGroup.check(ageRadioGroupIndices.get(ageIdx));
 
         EditText nationalityEditText = popupView.findViewById(R.id.nationalityEditText);
-        nationalityEditText.setText(userData.get(3));
+        nationalityEditText.setText(userData.get(DatabaseHelper.COL_NATIONALITY));
 
         RadioGroup holdingRadioGroup = popupView.findViewById(R.id.holdingRadioGroup);
         ArrayList<Integer> holdingRadioGroupIndices = new ArrayList<Integer>();
@@ -736,7 +805,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         holdingRadioGroupIndices.add(new Integer(R.id.holdingRightRadioButton));
         holdingRadioGroupIndices.add(new Integer(R.id.holdingLeftRadioButton));
         holdingRadioGroupIndices.add(new Integer(R.id.holdingBothRadioButton));
-        int holdingIdx = (int) Double.parseDouble(userData.get(4));
+        int holdingIdx = (int) Double.parseDouble(userData.get(DatabaseHelper.COL_HOLDING_HAND));
         holdingRadioGroup.check(holdingRadioGroupIndices.get(holdingIdx));
 
         Button saveProfileButton = popupView.findViewById(R.id.saveProfileButton);
@@ -752,7 +821,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 dbHelper.resetDB(false);
                 dbHelper.saveUserData(nickname, genderIndex, ageIndex, nationality, holdingIndex);
 
-                inputTextView.setText("Inputs 0 (min 5)"); // Forces UI refresh on main activity
+                inputTextView.setText("Inputs 0"); // Forces UI refresh on main activity
 
                 popupWindow.dismiss();
             }
@@ -778,43 +847,58 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         popupWindow.showAtLocation(view, Gravity.CENTER, 0, 0);
         hideMainActivity(popupWindow);
 
-        ArrayList<Integer> featureData = dbHelper.getFeatureData();
+        Map<String, Integer> featureData = dbHelper.getFeatureData();
 
         CheckBox accelerationCheckBox = popupView.findViewById(R.id.accelerationCheckBox);
-        accelerationCheckBox.setChecked(featureData.get(0) == 1);
+        accelerationCheckBox.setChecked(featureData.get(DatabaseHelper.COL_ACCELERATION) == 1);
 
         CheckBox angularVelocityCheckBox = popupView.findViewById(R.id.angularVelocityCheckBox);
-        angularVelocityCheckBox.setChecked(featureData.get(1) == 1);
+        angularVelocityCheckBox.setChecked(featureData.get(DatabaseHelper.COL_ANGULAR_VELOCITY) == 1);
 
         CheckBox orientationCheckBox = popupView.findViewById(R.id.orientationCheckBox);
-        orientationCheckBox.setChecked(featureData.get(2) == 1);
+        orientationCheckBox.setChecked(featureData.get(DatabaseHelper.COL_ORIENTATION) == 1);
 
         CheckBox swipeDurationCheckBox = popupView.findViewById(R.id.swipeDurationCheckBox);
-        swipeDurationCheckBox.setChecked(featureData.get(3) == 1);
+        swipeDurationCheckBox.setChecked(featureData.get(DatabaseHelper.COL_SWIPE_DURATION) == 1);
 
         CheckBox swipeShapeCheckBox = popupView.findViewById(R.id.swipeShapeCheckBox);
-        swipeShapeCheckBox.setChecked(featureData.get(4) == 1);
+        swipeShapeCheckBox.setChecked(featureData.get(DatabaseHelper.COL_SWIPE_SHAPE) == 1);
 
         Spinner swipeSegmentSpinner = (Spinner) popupView.findViewById(R.id.swipeSegmentsSpinner);
-        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this, R.array.swipe_segments, android.R.layout.simple_spinner_item);
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        swipeSegmentSpinner.setAdapter(adapter);
+        ArrayAdapter<CharSequence> swipeSegmentdapter = ArrayAdapter.createFromResource(this, R.array.swipe_segments, android.R.layout.simple_spinner_item);
+        swipeSegmentdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        swipeSegmentSpinner.setAdapter(swipeSegmentdapter);
 
-        if(featureData.get(5) == 0) {
+        if(featureData.get(DatabaseHelper.COL_SWIPE_SHAPE_SEGMENTS) == 0) {
             swipeSegmentSpinner.setSelection(((ArrayAdapter<String>) swipeSegmentSpinner.getAdapter()).getPosition(String.valueOf(DatabaseHelper.DEFAULT_SEGMENTS)));
         } else {
-            swipeSegmentSpinner.setSelection(((ArrayAdapter<String>) swipeSegmentSpinner.getAdapter()).getPosition(featureData.get(5).toString()));
+            swipeSegmentSpinner.setSelection(((ArrayAdapter<String>) swipeSegmentSpinner.getAdapter()).getPosition(featureData.get(DatabaseHelper.COL_SWIPE_SHAPE_SEGMENTS).toString()));
         }
-        Integer initial_segment_selection = Integer.parseInt((String) swipeSegmentSpinner.getSelectedItem());
+        Integer initialSegmentSelection = Integer.parseInt((String) swipeSegmentSpinner.getSelectedItem());
 
         CheckBox swipeTouchSizeCheckBox = popupView.findViewById(R.id.swipeTouchSizeCheckBox);
-        swipeTouchSizeCheckBox.setChecked(featureData.get(6) == 1);
+        swipeTouchSizeCheckBox.setChecked(featureData.get(DatabaseHelper.COL_SWIPE_TOUCH_SIZE) == 1);
 
         CheckBox swipeStartEndPosCheckBox = popupView.findViewById(R.id.swipeStartEndPosCheckBox);
-        swipeStartEndPosCheckBox.setChecked(featureData.get(7) == 1);
+        swipeStartEndPosCheckBox.setChecked(featureData.get(DatabaseHelper.COL_SWIPE_START_END_POS) == 1);
 
         CheckBox swipeVelocityCheckBox = popupView.findViewById(R.id.swipeVelocityCheckBox);
-        swipeVelocityCheckBox.setChecked(featureData.get(8) == 1);
+        swipeVelocityCheckBox.setChecked(featureData.get(DatabaseHelper.COL_SWIPE_VELOCITY) == 1);
+
+        CheckBox keystrokeCheckBox = popupView.findViewById(R.id.keystrokeCheckBox);
+        keystrokeCheckBox.setChecked(featureData.get(DatabaseHelper.COL_KEYSTROKE) == 1);
+        boolean initialKeystrokeEnabled = keystrokeCheckBox.isChecked();
+
+        Spinner keystrokeLengthSpinner = (Spinner) popupView.findViewById(R.id.keystrokeLengthSpinner);
+        ArrayAdapter<CharSequence> keystrokeLengthAdapter = ArrayAdapter.createFromResource(this, R.array.pin_length, android.R.layout.simple_spinner_item);
+        keystrokeLengthAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        keystrokeLengthSpinner.setAdapter(keystrokeLengthAdapter);
+        if(featureData.get(DatabaseHelper.COL_PIN_LENGTH) == 0) {
+            keystrokeLengthSpinner.setSelection(((ArrayAdapter<String>) keystrokeLengthSpinner.getAdapter()).getPosition(String.valueOf(DatabaseHelper.DEFAULT_PIN_LENGTH)));
+        } else {
+            keystrokeLengthSpinner.setSelection(((ArrayAdapter<String>) keystrokeLengthSpinner.getAdapter()).getPosition(featureData.get(DatabaseHelper.COL_PIN_LENGTH).toString()));
+        }
+        Integer initialPinLength = Integer.parseInt((String) keystrokeLengthSpinner.getSelectedItem());
 
         Button saveProfileButton = popupView.findViewById(R.id.saveProfileButton);
         class MyListener implements View.OnClickListener {
@@ -834,7 +918,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                         swipeShapeCheckBox.isChecked() ||
                         swipeTouchSizeCheckBox.isChecked() ||
                         swipeStartEndPosCheckBox.isChecked() ||
-                        swipeVelocityCheckBox.isChecked()
+                        swipeVelocityCheckBox.isChecked() ||
+                        keystrokeCheckBox.isChecked()
                 ) {
                     dbHelper.saveFeatureData(
                             accelerationCheckBox.isChecked() ? 1 : 0,
@@ -845,14 +930,23 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                             Integer.parseInt((String) swipeSegmentSpinner.getSelectedItem()),
                             swipeTouchSizeCheckBox.isChecked() ? 1 : 0,
                             swipeStartEndPosCheckBox.isChecked() ? 1 : 0,
-                            swipeVelocityCheckBox.isChecked() ? 1 : 0
+                            swipeVelocityCheckBox.isChecked() ? 1 : 0,
+                            keystrokeCheckBox.isChecked() ? 1 : 0,
+                            Integer.parseInt((String) keystrokeLengthSpinner.getSelectedItem())
                     );
 
-                    Integer cur_segment_selection = Integer.parseInt((String) swipeSegmentSpinner.getSelectedItem());
-                    if(cur_segment_selection != initial_segment_selection) {
+                    Integer curSegmentSelection = Integer.parseInt((String) swipeSegmentSpinner.getSelectedItem());
+                    Integer curPinLength = Integer.parseInt((String) keystrokeLengthSpinner.getSelectedItem());
+                    boolean curKeystrokeEnabled = keystrokeCheckBox.isChecked();
+
+                    if((curSegmentSelection != initialSegmentSelection) || (curKeystrokeEnabled != initialKeystrokeEnabled) || (curPinLength != initialPinLength)) {
                         dbHelper.resetDB(false);
-                        inputTextView.setText("Inputs 0 (min 5)");
-                        new Thread(() -> mainActivity.gan = new GAN(cur_segment_selection)).start();
+                        inputTextView.setText("Inputs 0");
+                        new Thread(() -> mainActivity.gan = new GAN(curSegmentSelection, curPinLength)).start();
+
+                        if(curKeystrokeEnabled != initialKeystrokeEnabled) {
+                            dbHelper.generateSwipesTables(null, true, curKeystrokeEnabled);
+                        }
                     }
 
                     popupWindow.dismiss();
@@ -900,10 +994,122 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         });
     }
 
+    private void setNumpadVisibility(Integer visibility) {
+        this.profileButton.setEnabled(visibility == View.INVISIBLE);
+        this.resetButton.setEnabled(visibility == View.INVISIBLE);
+        this.inputTextView.setEnabled(visibility == View.INVISIBLE);
+        this.trainButton.setEnabled(visibility == View.INVISIBLE);
+        this.ganButton.setEnabled(visibility == View.INVISIBLE);
+        this.swipeImageView.setVisibility((visibility == View.INVISIBLE) ? View.VISIBLE : View.INVISIBLE);
+
+        this.sittingRadioButton.setEnabled(visibility == View.INVISIBLE);
+        this.standingRadioButton.setEnabled(visibility == View.INVISIBLE);
+        this.walkingRadioButton.setEnabled(visibility == View.INVISIBLE);
+
+        for(int i = 0; i < NUMPAD_SIZE; i++) {
+            try {
+                Field class_var = this.getClass().getDeclaredField("keystrokeButton" + String.valueOf(i));
+                int res_id = getResources().getIdentifier("keystrokeButton" + String.valueOf(i), "id", this.getPackageName());
+                class_var.set(this, findViewById(res_id));
+
+                Method cur_method = class_var.getType().getMethod("setVisibility", int.class);
+                cur_method.invoke(class_var.get(this), visibility);
+            } catch (NoSuchFieldException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private void setKeystrokeButtonsEventListener() {
+        for(int i = 0; i < NUMPAD_SIZE; i++) {
+            try {
+                Field class_var = this.getClass().getDeclaredField("keystrokeButton" + String.valueOf(i));
+
+                Method cur_method = class_var.getType().getMethod("setOnTouchListener", View.OnTouchListener.class);
+                cur_method.invoke(class_var.get(this), new KeystrokeOnTouchListener(this));
+            } catch (NoSuchFieldException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    class KeystrokeOnTouchListener implements View.OnTouchListener {
+        private MainActivity mainActivity;
+
+        public KeystrokeOnTouchListener(MainActivity mainActivity) {
+            super();
+            this.mainActivity = mainActivity;
+        }
+
+        @Override
+        public boolean onTouch(View v, MotionEvent event) {
+            switch(event.getAction()) {
+                case MotionEvent.ACTION_DOWN:
+                    if(this.mainActivity.keystrokeCount == 0) {
+                        this.mainActivity.isTrackingAccelerometer = true;
+                        this.mainActivity.isTrackingGyroscope = true;
+                        this.mainActivity.isTrackingMagnetometer = true;
+                    }
+
+                    long prevStartTime = this.mainActivity.keystrokeStartTime;
+                    this.mainActivity.keystrokeStartTime = System.nanoTime();
+
+                    if(prevStartTime != 0) {
+                        double keystrokeStartInterval = (double) (this.mainActivity.keystrokeStartTime - prevStartTime) / 1_000_000_000;
+                        this.mainActivity.pendingSwipe.addKeystrokeStartInterval(keystrokeStartInterval, this.mainActivity.keystrokeCount - 1, this.mainActivity.dbHelper.getFeatureData().get(DatabaseHelper.COL_PIN_LENGTH));
+                    }
+
+                    if(this.mainActivity.keystrokeCount != 0) {
+                        double keystrokeInterval = (double) (this.mainActivity.keystrokeStartTime - this.mainActivity.keystrokeEndTime) / 1_000_000_000;
+                        this.mainActivity.pendingSwipe.addKeystrokeInterval(keystrokeInterval, this.mainActivity.keystrokeCount - 1, this.mainActivity.dbHelper.getFeatureData().get(DatabaseHelper.COL_PIN_LENGTH));
+                    }
+                    break;
+
+                case MotionEvent.ACTION_UP:
+                    long prevEndTime = this.mainActivity.keystrokeEndTime;
+                    this.mainActivity.keystrokeEndTime = System.nanoTime();
+
+                    if(prevEndTime != 0) {
+                        double keystrokeEndInterval = (double) (this.mainActivity.keystrokeEndTime - prevEndTime) / 1_000_000_000;
+                        this.mainActivity.pendingSwipe.addKeystrokeEndInterval(keystrokeEndInterval, this.mainActivity.keystrokeCount - 1, this.mainActivity.dbHelper.getFeatureData().get(DatabaseHelper.COL_PIN_LENGTH));
+                    }
+
+                    double keystrokeDuration = (double) (this.mainActivity.keystrokeEndTime - this.mainActivity.keystrokeStartTime) / 1_000_000_000;
+                    this.mainActivity.pendingSwipe.addKeystrokeDuration(keystrokeDuration, this.mainActivity.keystrokeCount, this.mainActivity.dbHelper.getFeatureData().get(DatabaseHelper.COL_PIN_LENGTH));
+
+                    this.mainActivity.keystrokeCount += 1;
+
+                    if(this.mainActivity.keystrokeCount == this.mainActivity.dbHelper.getFeatureData().get(DatabaseHelper.COL_PIN_LENGTH)) {
+                        this.mainActivity.pendingSwipe.setKeystrokeFullDuration();
+                        this.mainActivity.setHoldFeatures(this.mainActivity.pendingSwipe);
+                        this.mainActivity.resetSwipeValues();
+                        this.mainActivity.isTrackingSwipe = true;
+                        this.mainActivity.setNumpadVisibility(View.INVISIBLE);
+
+                        if(this.mainActivity.isTrainingMode) {
+                            this.mainActivity.dbHelper.addTrainRecord(this.mainActivity.pendingSwipe);
+                            this.mainActivity.inputTextView.setText("Inputs " + this.mainActivity.dbHelper.getRecordsCount("REAL_SWIPES"));
+                        } else {
+                            this.mainActivity.processTestRecord(this.mainActivity.pendingSwipe);
+                        }
+                    }
+                    break;
+            }
+
+            return true;
+        }
+    }
+
+    private void resetKeystrokeValues() {
+        this.keystrokeCount = 0;
+        this.keystrokeStartTime = 0;
+        this.keystrokeEndTime = 0;
+    }
+
     public void resetData(View view) {
         if(this.isTrainingMode) {
             this.dbHelper.resetDB(false);
-            this.inputTextView.setText("Inputs " + this.dbHelper.getRecordsCount("REAL_SWIPES") + " (min 5)");
+            this.inputTextView.setText("Inputs " + this.dbHelper.getRecordsCount("REAL_SWIPES"));
         } else {
             String strSummary = "";
             strSummary += String.format("%1$-9s %2$-9s %3$-9s %4$-9s %5$-9s %6$-9s %7$-9s %8$-9s", "Inputs", "TAR", "FRR", "TRR", "FAR", "Swipe", "Train", "Classifier");
@@ -920,6 +1126,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             ArrayList<double[]> attackerTestingData = this.dbHelper.getTestingData("Attacker");
 
             for(DatabaseHelper.ModelType modelType : DatabaseHelper.ModelType.values()) {
+                if(modelType == DatabaseHelper.ModelType.KEYSTROKE && this.dbHelper.getFeatureData().get(DatabaseHelper.COL_KEYSTROKE) == 0) {
+                    continue;
+                }
+
                 int cur_idx = modelType.ordinal();
 
                 System.out.println(Arrays.toString(attackerTestingData.stream().mapToDouble(x -> x[cur_idx]).toArray()));
@@ -932,7 +1142,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 double averageSwipeDuration = testSwipes.stream().mapToDouble(Swipe::getDuration).average().getAsDouble() / 1_000.0;
 
                 userTestingData.addAll(attackerTestingData);
-                double avgTestTime = userTestingData.stream().mapToDouble(x -> x[cur_idx+3]).average().getAsDouble();
+                double avgTestTime = userTestingData.stream().mapToDouble(x -> x[cur_idx+4]).average().getAsDouble();
 
                 int classifierSamples = this.dbHelper.getRecordsCount("REAL_SWIPES");
                 this.dbHelper.saveTestResults(instances, TAR, FRR, TRR, FAR, averageSwipeDuration, avgTestTime, classifierSamples, modelType);
@@ -954,7 +1164,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
             this.attackSwitch.setChecked(false);
 
-            this.inputTextView.setText("Inputs " + this.dbHelper.getRecordsCount("REAL_SWIPES") + " (min 5)");
+            this.inputTextView.setText("Inputs " + this.dbHelper.getRecordsCount("REAL_SWIPES"));
             this.ganButton.setVisibility(View.VISIBLE);
             this.trainButton.setVisibility(View.VISIBLE);
             this.saveButton.setVisibility(View.VISIBLE);
@@ -1046,10 +1256,18 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     resourceMonitor.stop(dbHelper, "GAN");
 
                     for(DatabaseHelper.ModelType modelType : DatabaseHelper.ModelType.values()) {
+                        if(modelType == DatabaseHelper.ModelType.KEYSTROKE && this.dbHelper.getFeatureData().get(DatabaseHelper.COL_KEYSTROKE) == 0) {
+                            continue;
+                        }
+
                         uiHandler.post(() -> {progressTextView.setText("Training " + modelType.name() + " classifier");});
                         trainClassifierWith(swipes, true, ganTime, modelType); }
                 } else {
                     for(DatabaseHelper.ModelType modelType : DatabaseHelper.ModelType.values()) {
+                        if(modelType == DatabaseHelper.ModelType.KEYSTROKE && this.dbHelper.getFeatureData().get(DatabaseHelper.COL_KEYSTROKE) == 0) {
+                            continue;
+                        }
+
                         uiHandler.post(() -> {progressTextView.setText("Training " + modelType.name() + " classifier");});
                         trainClassifierWith(swipes, false, 0.0, modelType); }
                 }
@@ -1145,8 +1363,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     public synchronized void saveData(View view) {
 
         try {
-            ArrayList<String> userData = dbHelper.getUserData();
-            dbHelper.saveAllTablesAsCSV(getContentResolver(), getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS).getPath() + File.separator + userData.get(0));
+            Map<String, String> userData = dbHelper.getUserData();
+            dbHelper.saveAllTablesAsCSV(getContentResolver(), getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS).getPath() + File.separator + userData.get(DatabaseHelper.COL_NICKNAME));
             //this.showAlertDialog("SUCCESS", "CSV files have been saved into the file manager");
             this.showSnackBar("CSV files saved to /Downloads", "#238823");
 
@@ -1176,19 +1394,19 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     public Instances getWekaDataset(DatabaseHelper.ModelType modelType) {
-        ArrayList<Integer> featureData = dbHelper.getFeatureData();
-        boolean useAcceleration = featureData.get(0) == 1;
-        boolean useAngularVelocity = featureData.get(1) == 1;
-        boolean useOrientation = featureData.get(2) == 1;
-        boolean useSwipeDuration = featureData.get(3) == 1;
-        boolean useSwipeShape = featureData.get(4) == 1;
-        boolean useSwipeSize = featureData.get(5) == 1;
-        boolean useSwipeStartEndPos = featureData.get(6) == 1;
-        boolean useSwipeVelocity = featureData.get(7) == 1;
+        Map<String, Integer> featureData = dbHelper.getFeatureData();
+        boolean useAcceleration = featureData.get(DatabaseHelper.COL_ACCELERATION) == 1;
+        boolean useAngularVelocity = featureData.get(DatabaseHelper.COL_ANGULAR_VELOCITY) == 1;
+        boolean useOrientation = featureData.get(DatabaseHelper.COL_ORIENTATION) == 1;
+        boolean useSwipeDuration = featureData.get(DatabaseHelper.COL_SWIPE_DURATION) == 1;
+        boolean useSwipeShape = featureData.get(DatabaseHelper.COL_SWIPE_SHAPE) == 1;
+        boolean useSwipeSize = featureData.get(DatabaseHelper.COL_SWIPE_TOUCH_SIZE) == 1;
+        boolean useSwipeStartEndPos = featureData.get(DatabaseHelper.COL_SWIPE_START_END_POS) == 1;
+        boolean useSwipeVelocity = featureData.get(DatabaseHelper.COL_SWIPE_VELOCITY) == 1;
 
         ArrayList<Attribute> attributes = new ArrayList<>();
 
-        if(modelType != DatabaseHelper.ModelType.HOLD) {
+        if(modelType == DatabaseHelper.ModelType.SWIPE || modelType == DatabaseHelper.ModelType.FULL) {
             if (useSwipeDuration) {
                 attributes.add(new Attribute("duration"));
             }
@@ -1196,7 +1414,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 attributes.add(new Attribute("length"));
 
                 for(String dimension : new String[]{"x", "y"}) {
-                    for(int i = 0; i < dbHelper.getFeatureData().get(5); i++) {
+                    for(int i = 0; i < dbHelper.getFeatureData().get(DatabaseHelper.COL_SWIPE_SHAPE_SEGMENTS); i++) {
                         attributes.add(new Attribute("segments_" + dimension + "_" + i));
                     }
                 }
@@ -1227,7 +1445,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 attributes.add(new Attribute("varYVelocity"));
             }
         }
-        if(modelType != DatabaseHelper.ModelType.SWIPE) {
+        if(modelType == DatabaseHelper.ModelType.HOLD || modelType == DatabaseHelper.ModelType.FULL) {
             if (useAcceleration) {
                 attributes.add(new Attribute("minXAccelerometer"));
                 attributes.add(new Attribute("maxXAccelerometer"));
@@ -1278,6 +1496,18 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 attributes.add(new Attribute("avgZOrientation"));
                 attributes.add(new Attribute("stdZOrientation"));
                 attributes.add(new Attribute("varZOrientation"));
+            }
+        }
+        if(dbHelper.getFeatureData().get(DatabaseHelper.COL_KEYSTROKE) == 1 && (modelType == DatabaseHelper.ModelType.KEYSTROKE || modelType == DatabaseHelper.ModelType.FULL)) {
+            for(String keystroke_feature : DatabaseHelper.keystroke_features) {
+                if(keystroke_feature == DatabaseHelper.COL_KEYSTROKE_FULL_DURATION) {
+                    attributes.add(new Attribute(keystroke_feature));
+                } else {
+                    Integer feature_size = keystroke_feature == DatabaseHelper.COL_KEYSTROKE_DURATIONS ? dbHelper.getFeatureData().get(DatabaseHelper.COL_PIN_LENGTH) : dbHelper.getFeatureData().get(DatabaseHelper.COL_PIN_LENGTH) - 1;
+                    for (int i = 0; i < feature_size; i++) {
+                        attributes.add(new Attribute(LOWER_UNDERSCORE.to(LOWER_CAMEL, keystroke_feature) + "_" + i));
+                    }
+                }
             }
         }
 

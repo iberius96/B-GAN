@@ -8,6 +8,19 @@
     android:background="#ffffff">
 
     <TextView
+        android:id="@+id/keystrokeTitleTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="14dp"
+        android:text="Keystroke"
+        android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/swipeVelocityCheckBox" />
+
+    <TextView
         android:id="@+id/titleTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -35,7 +48,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="20dp"
-        android:layout_marginTop="24dp"
+        android:layout_marginTop="14dp"
         android:text="Hold"
         android:textAppearance="@style/TextAppearance.AppCompat.Body1"
         android:textSize="16sp"
@@ -48,7 +61,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="20dp"
-        android:layout_marginTop="24dp"
+        android:layout_marginTop="14dp"
         android:text="Swipe"
         android:textAppearance="@style/TextAppearance.AppCompat.Body1"
         android:textSize="16sp"
@@ -77,6 +90,16 @@
         app:layout_constraintTop_toBottomOf="@+id/swipeDurationCheckBox" />
 
     <TextView
+        android:id="@+id/keystrokeLengthTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="20dp"
+        android:text="PIN length:"
+        app:layout_constraintStart_toEndOf="@+id/keystrokeCheckBox"
+        app:layout_constraintTop_toBottomOf="@+id/keystrokeDescTextView" />
+
+    <TextView
         android:id="@+id/swipeDescTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -95,6 +118,16 @@
         android:text="Acceleration (m/s^2)"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/holdDescTextView" />
+
+    <CheckBox
+        android:id="@+id/keystrokeCheckBox"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="14dp"
+        android:text="Enable numpad"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/keystrokeDescTextView" />
 
     <CheckBox
         android:id="@+id/swipeDurationCheckBox"
@@ -165,7 +198,7 @@
         android:layout_width="wrap_content"
         android:layout_height="54dp"
         android:layout_marginStart="24dp"
-        android:layout_marginBottom="32dp"
+        android:layout_marginBottom="20dp"
         android:backgroundTint="#457B9D"
         android:text="SAVE"
         android:textColor="#FFFFFF"
@@ -177,12 +210,12 @@
         android:layout_width="wrap_content"
         android:layout_height="54dp"
         android:layout_marginStart="20dp"
-        android:layout_marginTop="34dp"
-        android:layout_marginBottom="32dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginBottom="20dp"
         android:text="Cancel"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/swipeVelocityCheckBox" />
+        app:layout_constraintTop_toBottomOf="@+id/keystrokeCheckBox" />
 
     <Spinner
         android:id="@+id/swipeSegmentsSpinner"
@@ -190,5 +223,23 @@
         android:layout_height="wrap_content"
         app:layout_constraintStart_toEndOf="@+id/swipeSegmentTextView"
         app:layout_constraintTop_toBottomOf="@+id/swipeDurationCheckBox" />
+
+    <Spinner
+        android:id="@+id/keystrokeLengthSpinner"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="14dp"
+        app:layout_constraintStart_toEndOf="@+id/keystrokeLengthTextView"
+        app:layout_constraintTop_toBottomOf="@+id/keystrokeDescTextView" />
+
+    <TextView
+        android:id="@+id/keystrokeDescTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="14dp"
+        android:text="Features gathered from keystrokes"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/keystrokeTitleTextView" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

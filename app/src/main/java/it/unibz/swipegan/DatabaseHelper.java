@@ -21,10 +21,14 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
 import static com.google.common.base.CaseFormat.LOWER_CAMEL;
 import static com.google.common.base.CaseFormat.LOWER_UNDERSCORE;
+
+import org.apache.commons.lang3.ArrayUtils;
 
 import au.com.bytecode.opencsv.CSVWriter;
 
@@ -49,10 +53,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final String COL_AUTHENTICATION_HOLD = "AUTHENTICATION_HOLD";
     private static final String COL_AUTHENTICATION_SWIPE = "AUTHENTICATION_SWIPE";
+    private static final String COL_AUTHENTICATION_KEYSTROKE = "AUTHENTICATION_KEYSTROKE";
     private static final String COL_AUTHENTICATION_FULL = "AUTHENTICATION_FULL";
 
     private static final String COL_AUTHENTICATION_TIME_HOLD = "AUTHENTICATION_TIME_HOLD";
     private static final String COL_AUTHENTICATION_TIME_SWIPE = "AUTHENTICATION_TIME_SWIPE";
+    private static final String COL_AUTHENTICATION_TIME_KEYSTROKE = "AUTHENTICATION_TIME_KEYSTROKE";
     private static final String COL_AUTHENTICATION_TIME_FULL = "AUTHENTICATION_TIME_FULL";
 
     private static final String COL_DURATION = "duration";
@@ -83,22 +89,26 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String COL_CLASSIFIER_SAMPLES = "CLASSIFIER_SAMPLES";
     private static final String COL_MODEL_TYPE = "MODEL_TYPE";
 
-    private static final String COL_NICKNAME = "nickname";
-    private static final String COL_GENDER = "gender";
-    private static final String COL_AGE = "age";
-    private static final String COL_NATIONALITY = "nationality";
-    private static final String COL_HOLDING_HAND = "holding_hand";
+    public static final String COL_NICKNAME = "nickname";
+    public static final String COL_GENDER = "gender";
+    public static final String COL_AGE = "age";
+    public static final String COL_NATIONALITY = "nationality";
+    public static final String COL_HOLDING_HAND = "holding_hand";
 
-    private static final String COL_ACCELERATION = "acceleration";
-    private static final String COL_ANGULAR_VELOCITY = "angular_velocity";
-    private static final String COL_ORIENTATION = "orientation";
-    private static final String COL_SWIPE_DURATION = "swipe_duration";
-    private static final String COL_SWIPE_SHAPE = "swipe_shape";
-    private static final String COL_SWIPE_SHAPE_SEGMENTS = "swipe_shape_segments";
-    private static final String COL_SWIPE_TOUCH_SIZE = "swipe_touch_size";
-    private static final String COL_SWIPE_START_END_POS = "swipe_start_end_pos";
-    private static final String COL_SWIPE_VELOCITY = "swipe_velocity";
+    // Feature data columns
+    public static final String COL_ACCELERATION = "acceleration";
+    public static final String COL_ANGULAR_VELOCITY = "angular_velocity";
+    public static final String COL_ORIENTATION = "orientation";
+    public static final String COL_SWIPE_DURATION = "swipe_duration";
+    public static final String COL_SWIPE_SHAPE = "swipe_shape";
+    public static final String COL_SWIPE_SHAPE_SEGMENTS = "swipe_shape_segments";
+    public static final String COL_SWIPE_TOUCH_SIZE = "swipe_touch_size";
+    public static final String COL_SWIPE_START_END_POS = "swipe_start_end_pos";
+    public static final String COL_SWIPE_VELOCITY = "swipe_velocity";
+    public static final String COL_KEYSTROKE = "keystroke";
+    public static final String COL_PIN_LENGTH = "pin_length";
 
+    // Resource columns
     private static final String COL_MIN_CPU_TEMP = "min_cpu_temp";
     private static final String COL_MAX_CPU_TEMP = "max_cpu_temp";
     private static final String COL_AVG_CPU_TEMP = "avg_cpu_temp";
@@ -106,6 +116,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String COL_MAX_MEMORY_USAGE = "max_memory_usage";
     private static final String COL_AVG_MEMORY_USAGE = "avg_memory_usage";
     private static final String COL_POWER_DRAW = "power_draw";
+
+    // Keystrokes columns
+    public static final String COL_KEYSTROKE_DURATIONS = "keystroke_durations";
+    private static final String COL_KEYSTROKE_INTERVALS = "keystroke_intervals";
+    private static final String COL_KEYSTROKE_START_INTERVALS = "keystroke_start_intervals";
+    private static final String COL_KEYSTROKE_END_INTERVALS = "keystroke_end_intervals";
+    public static final String COL_KEYSTROKE_FULL_DURATION = "keystroke_full_duration";
 
     public static final String[] head_features = {
             COL_DURATION,
@@ -121,14 +138,24 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public static final String[] metrics = {"Min", "Max", "Avg", "Var", "Std"};
     public static final String[] dimensions = {"X", "Y", "Z"};
 
+    public static final String[] keystroke_features = {
+            COL_KEYSTROKE_DURATIONS,
+            COL_KEYSTROKE_INTERVALS,
+            COL_KEYSTROKE_START_INTERVALS,
+            COL_KEYSTROKE_END_INTERVALS,
+            COL_KEYSTROKE_FULL_DURATION
+    };
+
     public static enum ModelType {
         HOLD,
         SWIPE,
+        KEYSTROKE,
         FULL
     };
 
     public static final Integer BASE_FEATURES = 66; // TODO: Change this hardcoded value
     public static final Integer DEFAULT_SEGMENTS = 10;
+    public static final Integer DEFAULT_PIN_LENGTH = 8;
 
     public DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, 1);
@@ -136,29 +163,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        String swipes_base = "CREATE TABLE " + "BASE_TABLE"
-                + " (id INTEGER PRIMARY KEY AUTOINCREMENT, ";
-
-        for(String head_feature : head_features) {
-            if(head_feature == COL_SEGMENTS_X || head_feature == COL_SEGMENTS_Y) {
-                swipes_base += head_feature + " varchar(255), ";
-            } else {
-                swipes_base += head_feature + " float(53), ";
-            }
-        }
-
-        for(String feature : DatabaseHelper.features) {
-            for (String metric : DatabaseHelper.metrics) {
-                for (String dimension : DatabaseHelper.dimensions) {
-                    if (dimension == "Z" && feature == "Velocity") { continue; }
-
-                    swipes_base += metric.toLowerCase() + "_" + dimension.toLowerCase() + "_" + feature.toLowerCase() + " float(53), ";
-                }
-            }
-        }
-
-        swipes_base += COL_HOLDING_POSITION + " float(53), " + COL_USER_ID + " varchar(20))";
-
         String createRealResultsTable = "CREATE TABLE " + REAL_RESULTS
                 + " (id INTEGER PRIMARY KEY AUTOINCREMENT, "
                 + COL_INSTANCES + " float(53), "
@@ -210,7 +214,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 + COL_SWIPE_SHAPE_SEGMENTS + " integer(2), "
                 + COL_SWIPE_TOUCH_SIZE + " integer(1), "
                 + COL_SWIPE_START_END_POS + " integer(1), "
-                + COL_SWIPE_VELOCITY + " integer(1))";
+                + COL_SWIPE_VELOCITY + " integer(1),"
+                + COL_KEYSTROKE + " integer(1),"
+                + COL_PIN_LENGTH + " integer(1))";
 
         String createResourceDataTable = "CREATE TABLE " + RESOURCE_DATA
                 + " (id INTEGER PRIMARY KEY AUTOINCREMENT, "
@@ -224,24 +230,19 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 + COL_TRAINING_TIME + " float(53), "
                 + COL_MODEL_TYPE + " varchar(20))";
 
-        String[] swipes_tables = {REAL_SWIPES, GAN_SWIPES, TEST_SWIPES, REAL_SWIPES_NORMALIZED, GAN_SWIPES_NORMALIZED, TEST_SWIPES_NORMALIZED};
-        for(int i = 0; i < swipes_tables.length; i++) {
-            String create_statement = swipes_base.replace("BASE_TABLE", swipes_tables[i]);
-            if(swipes_tables[i] == TEST_SWIPES) {
-                create_statement = create_statement.replace(
-                        COL_USER_ID,
-                        COL_AUTHENTICATION_HOLD + " float(53), " +
-                                    COL_AUTHENTICATION_SWIPE + " float(53), " +
-                                    COL_AUTHENTICATION_FULL + " float(53), " +
-                                    COL_AUTHENTICATION_TIME_HOLD + " float(53), " +
-                                    COL_AUTHENTICATION_TIME_SWIPE + " float(53), " +
-                                    COL_AUTHENTICATION_TIME_FULL + " float(53), " +
-                                    COL_CLASSIFIER_SAMPLES + " float(53), " +
-                                    COL_USER_ID
-                );
-            }
-            db.execSQL(create_statement);
-        }
+        String createKeystrokesTable = "CREATE TABLE " + RESOURCE_DATA
+                + " (id INTEGER PRIMARY KEY AUTOINCREMENT, "
+                + COL_MIN_CPU_TEMP + " float(53), "
+                + COL_MAX_CPU_TEMP + " float(53), "
+                + COL_AVG_CPU_TEMP + " float(53), "
+                + COL_MIN_MEMORY_USAGE + " float(53), "
+                + COL_MAX_MEMORY_USAGE + " float(53), "
+                + COL_AVG_MEMORY_USAGE + " float(53), "
+                + COL_POWER_DRAW + " float(53), "
+                + COL_TRAINING_TIME + " float(53), "
+                + COL_MODEL_TYPE + " varchar(20))";
+
+        this.generateSwipesTables(db,false, true);
 
         db.execSQL(createRealResultsTable);
         db.execSQL(createGanResultsTable);
@@ -276,10 +277,15 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         if (feature_count == 0) {
             ContentValues contentValues = new ContentValues();
 
-            String[] feature_cols = {COL_ACCELERATION, COL_ANGULAR_VELOCITY, COL_ORIENTATION, COL_SWIPE_DURATION, COL_SWIPE_SHAPE, COL_SWIPE_SHAPE_SEGMENTS, COL_SWIPE_TOUCH_SIZE, COL_SWIPE_START_END_POS, COL_SWIPE_VELOCITY};
+            String[] feature_cols = {
+                    COL_ACCELERATION, COL_ANGULAR_VELOCITY, COL_ORIENTATION,
+                    COL_SWIPE_DURATION, COL_SWIPE_SHAPE, COL_SWIPE_SHAPE_SEGMENTS, COL_SWIPE_TOUCH_SIZE, COL_SWIPE_START_END_POS, COL_SWIPE_VELOCITY,
+                    COL_KEYSTROKE, COL_PIN_LENGTH};
             for(String feature_col : feature_cols) {
                 if (feature_col == COL_SWIPE_SHAPE_SEGMENTS) {
                     contentValues.put(feature_col, DEFAULT_SEGMENTS);
+                } else if(feature_col == COL_PIN_LENGTH) {
+                    contentValues.put(feature_col, DEFAULT_PIN_LENGTH);
                 } else {
                     contentValues.put(feature_col, 1);
                 }
@@ -287,6 +293,64 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             db.insert(FEATURE_DATA, null, contentValues);
         }
 
+    }
+
+    public void generateSwipesTables(SQLiteDatabase db, boolean regenerate, boolean hasKeystrokes) {
+        if(db == null) { db = this.getWritableDatabase(); }
+        String[] swipes_tables = {REAL_SWIPES, GAN_SWIPES, TEST_SWIPES, REAL_SWIPES_NORMALIZED, GAN_SWIPES_NORMALIZED, TEST_SWIPES_NORMALIZED};
+
+        if(regenerate) {
+            for (String swipe_table : swipes_tables) { db.execSQL("DROP TABLE " + swipe_table); }
+        }
+
+        String swipes_base = "CREATE TABLE " + "BASE_TABLE"
+                + " (id INTEGER PRIMARY KEY AUTOINCREMENT, ";
+
+        for(String head_feature : head_features) {
+            if(head_feature == COL_SEGMENTS_X || head_feature == COL_SEGMENTS_Y) {
+                swipes_base += head_feature + " varchar(255), ";
+            } else {
+                swipes_base += head_feature + " float(53), ";
+            }
+        }
+
+        for(String feature : DatabaseHelper.features) {
+            for (String metric : DatabaseHelper.metrics) {
+                for (String dimension : DatabaseHelper.dimensions) {
+                    if (dimension == "Z" && feature == "Velocity") { continue; }
+
+                    swipes_base += metric.toLowerCase() + "_" + dimension.toLowerCase() + "_" + feature.toLowerCase() + " float(53), ";
+                }
+            }
+        }
+
+        if(hasKeystrokes) {
+            for(String keystroke_feature : keystroke_features) {
+                swipes_base += keystroke_feature + (keystroke_feature == COL_KEYSTROKE_FULL_DURATION ? " float(53), " : " varchar(255), ");
+            }
+        }
+
+        swipes_base += COL_HOLDING_POSITION + " float(53), " + COL_USER_ID + " varchar(20))";
+
+        for(int i = 0; i < swipes_tables.length; i++) {
+            String create_statement = swipes_base.replace("BASE_TABLE", swipes_tables[i]);
+            if(swipes_tables[i] == TEST_SWIPES) {
+                create_statement = create_statement.replace(
+                        COL_USER_ID,
+                        COL_AUTHENTICATION_HOLD + " float(53), " +
+                                COL_AUTHENTICATION_SWIPE + " float(53), " +
+                                (hasKeystrokes ? (COL_AUTHENTICATION_KEYSTROKE + " float(53), ") : "") +
+                                COL_AUTHENTICATION_FULL + " float(53), " +
+                                COL_AUTHENTICATION_TIME_HOLD + " float(53), " +
+                                COL_AUTHENTICATION_TIME_SWIPE + " float(53), " +
+                                (hasKeystrokes ? (COL_AUTHENTICATION_TIME_KEYSTROKE + " float(53), ") : "") +
+                                COL_AUTHENTICATION_TIME_FULL + " float(53), " +
+                                COL_CLASSIFIER_SAMPLES + " float(53), " +
+                                COL_USER_ID
+                );
+            }
+            db.execSQL(create_statement);
+        }
     }
 
     @Override
@@ -352,6 +416,24 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             }
         }
 
+        for(String keystroke_feature : keystroke_features) {
+            java.lang.reflect.Method cur_method = null;
+            try {
+                cur_method = swipe.getClass().getMethod("get" + keystroke_feature.substring(0, 1).toUpperCase() + LOWER_UNDERSCORE.to(LOWER_CAMEL, keystroke_feature.substring(1)));
+
+                if(cur_method.invoke(swipe) != null) {
+                    if(keystroke_feature == COL_KEYSTROKE_FULL_DURATION) {
+                        contentValues.put(keystroke_feature, (Double) cur_method.invoke(swipe));
+                    } else {
+                        contentValues.put(keystroke_feature, Arrays.toString((double[]) cur_method.invoke(swipe)));
+                    }
+                }
+            } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+                e.printStackTrace();
+            }
+        }
+
+
         contentValues.put(COL_HOLDING_POSITION, swipe.getHoldingPosition());
         contentValues.put(COL_USER_ID, swipe.getUserId());
 
@@ -363,6 +445,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             contentValues.put(COL_AUTHENTICATION_TIME_HOLD, swipe.getAuthenticationTime(ModelType.HOLD));
             contentValues.put(COL_AUTHENTICATION_TIME_SWIPE, swipe.getAuthenticationTime(ModelType.SWIPE));
             contentValues.put(COL_AUTHENTICATION_TIME_FULL, swipe.getAuthenticationTime(ModelType.FULL));
+
+            if(this.getFeatureData().get(COL_KEYSTROKE) == 1) {
+                contentValues.put(COL_AUTHENTICATION_KEYSTROKE, swipe.getAuthentication(ModelType.KEYSTROKE));
+                contentValues.put(COL_AUTHENTICATION_TIME_KEYSTROKE, swipe.getAuthenticationTime(ModelType.KEYSTROKE));
+            }
 
             contentValues.put(COL_CLASSIFIER_SAMPLES, swipe.getClassifierSamples());
         }
@@ -403,7 +490,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             for(String head_feature : head_features) {
                 if(head_feature == DatabaseHelper.COL_SEGMENTS_X || head_feature == DatabaseHelper.COL_SEGMENTS_Y) {
                     String segment_str = "[";
-                    for(int i = 0; i < this.getFeatureData().get(5); i++) {
+                    for(int i = 0; i < this.getFeatureData().get(COL_SWIPE_SHAPE_SEGMENTS); i++) {
                         segment_str += normalizedValues[values_idx] + ",";
                         values_idx = values_idx + 1;
                     }
@@ -426,6 +513,39 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                         contentValues.put(col_name, normalizedValues[values_idx]);
                         values_idx = values_idx + 1;
                     }
+                }
+            }
+
+            for(String keystroke_feature : keystroke_features) {
+                java.lang.reflect.Method cur_method = null;
+                try {
+                    cur_method = swipe.getClass().getMethod("get" + keystroke_feature.substring(0, 1).toUpperCase() + LOWER_UNDERSCORE.to(LOWER_CAMEL, keystroke_feature.substring(1)));
+
+                    if(cur_method.invoke(swipe) == null) {
+                        continue;
+                    }
+                } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+                    e.printStackTrace();
+                }
+
+                if(keystroke_feature == COL_KEYSTROKE_FULL_DURATION) {
+                    contentValues.put(keystroke_feature, normalizedValues[values_idx]);
+                    values_idx = values_idx + 1;
+                } else {
+                    Integer feature_length = (this.getFeatureData().get(COL_PIN_LENGTH) - 1);
+                    if (keystroke_feature == COL_KEYSTROKE_DURATIONS) {
+                        feature_length = this.getFeatureData().get(COL_PIN_LENGTH);
+                    }
+
+                    String keystroke_str = "[";
+                    for (int i = 0; i < feature_length; i++) {
+                        keystroke_str += normalizedValues[values_idx] + ",";
+                        values_idx = values_idx + 1;
+                    }
+                    keystroke_str = keystroke_str.substring(0, keystroke_str.length() - 1);
+                    keystroke_str += "]";
+
+                    contentValues.put(keystroke_feature, keystroke_str);
                 }
             }
 
@@ -481,6 +601,26 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 }
             }
 
+            for(String keystroke_feature : keystroke_features) {
+                if(cursor.getColumnIndex(keystroke_feature) != -1) {
+                    java.lang.reflect.Method cur_method = null;
+                    try {
+                        if(keystroke_feature == COL_KEYSTROKE_FULL_DURATION) {
+                            cur_method = swipe.getClass().getMethod("set" + keystroke_feature.substring(0, 1).toUpperCase() + LOWER_UNDERSCORE.to(LOWER_CAMEL, keystroke_feature.substring(1)));
+                            cur_method.invoke(swipe);
+                        } else {
+                            cur_method = swipe.getClass().getMethod("set" + keystroke_feature.substring(0, 1).toUpperCase() + LOWER_UNDERSCORE.to(LOWER_CAMEL, keystroke_feature.substring(1)), double[].class);
+                            String cursor_str = cursor.getString(cursor.getColumnIndex(keystroke_feature));
+                            String[] cursor_array = cursor_str.replace("[", "").replace("]", "").split(",");
+                            cur_method.invoke(swipe, Arrays.stream(cursor_array).mapToDouble(Double::parseDouble).toArray());
+                        }
+                    } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+
+
             swipe.setHoldingPosition(cursor.getDouble(cursor.getColumnIndex(COL_HOLDING_POSITION)));
             swipe.setUserId(cursor.getString(cursor.getColumnIndex(COL_USER_ID)));
             swipes.add(swipe);
@@ -509,20 +649,23 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         cursor.moveToFirst();
 
         while(!cursor.isAfterLast()) {
-            double[] testingValues = new double[6];
+            double[] testingValues = new double[8];
             testingValues[0] = cursor.getDouble(cursor.getColumnIndex(COL_AUTHENTICATION_HOLD));
             testingValues[1] = cursor.getDouble(cursor.getColumnIndex(COL_AUTHENTICATION_SWIPE));
-            testingValues[2] = cursor.getDouble(cursor.getColumnIndex(COL_AUTHENTICATION_FULL));
+            testingValues[2] = this.getFeatureData().get(COL_KEYSTROKE) == 1 ? cursor.getDouble(cursor.getColumnIndex(COL_AUTHENTICATION_KEYSTROKE)) : 0;
+            testingValues[3] = cursor.getDouble(cursor.getColumnIndex(COL_AUTHENTICATION_FULL));
 
-            testingValues[3] = cursor.getDouble(cursor.getColumnIndex(COL_AUTHENTICATION_TIME_HOLD));
-            testingValues[4] = cursor.getDouble(cursor.getColumnIndex(COL_AUTHENTICATION_TIME_SWIPE));
-            testingValues[5] = cursor.getDouble(cursor.getColumnIndex(COL_AUTHENTICATION_TIME_FULL));
+            testingValues[4] = cursor.getDouble(cursor.getColumnIndex(COL_AUTHENTICATION_TIME_HOLD));
+            testingValues[5] = cursor.getDouble(cursor.getColumnIndex(COL_AUTHENTICATION_TIME_SWIPE));
+            testingValues[6] = this.getFeatureData().get(COL_KEYSTROKE) == 1 ? cursor.getDouble(cursor.getColumnIndex(COL_AUTHENTICATION_TIME_KEYSTROKE)) : 0;
+            testingValues[7] = cursor.getDouble(cursor.getColumnIndex(COL_AUTHENTICATION_TIME_FULL));
 
             testingData.add(testingValues);
             cursor.move(1);
         }
         cursor.close();
         return testingData;
+
     }
 
     public void deleteTestingData() {
@@ -619,27 +762,30 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return result != -1;
     }
 
-    public ArrayList<String> getUserData() {
+    public Map<String, String> getUserData() {
         SQLiteDatabase db = this.getReadableDatabase();
         String query = "SELECT * FROM " + USER_DATA;
 
         Cursor cursor = db.rawQuery(query, null);
         cursor.moveToFirst();
 
-        ArrayList<String> userData = new ArrayList<>();
+        Map<String, String> userData = new HashMap<>();
 
-        userData.add(cursor.getString(cursor.getColumnIndex(COL_NICKNAME)));
-        userData.add(Double.toString(cursor.getDouble(cursor.getColumnIndex(COL_GENDER))));
-        userData.add(Double.toString(cursor.getDouble(cursor.getColumnIndex(COL_AGE))));
-        userData.add(cursor.getString(cursor.getColumnIndex(COL_NATIONALITY)));
-        userData.add(Double.toString(cursor.getDouble(cursor.getColumnIndex(COL_HOLDING_HAND))));
+        userData.put(COL_NICKNAME, cursor.getString(cursor.getColumnIndex(COL_NICKNAME)));
+        userData.put(COL_GENDER, Double.toString(cursor.getDouble(cursor.getColumnIndex(COL_GENDER))));
+        userData.put(COL_AGE, Double.toString(cursor.getDouble(cursor.getColumnIndex(COL_AGE))));
+        userData.put(COL_NATIONALITY, cursor.getString(cursor.getColumnIndex(COL_NATIONALITY)));
+        userData.put(COL_HOLDING_HAND, Double.toString(cursor.getDouble(cursor.getColumnIndex(COL_HOLDING_HAND))));
 
         cursor.close();
 
         return userData;
     }
 
-    public boolean saveFeatureData(int acceleration, int angular_velocity, int orientation, int swipe_duration, int swipe_shape, int swipe_shape_segments, int swipe_touch_size, int swipe_start_end_pos, int swipe_velocity) {
+    public boolean saveFeatureData(
+            int acceleration, int angular_velocity, int orientation,
+            int swipe_duration, int swipe_shape, int swipe_shape_segments, int swipe_touch_size, int swipe_start_end_pos, int swipe_velocity,
+            int keystroke, int pin_length) {
         SQLiteDatabase db = this.getWritableDatabase();
         db.execSQL("DELETE FROM " + FEATURE_DATA);
 
@@ -654,29 +800,33 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         contentValues.put(COL_SWIPE_TOUCH_SIZE, swipe_touch_size);
         contentValues.put(COL_SWIPE_START_END_POS, swipe_start_end_pos);
         contentValues.put(COL_SWIPE_VELOCITY, swipe_velocity);
+        contentValues.put(COL_KEYSTROKE, keystroke);
+        contentValues.put(COL_PIN_LENGTH, pin_length);
 
         long result = db.insert(FEATURE_DATA, null, contentValues);
         return result != -1;
     }
 
-    public ArrayList<Integer> getFeatureData() {
+    public Map<String, Integer> getFeatureData() {
         SQLiteDatabase db = this.getReadableDatabase();
         String query = "SELECT * FROM " + FEATURE_DATA;
 
         Cursor cursor = db.rawQuery(query, null);
         cursor.moveToFirst();
 
-        ArrayList<Integer> featureData = new ArrayList<>();
+        Map<String, Integer> featureData = new HashMap<>();
 
-        featureData.add(cursor.getInt(cursor.getColumnIndex(COL_ACCELERATION)));
-        featureData.add(cursor.getInt(cursor.getColumnIndex(COL_ANGULAR_VELOCITY)));
-        featureData.add(cursor.getInt(cursor.getColumnIndex(COL_ORIENTATION)));
-        featureData.add(cursor.getInt(cursor.getColumnIndex(COL_SWIPE_DURATION)));
-        featureData.add(cursor.getInt(cursor.getColumnIndex(COL_SWIPE_SHAPE)));
-        featureData.add(cursor.getInt(cursor.getColumnIndex(COL_SWIPE_SHAPE_SEGMENTS)));
-        featureData.add(cursor.getInt(cursor.getColumnIndex(COL_SWIPE_TOUCH_SIZE)));
-        featureData.add(cursor.getInt(cursor.getColumnIndex(COL_SWIPE_START_END_POS)));
-        featureData.add(cursor.getInt(cursor.getColumnIndex(COL_SWIPE_VELOCITY)));
+        featureData.put(COL_ACCELERATION, cursor.getInt(cursor.getColumnIndex(COL_ACCELERATION)));
+        featureData.put(COL_ANGULAR_VELOCITY, cursor.getInt(cursor.getColumnIndex(COL_ANGULAR_VELOCITY)));
+        featureData.put(COL_ORIENTATION, cursor.getInt(cursor.getColumnIndex(COL_ORIENTATION)));
+        featureData.put(COL_SWIPE_DURATION, cursor.getInt(cursor.getColumnIndex(COL_SWIPE_DURATION)));
+        featureData.put(COL_SWIPE_SHAPE, cursor.getInt(cursor.getColumnIndex(COL_SWIPE_SHAPE)));
+        featureData.put(COL_SWIPE_SHAPE_SEGMENTS, cursor.getInt(cursor.getColumnIndex(COL_SWIPE_SHAPE_SEGMENTS)));
+        featureData.put(COL_SWIPE_TOUCH_SIZE, cursor.getInt(cursor.getColumnIndex(COL_SWIPE_TOUCH_SIZE)));
+        featureData.put(COL_SWIPE_START_END_POS, cursor.getInt(cursor.getColumnIndex(COL_SWIPE_START_END_POS)));
+        featureData.put(COL_SWIPE_VELOCITY, cursor.getInt(cursor.getColumnIndex(COL_SWIPE_VELOCITY)));
+        featureData.put(COL_KEYSTROKE, cursor.getInt(cursor.getColumnIndex(COL_KEYSTROKE)));
+        featureData.put(COL_PIN_LENGTH, cursor.getInt(cursor.getColumnIndex(COL_PIN_LENGTH)));
 
         cursor.close();
 
@@ -758,7 +908,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                                 colNames[i].equals(COL_NICKNAME) ||
                                 colNames[i].equals(COL_MODEL_TYPE) ||
                                 colNames[i].equals(COL_SEGMENTS_X) ||
-                                colNames[i].equals(COL_SEGMENTS_Y)) {
+                                colNames[i].equals(COL_SEGMENTS_Y) ||
+                                colNames[i].equals(COL_KEYSTROKE_DURATIONS) ||
+                                colNames[i].equals(COL_KEYSTROKE_INTERVALS) ||
+                                colNames[i].equals(COL_KEYSTROKE_START_INTERVALS) ||
+                                colNames[i].equals(COL_KEYSTROKE_END_INTERVALS)) {
                             arrStr[i] = curCSV.getString(i);
                         } else {
                             arrStr[i] = Double.toString(curCSV.getDouble(i));
@@ -789,7 +943,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                                     colNames[i].equals(COL_NICKNAME) ||
                                     colNames[i].equals(COL_MODEL_TYPE) ||
                                     colNames[i].equals(COL_SEGMENTS_X) ||
-                                    colNames[i].equals(COL_SEGMENTS_Y)) {
+                                    colNames[i].equals(COL_SEGMENTS_Y) ||
+                                    colNames[i].equals(COL_KEYSTROKE_DURATIONS) ||
+                                    colNames[i].equals(COL_KEYSTROKE_INTERVALS) ||
+                                    colNames[i].equals(COL_KEYSTROKE_START_INTERVALS) ||
+                                    colNames[i].equals(COL_KEYSTROKE_END_INTERVALS)) {
                                 arrStr[i] = curCSV.getString(i);
                             } else {
                                 arrStr[i] = Double.toString(curCSV.getDouble(i));

@@ -84,6 +84,14 @@ public class Swipe {
     private double avgZOrientation;
     private double varZOrientation;
     private double stdZOrientation;
+
+    //Keystroke features
+    private double[] keystrokeDurations;
+    private double[] keystrokeIntervals;
+    private double[] keystrokeStartIntervals;
+    private double[] keystrokeEndIntervals;
+    private double keystrokeFullDuration;
+
     private double holdingPosition;
     private String userId;
 
@@ -100,41 +108,6 @@ public class Swipe {
 
     public Swipe() {
 
-    }
-
-    public Swipe(double[] swipeArray, double holdingPosition, String userId) {
-        int array_idx = 0;
-
-        for(String head_feature : DatabaseHelper.head_features) {
-            java.lang.reflect.Method cur_method = null;
-            try {
-                cur_method = this.getClass().getMethod("set" + head_feature.substring(0, 1).toUpperCase() + LOWER_UNDERSCORE.to(LOWER_CAMEL, head_feature.substring(1)), double.class);
-                cur_method.invoke(this, swipeArray[array_idx]);
-            } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-                e.printStackTrace();
-            }
-            array_idx = array_idx + 1;
-        }
-
-        for(String feature : DatabaseHelper.features) {
-            for(String metric : DatabaseHelper.metrics) {
-                for(String dimension : DatabaseHelper.dimensions) {
-                    if (dimension == "Z" && feature == "Velocity") { continue; }
-
-                    java.lang.reflect.Method cur_method = null;
-                    try {
-                        cur_method = this.getClass().getMethod("set" + metric + dimension + feature, double.class);
-                        cur_method.invoke(this, swipeArray[array_idx]);
-                    } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-                        e.printStackTrace();
-                    }
-                    array_idx = array_idx + 1;
-                }
-            }
-        }
-
-        this.holdingPosition = holdingPosition;
-        this.userId = userId;
     }
 
     public double getDuration() {
@@ -681,6 +654,82 @@ public class Swipe {
         this.varZOrientation = varZOrientation;
     }
 
+    public double[] getKeystrokeDurations() {
+        return this.keystrokeDurations;
+    }
+
+    public void addKeystrokeDuration(double duration, int curKeystroke, int pinLength) {
+        if(this.keystrokeDurations == null) {
+            this.keystrokeDurations = new double[pinLength];
+        }
+
+        this.keystrokeDurations[curKeystroke] = duration;
+    }
+
+    public void setKeystrokeDurations(double[] keystrokeDurations) {
+        this.keystrokeDurations = keystrokeDurations;
+    }
+
+    public double[] getKeystrokeIntervals() {
+        return this.keystrokeIntervals;
+    }
+
+    public void addKeystrokeInterval(double interval, int curKeystroke, int pinLength) {
+        if(this.keystrokeIntervals == null) {
+            this.keystrokeIntervals = new double[pinLength - 1];
+        }
+
+        this.keystrokeIntervals[curKeystroke] = interval;
+    }
+
+    public void setKeystrokeIntervals(double[] keystrokeIntervals) {
+        this.keystrokeIntervals = keystrokeIntervals;
+    }
+
+    public double[] getKeystrokeStartIntervals() {
+        return this.keystrokeStartIntervals;
+    }
+
+    public void addKeystrokeStartInterval(double startInterval, int curKeystroke, int pinLength) {
+        if(this.keystrokeStartIntervals == null) {
+            this.keystrokeStartIntervals = new double[pinLength - 1];
+        }
+
+        this.keystrokeStartIntervals[curKeystroke] = startInterval;
+    }
+
+    public void setKeystrokeStartIntervals(double[] keystrokeStartIntervals) {
+        this.keystrokeStartIntervals = keystrokeStartIntervals;
+    }
+
+    public double[] getKeystrokeEndIntervals() {
+        return this.keystrokeEndIntervals;
+    }
+
+    public void addKeystrokeEndInterval(double endInterval, int curKeystroke, int pinLength) {
+        if(this.keystrokeEndIntervals == null) {
+            this.keystrokeEndIntervals = new double[pinLength - 1];
+        }
+
+        this.keystrokeEndIntervals[curKeystroke] = endInterval;
+    }
+
+    public void setKeystrokeEndIntervals(double[] keystrokeEndIntervals) {
+        this.keystrokeEndIntervals = keystrokeEndIntervals;
+    }
+
+    public double getKeystrokeFullDuration() {
+        return this.keystrokeFullDuration;
+    }
+
+    public void setKeystrokeFullDuration() {
+        this.keystrokeFullDuration = Arrays.stream(this.getKeystrokeDurations()).sum() + Arrays.stream(this.getKeystrokeIntervals()).sum();
+    }
+
+    public void setKeystrokeFullDurationNormalized(double keystrokeFullDuration) {
+        this.keystrokeFullDuration = keystrokeFullDuration;
+    }
+
     public double getHoldingPosition() {
         return holdingPosition;
     }
@@ -797,6 +846,33 @@ public class Swipe {
                     }
                 }
             }
+
+            for(String keystroke_feature : DatabaseHelper.keystroke_features) {
+                String min_key = "MIN_" + keystroke_feature.toUpperCase();
+                String max_key = "MAX_" + keystroke_feature.toUpperCase();
+
+                java.lang.reflect.Method cur_method = null;
+                try {
+                    cur_method = swipe.getClass().getMethod("get" + keystroke_feature.substring(0, 1).toUpperCase() + LOWER_UNDERSCORE.to(LOWER_CAMEL, keystroke_feature.substring(1)));
+
+                    if(keystroke_feature == DatabaseHelper.COL_KEYSTROKE_FULL_DURATION) {
+                        Double cur_value = (Double) cur_method.invoke(swipe);
+                        map.put(min_key, map.get(min_key) == null || cur_value < map.get(min_key) ? cur_value : map.get(min_key));
+                        map.put(max_key, map.get(max_key) == null || cur_value > map.get(max_key) ? cur_value : map.get(max_key));
+                    } else {
+                        double[] keystroke_vals = (double[]) cur_method.invoke(swipe);
+
+                        if (keystroke_vals != null) {
+                            for (int i = 0; i < keystroke_vals.length; i++) {
+                                map.put(min_key + "_" + i, map.get(min_key + "_" + i) == null || keystroke_vals[i] < map.get(min_key + "_" + i) ? keystroke_vals[i] : map.get(min_key + "_" + i));
+                                map.put(max_key + "_" + i, map.get(max_key + "_" + i) == null || keystroke_vals[i] > map.get(max_key + "_" + i) ? keystroke_vals[i] : map.get(max_key + "_" + i));
+                            }
+                        }
+                    }
+                } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+                    e.printStackTrace();
+                }
+            }
         }
 
         return map;
@@ -849,6 +925,31 @@ public class Swipe {
 
                     ret.add((cur_value - map.get(min_key)) / (map.get(max_key) - map.get(min_key)));
                 }
+            }
+        }
+
+        for(String keystroke_feature : DatabaseHelper.keystroke_features) {
+            String min_key = "MIN_" + keystroke_feature.toUpperCase();
+            String max_key = "MAX_" + keystroke_feature.toUpperCase();
+
+            java.lang.reflect.Method cur_method = null;
+            try {
+                cur_method = this.getClass().getMethod("get" + keystroke_feature.substring(0, 1).toUpperCase() + LOWER_UNDERSCORE.to(LOWER_CAMEL, keystroke_feature.substring(1)));
+
+                if(keystroke_feature == DatabaseHelper.COL_KEYSTROKE_FULL_DURATION) {
+                    Double cur_value = (Double) cur_method.invoke(this);
+                    ret.add((cur_value - map.get(min_key)) / (map.get(max_key) - map.get(min_key)));
+                } else {
+                    double[] keystroke_vals = (double[]) cur_method.invoke(this);
+
+                    if (keystroke_vals != null) {
+                        for (int i = 0; i < keystroke_vals.length; i++) {
+                            ret.add((keystroke_vals[i] - map.get(min_key + "_" + i)) / (map.get(max_key + "_" + i) - map.get(min_key + "_" + i)));
+                        }
+                    }
+                }
+            } catch (IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
+                e.printStackTrace();
             }
         }
 
@@ -915,6 +1016,38 @@ public class Swipe {
                     }
                     values_idx = values_idx + 1;
                 }
+            }
+        }
+
+        for(String keystroke_feature : DatabaseHelper.keystroke_features) {
+            String min_key = "MIN_" + keystroke_feature.toUpperCase();
+            String max_key = "MAX_" + keystroke_feature.toUpperCase();
+
+            Method cur_method = null;
+            try {
+                if(keystroke_feature == DatabaseHelper.COL_KEYSTROKE_FULL_DURATION) {
+                    cur_method = swipe.getClass().getMethod("set" + keystroke_feature.substring(0, 1).toUpperCase() + LOWER_UNDERSCORE.to(LOWER_CAMEL, keystroke_feature.substring(1)) + "Normalized", double.class);
+                    cur_method.invoke(swipe, values[values_idx] * (map.get(max_key) - map.get(min_key)) + map.get(min_key));
+                    values_idx = values_idx + 1;
+                } else {
+                    Integer keystroke_size = map.entrySet()
+                            .stream()
+                            .filter(x -> x.getKey().contains(keystroke_feature.toUpperCase()))
+                            .collect(Collectors.toMap(x -> x.getKey(), x -> x.getValue())).size() / 2;
+
+                    if (keystroke_size != 0) {
+                        double[] normalized_keystroke = new double[keystroke_size];
+                        for (int i = 0; i < keystroke_size; i++) {
+                            normalized_keystroke[i] = values[values_idx] * (map.get(max_key + "_" + i) - map.get(min_key + "_" + i)) + map.get(min_key + "_" + i);
+                            values_idx = values_idx + 1;
+                        }
+
+                        cur_method = swipe.getClass().getMethod("set" + keystroke_feature.substring(0, 1).toUpperCase() + LOWER_UNDERSCORE.to(LOWER_CAMEL, keystroke_feature.substring(1)), double[].class);
+                        cur_method.invoke(swipe, normalized_keystroke);
+                    }
+                }
+            } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+                e.printStackTrace();
             }
         }
 
@@ -995,25 +1128,31 @@ public class Swipe {
                 "\n avgZOrientation=" + avgZOrientation +
                 "\n stdZOrientation=" + stdZOrientation +
                 "\n varZOrientation=" + varZOrientation +
+                "\n keystrokeDurations=" + keystrokeDurations +
+                "\n keystrokeIntervals=" + keystrokeIntervals +
+                "\n keystrokeStartIntervals=" + keystrokeStartIntervals +
+                "\n keystrokeEndIntervals=" + keystrokeEndIntervals +
+                "\n keystrokeFullDuration=" + keystrokeFullDuration +
                 "\n holdingPosition=" + holdingPosition +
                 "\n userId=" + userId +
                 '}';
     }
 
-    public Instance getAsWekaInstance(Instances dataSet, boolean isTrainInstance, DatabaseHelper dbHelper, DatabaseHelper.ModelType modelType){
-        ArrayList<Integer> featureData = dbHelper.getFeatureData();
-        boolean useAcceleration = featureData.get(0) == 1;
-        boolean useAngularVelocity = featureData.get(1) == 1;
-        boolean useOrientation = featureData.get(2) == 1;
-        boolean useSwipeDuration = featureData.get(3) == 1;
-        boolean useSwipeShape = featureData.get(4) == 1;
-        boolean useSwipeSize = featureData.get(5) == 1;
-        boolean useSwipeStartEndPos = featureData.get(6) == 1;
-        boolean useSwipeVelocity = featureData.get(7) == 1;
+    public Instance getAsWekaInstance(Instances dataSet, boolean isTrainInstance, DatabaseHelper dbHelper, DatabaseHelper.ModelType modelType) {
+        Map<String, Integer> featureData = dbHelper.getFeatureData();
+        boolean useAcceleration = featureData.get(DatabaseHelper.COL_ACCELERATION) == 1;
+        boolean useAngularVelocity = featureData.get(DatabaseHelper.COL_ANGULAR_VELOCITY) == 1;
+        boolean useOrientation = featureData.get(DatabaseHelper.COL_ORIENTATION) == 1;
+        boolean useSwipeDuration = featureData.get(DatabaseHelper.COL_SWIPE_DURATION) == 1;
+        boolean useSwipeShape = featureData.get(DatabaseHelper.COL_SWIPE_SHAPE) == 1;
+        boolean useSwipeSize = featureData.get(DatabaseHelper.COL_SWIPE_TOUCH_SIZE) == 1;
+        boolean useSwipeStartEndPos = featureData.get(DatabaseHelper.COL_SWIPE_START_END_POS) == 1;
+        boolean useSwipeVelocity = featureData.get(DatabaseHelper.COL_SWIPE_VELOCITY) == 1;
+        boolean useKeystroke = featureData.get(DatabaseHelper.COL_KEYSTROKE) == 1;
 
         ArrayList<Double> featureSet = new ArrayList<>();
 
-        if(modelType != DatabaseHelper.ModelType.HOLD) {
+        if(modelType == DatabaseHelper.ModelType.SWIPE || modelType == DatabaseHelper.ModelType.FULL) {
             if (useSwipeDuration) {
                 featureSet.add(this.getDuration());
             }
@@ -1048,7 +1187,7 @@ public class Swipe {
                 featureSet.add(this.getVarYVelocity());
             }
         }
-        if(modelType != DatabaseHelper.ModelType.SWIPE) {
+        if(modelType == DatabaseHelper.ModelType.HOLD || modelType == DatabaseHelper.ModelType.FULL) {
             if (useAcceleration) {
                 featureSet.add(this.getMinXAccelerometer());
                 featureSet.add(this.getMaxXAccelerometer());
@@ -1099,6 +1238,15 @@ public class Swipe {
                 featureSet.add(this.getAvgZOrientation());
                 featureSet.add(this.getStdZOrientation());
                 featureSet.add(this.getVarZOrientation());
+            }
+        }
+        if(modelType == DatabaseHelper.ModelType.KEYSTROKE || modelType == DatabaseHelper.ModelType.FULL) {
+            if(useKeystroke) {
+                for(Double keystrokeDuration : this.getKeystrokeDurations()) { featureSet.add(keystrokeDuration); }
+                for(Double keystrokeInterval : this.getKeystrokeIntervals()) { featureSet.add(keystrokeInterval); }
+                for(Double keystrokeStartInterval : this.getKeystrokeStartIntervals()) { featureSet.add(keystrokeStartInterval); }
+                for(Double keystrokeEndInterval : this.getKeystrokeEndIntervals()) { featureSet.add(keystrokeEndInterval); }
+                featureSet.add(keystrokeFullDuration);
             }
         }
 
