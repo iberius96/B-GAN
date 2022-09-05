@@ -1080,6 +1080,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     this.mainActivity.keystrokeCount += 1;
 
                     if(this.mainActivity.keystrokeCount == this.mainActivity.dbHelper.getFeatureData().get(DatabaseHelper.COL_PIN_LENGTH)) {
+                        this.mainActivity.pendingSwipe.setKeystrokeFullDuration();
                         this.mainActivity.setHoldFeatures(this.mainActivity.pendingSwipe);
                         this.mainActivity.resetSwipeValues();
                         this.mainActivity.isTrackingSwipe = true;
@@ -1499,9 +1500,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         }
         if(dbHelper.getFeatureData().get(DatabaseHelper.COL_KEYSTROKE) == 1 && (modelType == DatabaseHelper.ModelType.KEYSTROKE || modelType == DatabaseHelper.ModelType.FULL)) {
             for(String keystroke_feature : DatabaseHelper.keystroke_features) {
-                Integer feature_size = keystroke_feature == DatabaseHelper.COL_KEYSTROKE_DURATIONS ? dbHelper.getFeatureData().get(DatabaseHelper.COL_PIN_LENGTH) : dbHelper.getFeatureData().get(DatabaseHelper.COL_PIN_LENGTH) - 1;
-                for (int i = 0; i < feature_size; i++) {
-                    attributes.add(new Attribute( LOWER_UNDERSCORE.to(LOWER_CAMEL, keystroke_feature) + "_" + i));
+                if(keystroke_feature == DatabaseHelper.COL_KEYSTROKE_FULL_DURATION) {
+                    attributes.add(new Attribute(keystroke_feature));
+                } else {
+                    Integer feature_size = keystroke_feature == DatabaseHelper.COL_KEYSTROKE_DURATIONS ? dbHelper.getFeatureData().get(DatabaseHelper.COL_PIN_LENGTH) : dbHelper.getFeatureData().get(DatabaseHelper.COL_PIN_LENGTH) - 1;
+                    for (int i = 0; i < feature_size; i++) {
+                        attributes.add(new Attribute(LOWER_UNDERSCORE.to(LOWER_CAMEL, keystroke_feature) + "_" + i));
+                    }
                 }
             }
         }

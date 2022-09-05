@@ -122,6 +122,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String COL_KEYSTROKE_INTERVALS = "keystroke_intervals";
     private static final String COL_KEYSTROKE_START_INTERVALS = "keystroke_start_intervals";
     private static final String COL_KEYSTROKE_END_INTERVALS = "keystroke_end_intervals";
+    public static final String COL_KEYSTROKE_FULL_DURATION = "keystroke_full_duration";
 
     public static final String[] head_features = {
             COL_DURATION,
@@ -141,7 +142,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             COL_KEYSTROKE_DURATIONS,
             COL_KEYSTROKE_INTERVALS,
             COL_KEYSTROKE_START_INTERVALS,
-            COL_KEYSTROKE_END_INTERVALS
+            COL_KEYSTROKE_END_INTERVALS,
+            COL_KEYSTROKE_FULL_DURATION
     };
 
     public static enum ModelType {
@@ -324,7 +326,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         if(hasKeystrokes) {
             for(String keystroke_feature : keystroke_features) {
-                swipes_base += keystroke_feature + " varchar(255), ";
+                swipes_base += keystroke_feature + (keystroke_feature == COL_KEYSTROKE_FULL_DURATION ? " float(53), " : " varchar(255), ");
             }
         }
 
@@ -420,7 +422,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 cur_method = swipe.getClass().getMethod("get" + keystroke_feature.substring(0, 1).toUpperCase() + LOWER_UNDERSCORE.to(LOWER_CAMEL, keystroke_feature.substring(1)));
 
                 if(cur_method.invoke(swipe) != null) {
-                    contentValues.put(keystroke_feature, Arrays.toString((double[]) cur_method.invoke(swipe)));
+                    if(keystroke_feature == COL_KEYSTROKE_FULL_DURATION) {
+                        contentValues.put(keystroke_feature, (Double) cur_method.invoke(swipe));
+                    } else {
+                        contentValues.put(keystroke_feature, Arrays.toString((double[]) cur_method.invoke(swipe)));
+                    }
                 }
             } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
                 e.printStackTrace();
@@ -522,20 +528,25 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                     e.printStackTrace();
                 }
 
-                Integer feature_length = (this.getFeatureData().get(COL_PIN_LENGTH) - 1);
-                if(keystroke_feature == COL_KEYSTROKE_DURATIONS) {
-                    feature_length = this.getFeatureData().get(COL_PIN_LENGTH);
-                }
-
-                String keystroke_str = "[";
-                for(int i = 0; i < feature_length; i++) {
-                    keystroke_str += normalizedValues[values_idx] + ",";
+                if(keystroke_feature == COL_KEYSTROKE_FULL_DURATION) {
+                    contentValues.put(keystroke_feature, normalizedValues[values_idx]);
                     values_idx = values_idx + 1;
-                }
-                keystroke_str = keystroke_str.substring(0, keystroke_str.length() - 1);
-                keystroke_str += "]";
+                } else {
+                    Integer feature_length = (this.getFeatureData().get(COL_PIN_LENGTH) - 1);
+                    if (keystroke_feature == COL_KEYSTROKE_DURATIONS) {
+                        feature_length = this.getFeatureData().get(COL_PIN_LENGTH);
+                    }
 
-                contentValues.put(keystroke_feature, keystroke_str);
+                    String keystroke_str = "[";
+                    for (int i = 0; i < feature_length; i++) {
+                        keystroke_str += normalizedValues[values_idx] + ",";
+                        values_idx = values_idx + 1;
+                    }
+                    keystroke_str = keystroke_str.substring(0, keystroke_str.length() - 1);
+                    keystroke_str += "]";
+
+                    contentValues.put(keystroke_feature, keystroke_str);
+                }
             }
 
             contentValues.put(COL_HOLDING_POSITION, swipe.getHoldingPosition());
@@ -594,10 +605,15 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 if(cursor.getColumnIndex(keystroke_feature) != -1) {
                     java.lang.reflect.Method cur_method = null;
                     try {
-                        cur_method = swipe.getClass().getMethod("set" + keystroke_feature.substring(0, 1).toUpperCase() + LOWER_UNDERSCORE.to(LOWER_CAMEL, keystroke_feature.substring(1)), double[].class);
-                        String cursor_str = cursor.getString(cursor.getColumnIndex(keystroke_feature));
-                        String[] cursor_array = cursor_str.replace("[", "").replace("]", "").split(",");
-                        cur_method.invoke(swipe, Arrays.stream(cursor_array).mapToDouble(Double::parseDouble).toArray());
+                        if(keystroke_feature == COL_KEYSTROKE_FULL_DURATION) {
+                            cur_method = swipe.getClass().getMethod("set" + keystroke_feature.substring(0, 1).toUpperCase() + LOWER_UNDERSCORE.to(LOWER_CAMEL, keystroke_feature.substring(1)));
+                            cur_method.invoke(swipe);
+                        } else {
+                            cur_method = swipe.getClass().getMethod("set" + keystroke_feature.substring(0, 1).toUpperCase() + LOWER_UNDERSCORE.to(LOWER_CAMEL, keystroke_feature.substring(1)), double[].class);
+                            String cursor_str = cursor.getString(cursor.getColumnIndex(keystroke_feature));
+                            String[] cursor_array = cursor_str.replace("[", "").replace("]", "").split(",");
+                            cur_method.invoke(swipe, Arrays.stream(cursor_array).mapToDouble(Double::parseDouble).toArray());
+                        }
                     } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
                         e.printStackTrace();
                     }
