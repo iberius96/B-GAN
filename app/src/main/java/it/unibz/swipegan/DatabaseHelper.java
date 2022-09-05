@@ -33,6 +33,7 @@ import org.apache.commons.lang3.ArrayUtils;
 import au.com.bytecode.opencsv.CSVWriter;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
+    private static DatabaseHelper sInstance;
 
     private static final String DATABASE_NAME = "GAN.db";
 
@@ -159,6 +160,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     public DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, 1);
+    }
+
+    public static synchronized DatabaseHelper getInstance(Context context) {
+        if (sInstance == null) {
+            sInstance = new DatabaseHelper(context.getApplicationContext());
+        }
+        return sInstance;
     }
 
     @Override
@@ -416,23 +424,22 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             }
         }
 
-        for(String keystroke_feature : keystroke_features) {
-            java.lang.reflect.Method cur_method = null;
-            try {
-                cur_method = swipe.getClass().getMethod("get" + keystroke_feature.substring(0, 1).toUpperCase() + LOWER_UNDERSCORE.to(LOWER_CAMEL, keystroke_feature.substring(1)));
+        if(this.getFeatureData().get(COL_KEYSTROKE) == 1) {
+            for (String keystroke_feature : keystroke_features) {
+                java.lang.reflect.Method cur_method = null;
+                try {
+                    cur_method = swipe.getClass().getMethod("get" + keystroke_feature.substring(0, 1).toUpperCase() + LOWER_UNDERSCORE.to(LOWER_CAMEL, keystroke_feature.substring(1)));
 
-                if(cur_method.invoke(swipe) != null) {
-                    if(keystroke_feature == COL_KEYSTROKE_FULL_DURATION) {
+                    if (keystroke_feature == COL_KEYSTROKE_FULL_DURATION) {
                         contentValues.put(keystroke_feature, (Double) cur_method.invoke(swipe));
                     } else {
                         contentValues.put(keystroke_feature, Arrays.toString((double[]) cur_method.invoke(swipe)));
                     }
+                } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+                    e.printStackTrace();
                 }
-            } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-                e.printStackTrace();
             }
         }
-
 
         contentValues.put(COL_HOLDING_POSITION, swipe.getHoldingPosition());
         contentValues.put(COL_USER_ID, swipe.getUserId());

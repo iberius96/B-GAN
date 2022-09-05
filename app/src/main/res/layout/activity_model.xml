@@ -5,7 +5,7 @@
     android:id="@+id/relativeLayout"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:background="#ffffff">
+    android:background="#00FFFFFF">
 
     <TextView
         android:id="@+id/keystrokeTitleTextView"
@@ -21,7 +21,7 @@
         app:layout_constraintTop_toBottomOf="@+id/swipeVelocityCheckBox" />
 
     <TextView
-        android:id="@+id/titleTextView"
+        android:id="@+id/nicknameTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="20dp"
@@ -41,7 +41,7 @@
         android:layout_marginTop="14dp"
         android:text="Select the features used for training the model"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/titleTextView" />
+        app:layout_constraintTop_toBottomOf="@+id/nicknameTextView" />
 
     <TextView
         android:id="@+id/holdTitleTextView"

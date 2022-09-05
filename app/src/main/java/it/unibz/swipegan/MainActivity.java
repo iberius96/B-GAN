@@ -6,11 +6,12 @@ import static com.google.common.base.CaseFormat.LOWER_CAMEL;
 import static com.google.common.base.CaseFormat.LOWER_UNDERSCORE;
 import static it.unibz.swipegan.GAN.NUM_EPOCHS;
 
+import android.app.Activity;
 import android.app.ActivityManager;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.content.res.Resources;
 import android.graphics.Color;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -49,13 +50,16 @@ import androidx.core.app.ActivityCompat;
 import com.google.android.material.snackbar.Snackbar;
 
 import java.io.File;
+import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.DoubleSummaryStatistics;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Random;
 
 import weka.classifiers.evaluation.Evaluation;
@@ -744,12 +748,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         builder.setMessage("Choose the profile you want to edit").setTitle("Choose profile");
         builder.setPositiveButton("User", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
-                editUserProfile(view);
+                switchActivities(ProfileActivity.class);
             }
         });
         builder.setNegativeButton("Model", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
-                editModelProfile(view);
+                switchActivities(ModelActivity.class);
             }
         });
         builder.setNeutralButton("Cancel", new DialogInterface.OnClickListener() {
@@ -762,236 +766,45 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         dialog.show();
     }
 
-    public void editUserProfile(View view) {
-        LayoutInflater inflater = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
-        View popupView = inflater.inflate(R.layout.profile_window, null);
-
-        int width = LinearLayout.LayoutParams.WRAP_CONTENT;
-        int height = LinearLayout.LayoutParams.WRAP_CONTENT;
-        final PopupWindow popupWindow = new PopupWindow(popupView, width, height, false);
-
-        popupWindow.showAtLocation(view, Gravity.CENTER, 0, 0);
-        hideMainActivity(popupWindow);
-
-        Map<String, String> userData = dbHelper.getUserData();
-
-        EditText nicknameEditText = popupView.findViewById(R.id.nicknameEditText);
-        nicknameEditText.setText(userData.get(DatabaseHelper.COL_NICKNAME));
-
-        RadioGroup genderRadioGroup = popupView.findViewById(R.id.genderRadioGroup);
-        ArrayList<Integer> genderRadioGroupIndices = new ArrayList<Integer>();
-        genderRadioGroupIndices.add(new Integer(R.id.genderNoneRadioButton));
-        genderRadioGroupIndices.add(new Integer(R.id.genderMaleRadioButton));
-        genderRadioGroupIndices.add(new Integer(R.id.genderFemaleRadioButton));
-        int genderIdx = (int) Double.parseDouble(userData.get(DatabaseHelper.COL_GENDER));
-        genderRadioGroup.check(genderRadioGroupIndices.get(genderIdx));
-
-        RadioGroup ageRadioGroup = popupView.findViewById(R.id.ageRadioGroup);
-        ArrayList<Integer> ageRadioGroupIndices = new ArrayList<Integer>();
-        ageRadioGroupIndices.add(new Integer(R.id.ageNoneRadioButton));
-        ageRadioGroupIndices.add(new Integer(R.id.age20RadioButton));
-        ageRadioGroupIndices.add(new Integer(R.id.age40RadioButton));
-        ageRadioGroupIndices.add(new Integer(R.id.age60RadioButton));
-        ageRadioGroupIndices.add(new Integer(R.id.age80RadioButton));
-        int ageIdx = (int) Double.parseDouble(userData.get(DatabaseHelper.COL_AGE));
-        ageRadioGroup.check(ageRadioGroupIndices.get(ageIdx));
-
-        EditText nationalityEditText = popupView.findViewById(R.id.nationalityEditText);
-        nationalityEditText.setText(userData.get(DatabaseHelper.COL_NATIONALITY));
-
-        RadioGroup holdingRadioGroup = popupView.findViewById(R.id.holdingRadioGroup);
-        ArrayList<Integer> holdingRadioGroupIndices = new ArrayList<Integer>();
-        holdingRadioGroupIndices.add(new Integer(R.id.holdingNoneRadioButton));
-        holdingRadioGroupIndices.add(new Integer(R.id.holdingRightRadioButton));
-        holdingRadioGroupIndices.add(new Integer(R.id.holdingLeftRadioButton));
-        holdingRadioGroupIndices.add(new Integer(R.id.holdingBothRadioButton));
-        int holdingIdx = (int) Double.parseDouble(userData.get(DatabaseHelper.COL_HOLDING_HAND));
-        holdingRadioGroup.check(holdingRadioGroupIndices.get(holdingIdx));
-
-        Button saveProfileButton = popupView.findViewById(R.id.saveProfileButton);
-        saveProfileButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                String nickname = nicknameEditText.getText().toString();
-                int genderIndex = genderRadioGroupIndices.indexOf(new Integer(genderRadioGroup.getCheckedRadioButtonId()));
-                int ageIndex = ageRadioGroupIndices.indexOf(new Integer(ageRadioGroup.getCheckedRadioButtonId()));
-                String nationality = nationalityEditText.getText().toString();
-                int holdingIndex = holdingRadioGroupIndices.lastIndexOf(new Integer(holdingRadioGroup.getCheckedRadioButtonId()));
-
-                dbHelper.resetDB(false);
-                dbHelper.saveUserData(nickname, genderIndex, ageIndex, nationality, holdingIndex);
-
-                inputTextView.setText("Inputs 0"); // Forces UI refresh on main activity
-
-                popupWindow.dismiss();
-            }
-        });
-
-        Button cancelButton = popupView.findViewById(R.id.cancelButton);
-        cancelButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                popupWindow.dismiss();
-            }
-        });
+    private void switchActivities(Class targetActivity) {
+        Intent switchActivityIntent = new Intent(this, targetActivity);
+        startActivityForResult(switchActivityIntent, targetActivity == ModelActivity.class ? 0 : 1); // TODO: Refactor request code
     }
 
-    public void editModelProfile(View view) {
-        LayoutInflater inflater = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
-        View popupView = inflater.inflate(R.layout.model_window, null);
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        switch(requestCode) {
+            case (0): { // Model activity
+                if (resultCode == Activity.RESULT_OK) {
+                    Map<String, Object> modelSelection = (HashMap<String, Object>) data.getSerializableExtra("modelSelection");
 
-        int width = LinearLayout.LayoutParams.WRAP_CONTENT;
-        int height = LinearLayout.LayoutParams.WRAP_CONTENT;
-        final PopupWindow popupWindow = new PopupWindow(popupView, width, height, false);
-
-        popupWindow.showAtLocation(view, Gravity.CENTER, 0, 0);
-        hideMainActivity(popupWindow);
-
-        Map<String, Integer> featureData = dbHelper.getFeatureData();
-
-        CheckBox accelerationCheckBox = popupView.findViewById(R.id.accelerationCheckBox);
-        accelerationCheckBox.setChecked(featureData.get(DatabaseHelper.COL_ACCELERATION) == 1);
-
-        CheckBox angularVelocityCheckBox = popupView.findViewById(R.id.angularVelocityCheckBox);
-        angularVelocityCheckBox.setChecked(featureData.get(DatabaseHelper.COL_ANGULAR_VELOCITY) == 1);
-
-        CheckBox orientationCheckBox = popupView.findViewById(R.id.orientationCheckBox);
-        orientationCheckBox.setChecked(featureData.get(DatabaseHelper.COL_ORIENTATION) == 1);
-
-        CheckBox swipeDurationCheckBox = popupView.findViewById(R.id.swipeDurationCheckBox);
-        swipeDurationCheckBox.setChecked(featureData.get(DatabaseHelper.COL_SWIPE_DURATION) == 1);
-
-        CheckBox swipeShapeCheckBox = popupView.findViewById(R.id.swipeShapeCheckBox);
-        swipeShapeCheckBox.setChecked(featureData.get(DatabaseHelper.COL_SWIPE_SHAPE) == 1);
-
-        Spinner swipeSegmentSpinner = (Spinner) popupView.findViewById(R.id.swipeSegmentsSpinner);
-        ArrayAdapter<CharSequence> swipeSegmentdapter = ArrayAdapter.createFromResource(this, R.array.swipe_segments, android.R.layout.simple_spinner_item);
-        swipeSegmentdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        swipeSegmentSpinner.setAdapter(swipeSegmentdapter);
-
-        if(featureData.get(DatabaseHelper.COL_SWIPE_SHAPE_SEGMENTS) == 0) {
-            swipeSegmentSpinner.setSelection(((ArrayAdapter<String>) swipeSegmentSpinner.getAdapter()).getPosition(String.valueOf(DatabaseHelper.DEFAULT_SEGMENTS)));
-        } else {
-            swipeSegmentSpinner.setSelection(((ArrayAdapter<String>) swipeSegmentSpinner.getAdapter()).getPosition(featureData.get(DatabaseHelper.COL_SWIPE_SHAPE_SEGMENTS).toString()));
-        }
-        Integer initialSegmentSelection = Integer.parseInt((String) swipeSegmentSpinner.getSelectedItem());
-
-        CheckBox swipeTouchSizeCheckBox = popupView.findViewById(R.id.swipeTouchSizeCheckBox);
-        swipeTouchSizeCheckBox.setChecked(featureData.get(DatabaseHelper.COL_SWIPE_TOUCH_SIZE) == 1);
-
-        CheckBox swipeStartEndPosCheckBox = popupView.findViewById(R.id.swipeStartEndPosCheckBox);
-        swipeStartEndPosCheckBox.setChecked(featureData.get(DatabaseHelper.COL_SWIPE_START_END_POS) == 1);
-
-        CheckBox swipeVelocityCheckBox = popupView.findViewById(R.id.swipeVelocityCheckBox);
-        swipeVelocityCheckBox.setChecked(featureData.get(DatabaseHelper.COL_SWIPE_VELOCITY) == 1);
-
-        CheckBox keystrokeCheckBox = popupView.findViewById(R.id.keystrokeCheckBox);
-        keystrokeCheckBox.setChecked(featureData.get(DatabaseHelper.COL_KEYSTROKE) == 1);
-        boolean initialKeystrokeEnabled = keystrokeCheckBox.isChecked();
-
-        Spinner keystrokeLengthSpinner = (Spinner) popupView.findViewById(R.id.keystrokeLengthSpinner);
-        ArrayAdapter<CharSequence> keystrokeLengthAdapter = ArrayAdapter.createFromResource(this, R.array.pin_length, android.R.layout.simple_spinner_item);
-        keystrokeLengthAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        keystrokeLengthSpinner.setAdapter(keystrokeLengthAdapter);
-        if(featureData.get(DatabaseHelper.COL_PIN_LENGTH) == 0) {
-            keystrokeLengthSpinner.setSelection(((ArrayAdapter<String>) keystrokeLengthSpinner.getAdapter()).getPosition(String.valueOf(DatabaseHelper.DEFAULT_PIN_LENGTH)));
-        } else {
-            keystrokeLengthSpinner.setSelection(((ArrayAdapter<String>) keystrokeLengthSpinner.getAdapter()).getPosition(featureData.get(DatabaseHelper.COL_PIN_LENGTH).toString()));
-        }
-        Integer initialPinLength = Integer.parseInt((String) keystrokeLengthSpinner.getSelectedItem());
-
-        Button saveProfileButton = popupView.findViewById(R.id.saveProfileButton);
-        class MyListener implements View.OnClickListener {
-            private MainActivity mainActivity;
-
-            public MyListener(MainActivity mainActivity) {
-                super();
-                this.mainActivity = mainActivity;
-            }
-
-            @Override
-            public void onClick(View v) {
-                if( accelerationCheckBox.isChecked() ||
-                        angularVelocityCheckBox.isChecked() ||
-                        orientationCheckBox.isChecked() ||
-                        swipeDurationCheckBox.isChecked() ||
-                        swipeShapeCheckBox.isChecked() ||
-                        swipeTouchSizeCheckBox.isChecked() ||
-                        swipeStartEndPosCheckBox.isChecked() ||
-                        swipeVelocityCheckBox.isChecked() ||
-                        keystrokeCheckBox.isChecked()
-                ) {
-                    dbHelper.saveFeatureData(
-                            accelerationCheckBox.isChecked() ? 1 : 0,
-                            angularVelocityCheckBox.isChecked() ? 1 : 0,
-                            orientationCheckBox.isChecked() ? 1 : 0,
-                            swipeDurationCheckBox.isChecked() ? 1 : 0,
-                            swipeShapeCheckBox.isChecked() ? 1 : 0,
-                            Integer.parseInt((String) swipeSegmentSpinner.getSelectedItem()),
-                            swipeTouchSizeCheckBox.isChecked() ? 1 : 0,
-                            swipeStartEndPosCheckBox.isChecked() ? 1 : 0,
-                            swipeVelocityCheckBox.isChecked() ? 1 : 0,
-                            keystrokeCheckBox.isChecked() ? 1 : 0,
-                            Integer.parseInt((String) keystrokeLengthSpinner.getSelectedItem())
-                    );
-
-                    Integer curSegmentSelection = Integer.parseInt((String) swipeSegmentSpinner.getSelectedItem());
-                    Integer curPinLength = Integer.parseInt((String) keystrokeLengthSpinner.getSelectedItem());
-                    boolean curKeystrokeEnabled = keystrokeCheckBox.isChecked();
+                    Integer curSegmentSelection = (Integer) modelSelection.get("curSegmentSelection");
+                    Integer initialSegmentSelection = (Integer) modelSelection.get("initialSegmentSelection");
+                    boolean curKeystrokeEnabled = (boolean) modelSelection.get("curKeystrokeEnabled");
+                    boolean initialKeystrokeEnabled = (boolean) modelSelection.get("initialKeystrokeEnabled");
+                    Integer curPinLength = (Integer) modelSelection.get("curPinLength");
+                    Integer initialPinLength = (Integer) modelSelection.get("initialPinLength");
 
                     if((curSegmentSelection != initialSegmentSelection) || (curKeystrokeEnabled != initialKeystrokeEnabled) || (curPinLength != initialPinLength)) {
                         dbHelper.resetDB(false);
                         inputTextView.setText("Inputs 0");
-                        new Thread(() -> mainActivity.gan = new GAN(curSegmentSelection, curPinLength)).start();
+                        new Thread(() -> this.gan = new GAN(curSegmentSelection, curPinLength)).start();
 
                         if(curKeystrokeEnabled != initialKeystrokeEnabled) {
                             dbHelper.generateSwipesTables(null, true, curKeystrokeEnabled);
                         }
                     }
-
-                    popupWindow.dismiss();
-                } else {
-                    AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-                    builder.setMessage("Please select at least one feature type").setTitle("No feature selected");
-                    builder.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {}
-                    });
-                    builder.show();
                 }
+                break;
+            }
+            case(1): {
+                if (resultCode == Activity.RESULT_OK) {
+                    inputTextView.setText("Inputs 0");
+                }
+                break;
             }
         }
-        saveProfileButton.setOnClickListener(new MyListener(this));
-
-        Button cancelButton = popupView.findViewById(R.id.cancelButton);
-        cancelButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                popupWindow.dismiss();
-            }
-        });
-    }
-
-    private void hideMainActivity(PopupWindow popupWindow) {
-        this.profileButton.setVisibility(View.INVISIBLE);
-        this.resetButton.setVisibility(View.INVISIBLE);
-        this.inputTextView.setVisibility(View.INVISIBLE);
-        this.trainButton.setVisibility(View.INVISIBLE);
-        this.ganButton.setVisibility(View.INVISIBLE);
-        this.swipeImageView.setVisibility(View.INVISIBLE);
-        this.holdingPositionRadioGroup.setVisibility(View.INVISIBLE);
-
-        popupWindow.setOnDismissListener(new PopupWindow.OnDismissListener() {
-            @Override
-            public void onDismiss() {
-                profileButton.setVisibility(View.VISIBLE);
-                resetButton.setVisibility(View.VISIBLE);
-                inputTextView.setVisibility(View.VISIBLE);
-                trainButton.setVisibility(View.VISIBLE);
-                ganButton.setVisibility(View.VISIBLE);
-                swipeImageView.setVisibility(View.VISIBLE);
-                holdingPositionRadioGroup.setVisibility(View.VISIBLE);
-            }
-        });
     }
 
     private void setNumpadVisibility(Integer visibility) {
