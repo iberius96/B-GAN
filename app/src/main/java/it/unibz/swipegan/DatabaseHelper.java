@@ -154,7 +154,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     public static final Integer BASE_FEATURES = 66; // TODO: Change this hardcoded value
     public static final Integer DEFAULT_SEGMENTS = 10;
-    public static final Integer DEFAULT_PIN_LENGTH = 8;
+    public static final Integer DEFAULT_PIN_LENGTH = 4;
 
     public DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, 1);
@@ -830,6 +830,29 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         cursor.close();
 
         return featureData;
+    }
+
+    public Integer getEnabledFeatureTypesCount(ModelType model) {
+        Integer ret = 0;
+
+        if(model == ModelType.HOLD || model == ModelType.FULL) {
+            ret +=  getFeatureData().get(COL_ACCELERATION) +
+                    getFeatureData().get(COL_ANGULAR_VELOCITY) +
+                    getFeatureData().get(COL_ORIENTATION);
+        }
+        if(model == ModelType.SWIPE || model == ModelType.FULL) {
+            ret +=  getFeatureData().get(COL_SWIPE_DURATION) +
+                    getFeatureData().get(COL_SWIPE_SHAPE) +
+                    getFeatureData().get(COL_SWIPE_TOUCH_SIZE) +
+                    getFeatureData().get(COL_SWIPE_START_END_POS) +
+                    getFeatureData().get(COL_SWIPE_VELOCITY);
+        }
+        if((model == ModelType.KEYSTROKE || model == ModelType.FULL) && getFeatureData().get(COL_KEYSTROKE) == 1) {
+            ret +=  getFeatureData().get(COL_KEYSTROKE_DURATIONS) +
+                    getFeatureData().get(COL_KEYSTROKE_INTERVALS);
+        }
+
+        return ret;
     }
 
     public boolean saveResourceData(Double[] cpu_temps, Double[] memory_usage, Double power_draw, Double training_time, String model_type) {

@@ -1059,7 +1059,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     resourceMonitor.stop(dbHelper, "GAN");
 
                     for(DatabaseHelper.ModelType modelType : DatabaseHelper.ModelType.values()) {
-                        if(modelType == DatabaseHelper.ModelType.KEYSTROKE && this.dbHelper.getFeatureData().get(DatabaseHelper.COL_KEYSTROKE) == 0) {
+                        if(dbHelper.getEnabledFeatureTypesCount(modelType) == 0) {
                             continue;
                         }
 
@@ -1067,7 +1067,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                         trainClassifierWith(swipes, true, ganTime, modelType); }
                 } else {
                     for(DatabaseHelper.ModelType modelType : DatabaseHelper.ModelType.values()) {
-                        if(modelType == DatabaseHelper.ModelType.KEYSTROKE && this.dbHelper.getFeatureData().get(DatabaseHelper.COL_KEYSTROKE) == 0) {
+                        if(dbHelper.getEnabledFeatureTypesCount(modelType) == 0) {
                             continue;
                         }
 

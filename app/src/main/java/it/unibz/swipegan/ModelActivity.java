@@ -117,7 +117,7 @@ public class ModelActivity extends AppCompatActivity {
             // TODO: Change checked logic
             @Override
             public void onClick(View v) {
-                if( accelerationCheckBox.isChecked() ||
+                if(     accelerationCheckBox.isChecked() ||
                         angularVelocityCheckBox.isChecked() ||
                         orientationCheckBox.isChecked() ||
                         swipeDurationCheckBox.isChecked() ||
@@ -125,9 +125,8 @@ public class ModelActivity extends AppCompatActivity {
                         swipeTouchSizeCheckBox.isChecked() ||
                         swipeStartEndPosCheckBox.isChecked() ||
                         swipeVelocityCheckBox.isChecked() ||
-                        keystrokeCheckBox.isChecked() ||
-                        keystrokeDurationsCheckBox.isChecked() ||
-                        keystrokeIntervalsCheckBox.isChecked()
+                        (keystrokeCheckBox.isChecked() &&
+                            (keystrokeDurationsCheckBox.isChecked() || keystrokeIntervalsCheckBox.isChecked()))
                 ) {
                     dbHelper.saveFeatureData(
                             accelerationCheckBox.isChecked() ? 1 : 0,
