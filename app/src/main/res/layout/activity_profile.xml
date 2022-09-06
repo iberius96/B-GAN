@@ -5,18 +5,41 @@
     android:id="@+id/relativeLayout"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:background="#ffffff">
+    android:background="#00FFFFFF">
 
     <TextView
-        android:id="@+id/titleTextView"
+        android:id="@+id/descTextView2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="14dp"
+        android:text="Set the details of the user"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/titleTextView2" />
+
+    <TextView
+        android:id="@+id/titleTextView2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="20dp"
         android:layout_marginTop="32dp"
-        android:text="Your nickname: "
-        android:textSize="16sp"
+        android:text="User Profile"
+        android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+        android:textSize="24sp"
+        android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/nicknameTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="14dp"
+        android:text="Your nickname: "
+        android:textSize="14sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/descTextView2" />
 
     <EditText
         android:id="@+id/nicknameEditText"
@@ -29,8 +52,9 @@
         android:hint="nickname"
         android:inputType="textPersonName"
         android:text="Dwtd*"
+        android:textSize="14sp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/titleTextView" />
+        app:layout_constraintTop_toBottomOf="@+id/nicknameTextView" />
 
     <TextView
         android:id="@+id/textView3"
@@ -39,7 +63,7 @@
         android:layout_marginStart="20dp"
         android:layout_marginTop="14dp"
         android:text="Your gender: "
-        android:textSize="16sp"
+        android:textSize="14sp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/nicknameEditText" />
 
@@ -87,7 +111,7 @@
         android:layout_marginStart="20dp"
         android:layout_marginTop="14dp"
         android:text="Your age: "
-        android:textSize="16sp"
+        android:textSize="14sp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/genderRadioGroup" />
 
@@ -154,7 +178,7 @@
         android:layout_marginStart="20dp"
         android:layout_marginTop="14dp"
         android:text="Your nationality: "
-        android:textSize="16sp"
+        android:textSize="14sp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/ageRadioGroup" />
 
@@ -169,6 +193,7 @@
         android:hint="Nationality"
         android:inputType="textPersonName"
         android:text="Dwtd*"
+        android:textSize="14sp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textView7" />
 
@@ -179,7 +204,7 @@
         android:layout_marginStart="20dp"
         android:layout_marginTop="14dp"
         android:text="Which hand do you use to hold your phone?"
-        android:textSize="16sp"
+        android:textSize="14sp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/nationalityEditText" />
 
@@ -260,7 +285,7 @@
         android:layout_marginTop="14dp"
         android:text="* Don't want to disclose"
         android:textColor="#000000"
-        android:textSize="18sp"
+        android:textSize="14sp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/holdingRadioGroup" />
 
