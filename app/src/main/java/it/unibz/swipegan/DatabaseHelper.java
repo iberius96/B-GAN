@@ -28,8 +28,6 @@ import java.util.Objects;
 import static com.google.common.base.CaseFormat.LOWER_CAMEL;
 import static com.google.common.base.CaseFormat.LOWER_UNDERSCORE;
 
-import org.apache.commons.lang3.ArrayUtils;
-
 import au.com.bytecode.opencsv.CSVWriter;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
@@ -120,9 +118,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     // Keystrokes columns
     public static final String COL_KEYSTROKE_DURATIONS = "keystroke_durations";
-    private static final String COL_KEYSTROKE_INTERVALS = "keystroke_intervals";
-    private static final String COL_KEYSTROKE_START_INTERVALS = "keystroke_start_intervals";
-    private static final String COL_KEYSTROKE_END_INTERVALS = "keystroke_end_intervals";
+    public static final String COL_KEYSTROKE_INTERVALS = "keystroke_intervals";
+    public static final String COL_KEYSTROKE_START_INTERVALS = "keystroke_start_intervals";
+    public static final String COL_KEYSTROKE_END_INTERVALS = "keystroke_end_intervals";
     public static final String COL_KEYSTROKE_FULL_DURATION = "keystroke_full_duration";
 
     public static final String[] head_features = {
@@ -224,21 +222,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 + COL_SWIPE_START_END_POS + " integer(1), "
                 + COL_SWIPE_VELOCITY + " integer(1),"
                 + COL_KEYSTROKE + " integer(1),"
-                + COL_PIN_LENGTH + " integer(1))";
+                + COL_PIN_LENGTH + " integer(1),"
+                + COL_KEYSTROKE_DURATIONS + " integer(1),"
+                + COL_KEYSTROKE_INTERVALS + " integet(1))";
 
         String createResourceDataTable = "CREATE TABLE " + RESOURCE_DATA
-                + " (id INTEGER PRIMARY KEY AUTOINCREMENT, "
-                + COL_MIN_CPU_TEMP + " float(53), "
-                + COL_MAX_CPU_TEMP + " float(53), "
-                + COL_AVG_CPU_TEMP + " float(53), "
-                + COL_MIN_MEMORY_USAGE + " float(53), "
-                + COL_MAX_MEMORY_USAGE + " float(53), "
-                + COL_AVG_MEMORY_USAGE + " float(53), "
-                + COL_POWER_DRAW + " float(53), "
-                + COL_TRAINING_TIME + " float(53), "
-                + COL_MODEL_TYPE + " varchar(20))";
-
-        String createKeystrokesTable = "CREATE TABLE " + RESOURCE_DATA
                 + " (id INTEGER PRIMARY KEY AUTOINCREMENT, "
                 + COL_MIN_CPU_TEMP + " float(53), "
                 + COL_MAX_CPU_TEMP + " float(53), "
@@ -288,7 +276,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             String[] feature_cols = {
                     COL_ACCELERATION, COL_ANGULAR_VELOCITY, COL_ORIENTATION,
                     COL_SWIPE_DURATION, COL_SWIPE_SHAPE, COL_SWIPE_SHAPE_SEGMENTS, COL_SWIPE_TOUCH_SIZE, COL_SWIPE_START_END_POS, COL_SWIPE_VELOCITY,
-                    COL_KEYSTROKE, COL_PIN_LENGTH};
+                    COL_KEYSTROKE, COL_PIN_LENGTH, COL_KEYSTROKE_DURATIONS, COL_KEYSTROKE_INTERVALS};
             for(String feature_col : feature_cols) {
                 if (feature_col == COL_SWIPE_SHAPE_SEGMENTS) {
                     contentValues.put(feature_col, DEFAULT_SEGMENTS);
@@ -528,7 +516,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 try {
                     cur_method = swipe.getClass().getMethod("get" + keystroke_feature.substring(0, 1).toUpperCase() + LOWER_UNDERSCORE.to(LOWER_CAMEL, keystroke_feature.substring(1)));
 
-                    if(cur_method.invoke(swipe) == null) {
+                    if((keystroke_feature == COL_KEYSTROKE_FULL_DURATION && (Double) cur_method.invoke(swipe) == -1.0) || cur_method.invoke(swipe) == null) {
                         continue;
                     }
                 } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
@@ -792,7 +780,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public boolean saveFeatureData(
             int acceleration, int angular_velocity, int orientation,
             int swipe_duration, int swipe_shape, int swipe_shape_segments, int swipe_touch_size, int swipe_start_end_pos, int swipe_velocity,
-            int keystroke, int pin_length) {
+            int keystroke, int pin_length, int keystroke_durations, int keystroke_intervals) {
         SQLiteDatabase db = this.getWritableDatabase();
         db.execSQL("DELETE FROM " + FEATURE_DATA);
 
@@ -809,6 +797,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         contentValues.put(COL_SWIPE_VELOCITY, swipe_velocity);
         contentValues.put(COL_KEYSTROKE, keystroke);
         contentValues.put(COL_PIN_LENGTH, pin_length);
+        contentValues.put(COL_KEYSTROKE_DURATIONS, keystroke_durations);
+        contentValues.put(COL_KEYSTROKE_INTERVALS, keystroke_intervals);
 
         long result = db.insert(FEATURE_DATA, null, contentValues);
         return result != -1;
@@ -834,6 +824,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         featureData.put(COL_SWIPE_VELOCITY, cursor.getInt(cursor.getColumnIndex(COL_SWIPE_VELOCITY)));
         featureData.put(COL_KEYSTROKE, cursor.getInt(cursor.getColumnIndex(COL_KEYSTROKE)));
         featureData.put(COL_PIN_LENGTH, cursor.getInt(cursor.getColumnIndex(COL_PIN_LENGTH)));
+        featureData.put(COL_KEYSTROKE_DURATIONS, cursor.getInt(cursor.getColumnIndex(COL_KEYSTROKE_DURATIONS)));
+        featureData.put(COL_KEYSTROKE_INTERVALS, cursor.getInt(cursor.getColumnIndex(COL_KEYSTROKE_INTERVALS)));
 
         cursor.close();
 

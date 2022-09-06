@@ -4,13 +4,10 @@ import android.app.Activity;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.Gravity;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
-import android.widget.LinearLayout;
-import android.widget.PopupWindow;
 import android.widget.Spinner;
 
 import androidx.appcompat.app.AlertDialog;
@@ -19,7 +16,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 
 public class ModelActivity extends AppCompatActivity {
     @Override
@@ -55,7 +51,16 @@ public class ModelActivity extends AppCompatActivity {
         } else {
             swipeSegmentSpinner.setSelection(((ArrayAdapter<String>) swipeSegmentSpinner.getAdapter()).getPosition(featureData.get(DatabaseHelper.COL_SWIPE_SHAPE_SEGMENTS).toString()));
         }
+        swipeSegmentSpinner.setEnabled(swipeShapeCheckBox.isChecked());
         Integer initialSegmentSelection = Integer.parseInt((String) swipeSegmentSpinner.getSelectedItem());
+
+        swipeShapeCheckBox.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v)
+            {
+                swipeSegmentSpinner.setEnabled(swipeShapeCheckBox.isChecked());
+            }
+        });
 
         CheckBox swipeTouchSizeCheckBox = findViewById(R.id.swipeTouchSizeCheckBox);
         swipeTouchSizeCheckBox.setChecked(featureData.get(DatabaseHelper.COL_SWIPE_TOUCH_SIZE) == 1);
@@ -79,7 +84,26 @@ public class ModelActivity extends AppCompatActivity {
         } else {
             keystrokeLengthSpinner.setSelection(((ArrayAdapter<String>) keystrokeLengthSpinner.getAdapter()).getPosition(featureData.get(DatabaseHelper.COL_PIN_LENGTH).toString()));
         }
+        keystrokeLengthSpinner.setEnabled(keystrokeCheckBox.isChecked());
         Integer initialPinLength = Integer.parseInt((String) keystrokeLengthSpinner.getSelectedItem());
+
+        CheckBox keystrokeDurationsCheckBox = findViewById(R.id.keystrokeDurationsCheckBox);
+        keystrokeDurationsCheckBox.setChecked(featureData.get(DatabaseHelper.COL_KEYSTROKE_DURATIONS) == 1);
+        keystrokeDurationsCheckBox.setEnabled(keystrokeCheckBox.isChecked());
+
+        CheckBox keystrokeIntervalsCheckBox = findViewById(R.id.keystrokeIntervalsCheckBox);
+        keystrokeIntervalsCheckBox.setChecked(featureData.get(DatabaseHelper.COL_KEYSTROKE_INTERVALS) == 1);
+        keystrokeIntervalsCheckBox.setEnabled(keystrokeCheckBox.isChecked());
+
+        keystrokeCheckBox.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v)
+            {
+                keystrokeLengthSpinner.setEnabled(keystrokeCheckBox.isChecked());
+                keystrokeDurationsCheckBox.setEnabled(keystrokeCheckBox.isChecked());
+                keystrokeIntervalsCheckBox.setEnabled(keystrokeCheckBox.isChecked());
+            }
+        });
 
         Button saveProfileButton = findViewById(R.id.saveProfileButton);
         class MyListener implements View.OnClickListener {
@@ -90,6 +114,7 @@ public class ModelActivity extends AppCompatActivity {
                 this.modelActivity = modelActivity;
             }
 
+            // TODO: Change checked logic
             @Override
             public void onClick(View v) {
                 if( accelerationCheckBox.isChecked() ||
@@ -100,7 +125,9 @@ public class ModelActivity extends AppCompatActivity {
                         swipeTouchSizeCheckBox.isChecked() ||
                         swipeStartEndPosCheckBox.isChecked() ||
                         swipeVelocityCheckBox.isChecked() ||
-                        keystrokeCheckBox.isChecked()
+                        keystrokeCheckBox.isChecked() ||
+                        keystrokeDurationsCheckBox.isChecked() ||
+                        keystrokeIntervalsCheckBox.isChecked()
                 ) {
                     dbHelper.saveFeatureData(
                             accelerationCheckBox.isChecked() ? 1 : 0,
@@ -113,7 +140,9 @@ public class ModelActivity extends AppCompatActivity {
                             swipeStartEndPosCheckBox.isChecked() ? 1 : 0,
                             swipeVelocityCheckBox.isChecked() ? 1 : 0,
                             keystrokeCheckBox.isChecked() ? 1 : 0,
-                            Integer.parseInt((String) keystrokeLengthSpinner.getSelectedItem())
+                            Integer.parseInt((String) keystrokeLengthSpinner.getSelectedItem()),
+                            keystrokeDurationsCheckBox.isChecked() ? 1 : 0,
+                            keystrokeIntervalsCheckBox.isChecked() ? 1 : 0
                     );
 
                     Integer curSegmentSelection = Integer.parseInt((String) swipeSegmentSpinner.getSelectedItem());

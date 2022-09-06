@@ -25,21 +25,13 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.StrictMode;
-import android.view.Gravity;
-import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.CheckBox;
-import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.PopupWindow;
 import android.widget.ProgressBar;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
-import android.widget.Spinner;
 import android.widget.Switch;
 import android.widget.TextView;
 
@@ -50,7 +42,6 @@ import androidx.core.app.ActivityCompat;
 import com.google.android.material.snackbar.Snackbar;
 
 import java.io.File;
-import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -59,7 +50,6 @@ import java.util.Arrays;
 import java.util.DoubleSummaryStatistics;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Random;
 
 import weka.classifiers.evaluation.Evaluation;
@@ -789,7 +779,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     if((curSegmentSelection != initialSegmentSelection) || (curKeystrokeEnabled != initialKeystrokeEnabled) || (curPinLength != initialPinLength)) {
                         dbHelper.resetDB(false);
                         inputTextView.setText("Inputs 0");
-                        new Thread(() -> this.gan = new GAN(curSegmentSelection, curPinLength)).start();
+                        new Thread(() -> this.gan = new GAN(curSegmentSelection, curKeystrokeEnabled ? curPinLength : 0)).start();
 
                         if(curKeystrokeEnabled != initialKeystrokeEnabled) {
                             dbHelper.generateSwipesTables(null, true, curKeystrokeEnabled);
@@ -1216,6 +1206,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         boolean useSwipeSize = featureData.get(DatabaseHelper.COL_SWIPE_TOUCH_SIZE) == 1;
         boolean useSwipeStartEndPos = featureData.get(DatabaseHelper.COL_SWIPE_START_END_POS) == 1;
         boolean useSwipeVelocity = featureData.get(DatabaseHelper.COL_SWIPE_VELOCITY) == 1;
+        boolean useKeystroke = featureData.get(DatabaseHelper.COL_KEYSTROKE) == 1;
+        boolean useKeystrokeDurations = featureData.get(DatabaseHelper.COL_KEYSTROKE_DURATIONS) == 1;
+        boolean useKeystrokeIntervals = featureData.get(DatabaseHelper.COL_KEYSTROKE_INTERVALS) == 1;
 
         ArrayList<Attribute> attributes = new ArrayList<>();
 
@@ -1311,15 +1304,16 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 attributes.add(new Attribute("varZOrientation"));
             }
         }
-        if(dbHelper.getFeatureData().get(DatabaseHelper.COL_KEYSTROKE) == 1 && (modelType == DatabaseHelper.ModelType.KEYSTROKE || modelType == DatabaseHelper.ModelType.FULL)) {
-            for(String keystroke_feature : DatabaseHelper.keystroke_features) {
-                if(keystroke_feature == DatabaseHelper.COL_KEYSTROKE_FULL_DURATION) {
-                    attributes.add(new Attribute(keystroke_feature));
-                } else {
-                    Integer feature_size = keystroke_feature == DatabaseHelper.COL_KEYSTROKE_DURATIONS ? dbHelper.getFeatureData().get(DatabaseHelper.COL_PIN_LENGTH) : dbHelper.getFeatureData().get(DatabaseHelper.COL_PIN_LENGTH) - 1;
-                    for (int i = 0; i < feature_size; i++) {
-                        attributes.add(new Attribute(LOWER_UNDERSCORE.to(LOWER_CAMEL, keystroke_feature) + "_" + i));
-                    }
+        if(useKeystroke && (modelType == DatabaseHelper.ModelType.KEYSTROKE || modelType == DatabaseHelper.ModelType.FULL)) {
+            if(useKeystrokeDurations) {
+                for (int i = 0; i < dbHelper.getFeatureData().get(DatabaseHelper.COL_PIN_LENGTH); i++) { attributes.add(new Attribute(LOWER_UNDERSCORE.to(LOWER_CAMEL, DatabaseHelper.COL_KEYSTROKE_DURATIONS) + "_" + i)); }
+                attributes.add(new Attribute(DatabaseHelper.COL_KEYSTROKE_FULL_DURATION));
+            }
+            if(useKeystrokeIntervals) {
+                for (int i = 0; i < dbHelper.getFeatureData().get(DatabaseHelper.COL_PIN_LENGTH) - 1; i++) {
+                    attributes.add(new Attribute(LOWER_UNDERSCORE.to(LOWER_CAMEL, DatabaseHelper.COL_KEYSTROKE_INTERVALS) + "_" + i));
+                    attributes.add(new Attribute(LOWER_UNDERSCORE.to(LOWER_CAMEL, DatabaseHelper.COL_KEYSTROKE_START_INTERVALS) + "_" + i));
+                    attributes.add(new Attribute(LOWER_UNDERSCORE.to(LOWER_CAMEL, DatabaseHelper.COL_KEYSTROKE_END_INTERVALS) + "_" + i));
                 }
             }
         }
