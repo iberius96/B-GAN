@@ -106,6 +106,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public static final String COL_SWIPE_VELOCITY = "swipe_velocity";
     public static final String COL_KEYSTROKE = "keystroke";
     public static final String COL_PIN_LENGTH = "pin_length";
+    public static final String COL_SIGNATURE = "signature";
 
     // Resource columns
     private static final String COL_MIN_CPU_TEMP = "min_cpu_temp";
@@ -149,6 +150,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         HOLD,
         SWIPE,
         KEYSTROKE,
+        SIGNATURE,
         FULL
     };
 
@@ -224,7 +226,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 + COL_KEYSTROKE + " integer(1),"
                 + COL_PIN_LENGTH + " integer(1),"
                 + COL_KEYSTROKE_DURATIONS + " integer(1),"
-                + COL_KEYSTROKE_INTERVALS + " integet(1))";
+                + COL_KEYSTROKE_INTERVALS + " integet(1),"
+                + COL_SIGNATURE + " integer(1))";
 
         String createResourceDataTable = "CREATE TABLE " + RESOURCE_DATA
                 + " (id INTEGER PRIMARY KEY AUTOINCREMENT, "
@@ -276,7 +279,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             String[] feature_cols = {
                     COL_ACCELERATION, COL_ANGULAR_VELOCITY, COL_ORIENTATION,
                     COL_SWIPE_DURATION, COL_SWIPE_SHAPE, COL_SWIPE_SHAPE_SEGMENTS, COL_SWIPE_TOUCH_SIZE, COL_SWIPE_START_END_POS, COL_SWIPE_VELOCITY,
-                    COL_KEYSTROKE, COL_PIN_LENGTH, COL_KEYSTROKE_DURATIONS, COL_KEYSTROKE_INTERVALS};
+                    COL_KEYSTROKE, COL_PIN_LENGTH, COL_KEYSTROKE_DURATIONS, COL_KEYSTROKE_INTERVALS,
+                    COL_SIGNATURE};
             for(String feature_col : feature_cols) {
                 if (feature_col == COL_SWIPE_SHAPE_SEGMENTS) {
                     contentValues.put(feature_col, DEFAULT_SEGMENTS);
@@ -780,7 +784,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public boolean saveFeatureData(
             int acceleration, int angular_velocity, int orientation,
             int swipe_duration, int swipe_shape, int swipe_shape_segments, int swipe_touch_size, int swipe_start_end_pos, int swipe_velocity,
-            int keystroke, int pin_length, int keystroke_durations, int keystroke_intervals) {
+            int keystroke, int pin_length, int keystroke_durations, int keystroke_intervals,
+            int signature) {
         SQLiteDatabase db = this.getWritableDatabase();
         db.execSQL("DELETE FROM " + FEATURE_DATA);
 
@@ -799,6 +804,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         contentValues.put(COL_PIN_LENGTH, pin_length);
         contentValues.put(COL_KEYSTROKE_DURATIONS, keystroke_durations);
         contentValues.put(COL_KEYSTROKE_INTERVALS, keystroke_intervals);
+        contentValues.put(COL_SIGNATURE, signature);
 
         long result = db.insert(FEATURE_DATA, null, contentValues);
         return result != -1;
@@ -826,6 +832,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         featureData.put(COL_PIN_LENGTH, cursor.getInt(cursor.getColumnIndex(COL_PIN_LENGTH)));
         featureData.put(COL_KEYSTROKE_DURATIONS, cursor.getInt(cursor.getColumnIndex(COL_KEYSTROKE_DURATIONS)));
         featureData.put(COL_KEYSTROKE_INTERVALS, cursor.getInt(cursor.getColumnIndex(COL_KEYSTROKE_INTERVALS)));
+        featureData.put(COL_SIGNATURE, cursor.getInt(cursor.getColumnIndex(COL_SIGNATURE)));
 
         cursor.close();
 
@@ -850,6 +857,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         if((model == ModelType.KEYSTROKE || model == ModelType.FULL) && getFeatureData().get(COL_KEYSTROKE) == 1) {
             ret +=  getFeatureData().get(COL_KEYSTROKE_DURATIONS) +
                     getFeatureData().get(COL_KEYSTROKE_INTERVALS);
+        }
+        if((model == ModelType.SIGNATURE || model == ModelType.FULL) && getFeatureData().get(COL_SIGNATURE) == 1) {
+            ret +=  getFeatureData().get(COL_SIGNATURE);
         }
 
         return ret;

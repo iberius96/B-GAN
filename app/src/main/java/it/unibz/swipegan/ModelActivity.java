@@ -105,6 +105,9 @@ public class ModelActivity extends AppCompatActivity {
             }
         });
 
+        CheckBox signatureCheckBox = findViewById(R.id.signatureCheckBox);
+        signatureCheckBox.setChecked(featureData.get(DatabaseHelper.COL_SIGNATURE) == 1);
+
         Button saveProfileButton = findViewById(R.id.saveProfileButton);
         class MyListener implements View.OnClickListener {
             private ModelActivity modelActivity;
@@ -126,7 +129,8 @@ public class ModelActivity extends AppCompatActivity {
                         swipeStartEndPosCheckBox.isChecked() ||
                         swipeVelocityCheckBox.isChecked() ||
                         (keystrokeCheckBox.isChecked() &&
-                            (keystrokeDurationsCheckBox.isChecked() || keystrokeIntervalsCheckBox.isChecked()))
+                            (keystrokeDurationsCheckBox.isChecked() || keystrokeIntervalsCheckBox.isChecked())) ||
+                        signatureCheckBox.isChecked()
                 ) {
                     dbHelper.saveFeatureData(
                             accelerationCheckBox.isChecked() ? 1 : 0,
@@ -141,7 +145,8 @@ public class ModelActivity extends AppCompatActivity {
                             keystrokeCheckBox.isChecked() ? 1 : 0,
                             Integer.parseInt((String) keystrokeLengthSpinner.getSelectedItem()),
                             keystrokeDurationsCheckBox.isChecked() ? 1 : 0,
-                            keystrokeIntervalsCheckBox.isChecked() ? 1 : 0
+                            keystrokeIntervalsCheckBox.isChecked() ? 1 : 0,
+                            signatureCheckBox.isChecked() ? 1 : 0
                     );
 
                     Integer curSegmentSelection = Integer.parseInt((String) swipeSegmentSpinner.getSelectedItem());

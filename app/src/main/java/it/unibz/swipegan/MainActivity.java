@@ -59,6 +59,7 @@ import weka.core.Instance;
 import weka.core.Instances;
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
+    public static final int INVISIBLE = View.INVISIBLE;
     private long startTime = 0;
     private boolean isTrainingMode = true;
     private boolean isTrainingClassifier = false;
@@ -126,6 +127,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private Button keystrokeButton7;
     private Button keystrokeButton8;
     private Button keystrokeButton9;
+    private Button nextButton;
+    private Button clearButton;
+    private SignatureView signatureView;
 
     private int keystrokeCount = 0;
     private long keystrokeStartTime = 0;
@@ -160,6 +164,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         this.setNumpadVisibility(View.INVISIBLE);
         this.setKeystrokeButtonsEventListener();
+
+        this.signatureView = findViewById(R.id.signature_view);
+        this.nextButton = findViewById(R.id.nextButton);
+        this.clearButton = findViewById(R.id.clearButton);
+        this.setSignatureVisibility(View.INVISIBLE);
 
         this.sittingRadioButton.setChecked(true);
 
@@ -365,7 +374,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     if(this.isTrainingMode) {
                         this.saveButton.setVisibility(View.INVISIBLE);
 
-                        if(this.dbHelper.getFeatureData().get(DatabaseHelper.COL_KEYSTROKE) == 0) {
+                        if(this.dbHelper.getFeatureData().get(DatabaseHelper.COL_KEYSTROKE) == 0 && this.dbHelper.getFeatureData().get(DatabaseHelper.COL_SIGNATURE) == 0) {
                             this.dbHelper.addTrainRecord(swipe);
                         } else {
                             this.pendingSwipe = swipe;
@@ -374,7 +383,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                         int recordsCount = this.dbHelper.getRecordsCount("REAL_SWIPES");
                         this.inputTextView.setText("Inputs " + recordsCount);
                     } else {
-                        if(this.dbHelper.getFeatureData().get(DatabaseHelper.COL_KEYSTROKE) == 0) {
+                        if(this.dbHelper.getFeatureData().get(DatabaseHelper.COL_KEYSTROKE) == 0 && this.dbHelper.getFeatureData().get(DatabaseHelper.COL_SIGNATURE) == 0) {
                             this.processTestRecord(swipe);
                         } else {
                             this.pendingSwipe = swipe;
@@ -385,10 +394,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                         this.isTrackingSwipe = false;
                         this.resetKeystrokeValues();
                         this.setNumpadVisibility(View.VISIBLE);
+                    } else if (this.dbHelper.getFeatureData().get(DatabaseHelper.COL_SIGNATURE) == 1) {
+                        this.setSignatureVisibility(View.VISIBLE);
                     }
                 }
 
-                if(this.dbHelper.getFeatureData().get(DatabaseHelper.COL_KEYSTROKE) == 0) {
+                if(this.dbHelper.getFeatureData().get(DatabaseHelper.COL_KEYSTROKE) == 0 && this.dbHelper.getFeatureData().get(DatabaseHelper.COL_SIGNATURE) == 0) {
                     this.resetSwipeValues();
                 } else {
                     // Stop hold tracking until start of keystroke gesture
@@ -410,7 +421,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         outputMessage += "\n";
 
         for(DatabaseHelper.ModelType modelType : DatabaseHelper.ModelType.values()) {
-            if(modelType == DatabaseHelper.ModelType.KEYSTROKE && this.dbHelper.getFeatureData().get(DatabaseHelper.COL_KEYSTROKE) == 0) {
+            if(
+                    (modelType == DatabaseHelper.ModelType.KEYSTROKE && this.dbHelper.getFeatureData().get(DatabaseHelper.COL_KEYSTROKE) == 0) ||
+                    (modelType == DatabaseHelper.ModelType.SIGNATURE && this.dbHelper.getFeatureData().get(DatabaseHelper.COL_SIGNATURE) == 0)
+            ) {
                 continue;
             }
 
@@ -798,16 +812,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     private void setNumpadVisibility(Integer visibility) {
-        this.profileButton.setEnabled(visibility == View.INVISIBLE);
-        this.resetButton.setEnabled(visibility == View.INVISIBLE);
-        this.inputTextView.setEnabled(visibility == View.INVISIBLE);
-        this.trainButton.setEnabled(visibility == View.INVISIBLE);
-        this.ganButton.setEnabled(visibility == View.INVISIBLE);
-        this.swipeImageView.setVisibility((visibility == View.INVISIBLE) ? View.VISIBLE : View.INVISIBLE);
-
-        this.sittingRadioButton.setEnabled(visibility == View.INVISIBLE);
-        this.standingRadioButton.setEnabled(visibility == View.INVISIBLE);
-        this.walkingRadioButton.setEnabled(visibility == View.INVISIBLE);
+        this.setAccessoryUI(visibility);
 
         for(int i = 0; i < NUMPAD_SIZE; i++) {
             try {
@@ -885,15 +890,20 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     if(this.mainActivity.keystrokeCount == this.mainActivity.dbHelper.getFeatureData().get(DatabaseHelper.COL_PIN_LENGTH)) {
                         this.mainActivity.pendingSwipe.setKeystrokeFullDuration();
                         this.mainActivity.setHoldFeatures(this.mainActivity.pendingSwipe);
-                        this.mainActivity.resetSwipeValues();
-                        this.mainActivity.isTrackingSwipe = true;
                         this.mainActivity.setNumpadVisibility(View.INVISIBLE);
 
-                        if(this.mainActivity.isTrainingMode) {
-                            this.mainActivity.dbHelper.addTrainRecord(this.mainActivity.pendingSwipe);
-                            this.mainActivity.inputTextView.setText("Inputs " + this.mainActivity.dbHelper.getRecordsCount("REAL_SWIPES"));
+                        if(this.mainActivity.dbHelper.getFeatureData().get(DatabaseHelper.COL_SIGNATURE) == 1) {
+                            this.mainActivity.setSignatureVisibility(View.VISIBLE);
                         } else {
-                            this.mainActivity.processTestRecord(this.mainActivity.pendingSwipe);
+                            this.mainActivity.resetSwipeValues();
+                            this.mainActivity.isTrackingSwipe = true;
+
+                            if(this.mainActivity.isTrainingMode) {
+                                this.mainActivity.dbHelper.addTrainRecord(this.mainActivity.pendingSwipe);
+                                this.mainActivity.inputTextView.setText("Inputs " + this.mainActivity.dbHelper.getRecordsCount("REAL_SWIPES"));
+                            } else {
+                                this.mainActivity.processTestRecord(this.mainActivity.pendingSwipe);
+                            }
                         }
                     }
                     break;
@@ -907,6 +917,45 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         this.keystrokeCount = 0;
         this.keystrokeStartTime = 0;
         this.keystrokeEndTime = 0;
+    }
+
+    private void setSignatureVisibility(Integer visibility) {
+        this.setAccessoryUI(visibility);
+
+        this.signatureView.setVisibility(visibility);
+        this.nextButton.setVisibility(visibility);
+        this.clearButton.setVisibility(visibility);
+    }
+
+    public synchronized void nextInput(View view) {
+        this.signatureView.clearPath();
+        this.resetSwipeValues();
+        this.isTrackingSwipe = true;
+        this.setSignatureVisibility(INVISIBLE);
+
+        if(this.isTrainingMode) {
+            this.dbHelper.addTrainRecord(this.pendingSwipe);
+            this.inputTextView.setText("Inputs " + this.dbHelper.getRecordsCount("REAL_SWIPES"));
+        } else {
+            this.processTestRecord(this.pendingSwipe);
+        }
+    }
+
+    public synchronized void clearSignature(View view) {
+        this.signatureView.clearPath();
+    }
+
+    public void setAccessoryUI(Integer visibility) {
+        this.profileButton.setEnabled(visibility == View.INVISIBLE);
+        this.resetButton.setEnabled(visibility == View.INVISIBLE);
+        this.inputTextView.setEnabled(visibility == View.INVISIBLE);
+        this.trainButton.setEnabled(visibility == View.INVISIBLE);
+        this.ganButton.setEnabled(visibility == View.INVISIBLE);
+        this.swipeImageView.setVisibility((visibility == View.INVISIBLE) ? View.VISIBLE : View.INVISIBLE);
+
+        this.sittingRadioButton.setEnabled(visibility == View.INVISIBLE);
+        this.standingRadioButton.setEnabled(visibility == View.INVISIBLE);
+        this.walkingRadioButton.setEnabled(visibility == View.INVISIBLE);
     }
 
     public void resetData(View view) {
@@ -929,7 +978,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             ArrayList<double[]> attackerTestingData = this.dbHelper.getTestingData("Attacker");
 
             for(DatabaseHelper.ModelType modelType : DatabaseHelper.ModelType.values()) {
-                if(modelType == DatabaseHelper.ModelType.KEYSTROKE && this.dbHelper.getFeatureData().get(DatabaseHelper.COL_KEYSTROKE) == 0) {
+                if(
+                        (modelType == DatabaseHelper.ModelType.KEYSTROKE && this.dbHelper.getFeatureData().get(DatabaseHelper.COL_KEYSTROKE) == 0) ||
+                        (modelType == DatabaseHelper.ModelType.SIGNATURE && this.dbHelper.getFeatureData().get(DatabaseHelper.COL_SIGNATURE) == 0)
+                ) {
                     continue;
                 }
 
