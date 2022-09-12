@@ -789,13 +789,22 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     Integer initialPinLength = (Integer) modelSelection.get("initialPinLength");
 
                     boolean curSignatureEnabled = (boolean) modelSelection.get("curSignatureEnabled");
+                    boolean initialSignatureEnabled = (boolean) modelSelection.get("initialSignatureEnabled");
+                    Integer curSignatureSegmentSelection = (Integer) modelSelection.get("curSignatureSegmentSelection");
+                    Integer initialSignatureSegmentSelection = (Integer) modelSelection.get("initialSignatureSegmentSelection");
 
-                    if((curSegmentSelection != initialSegmentSelection) || (curKeystrokeEnabled != initialKeystrokeEnabled) || (curPinLength != initialPinLength)) {
+                    if(
+                            (curSegmentSelection != initialSegmentSelection) ||
+                            (curKeystrokeEnabled != initialKeystrokeEnabled) ||
+                            (curPinLength != initialPinLength) ||
+                            (curSignatureEnabled != initialSignatureEnabled) ||
+                            (curSignatureSegmentSelection != initialSignatureSegmentSelection)
+                    ) {
                         dbHelper.resetDB(false);
                         inputTextView.setText("Inputs 0");
                         new Thread(() -> this.gan = new GAN(curSegmentSelection, curKeystrokeEnabled ? curPinLength : 0)).start();
 
-                        if(curKeystrokeEnabled != initialKeystrokeEnabled) {
+                        if(curKeystrokeEnabled != initialKeystrokeEnabled || curSignatureEnabled != initialSignatureEnabled) {
                             dbHelper.generateSwipesTables(null, true, curKeystrokeEnabled, curSignatureEnabled);
                         }
                     }

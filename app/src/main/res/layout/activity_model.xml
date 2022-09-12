@@ -17,7 +17,7 @@
             android:layout_marginStart="20dp"
             android:text="Shape"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/signatureStartEndPosCheckBox" />
+            app:layout_constraintTop_toBottomOf="@+id/signatureVelocityCheckBox" />
 
         <CheckBox
             android:id="@+id/signatureVelocityCheckBox"
@@ -26,7 +26,7 @@
             android:layout_marginStart="20dp"
             android:text="Velocity"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/signatureShapeCheckBox" />
+            app:layout_constraintTop_toBottomOf="@+id/signatureStartEndPosCheckBox" />
 
         <TextView
             android:id="@+id/keystrokeTitleTextView"
@@ -128,10 +128,9 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="20dp"
-            android:layout_marginTop="6dp"
             android:text="Nr. of segments:"
             app:layout_constraintStart_toEndOf="@+id/signatureVelocityCheckBox"
-            app:layout_constraintTop_toBottomOf="@+id/signatureShapeCheckBox" />
+            tools:layout_editor_absoluteY="914dp" />
 
         <TextView
             android:id="@+id/keystrokeLengthTextView"
@@ -298,7 +297,7 @@
             android:text="Cancel"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/signatureVelocityCheckBox" />
+            app:layout_constraintTop_toBottomOf="@+id/signatureShapeCheckBox" />
 
         <Spinner
             android:id="@+id/swipeSegmentsSpinner"
@@ -312,7 +311,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             app:layout_constraintStart_toEndOf="@+id/signatureSegmentTextView"
-            app:layout_constraintTop_toBottomOf="@+id/signatureShapeCheckBox" />
+            app:layout_constraintTop_toBottomOf="@+id/signatureVelocityCheckBox" />
 
         <Spinner
             android:id="@+id/keystrokeLengthSpinner"

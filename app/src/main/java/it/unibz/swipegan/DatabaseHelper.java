@@ -705,19 +705,21 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             }
 
             for(String signature_feature : signature_features) {
-                java.lang.reflect.Method cur_method = null;
-                try {
-                    if(signature_feature == COL_SIGNATURE_SEGMENTS_X || signature_feature == COL_SIGNATURE_SEGMENTS_Y) {
-                        cur_method = swipe.getClass().getMethod("set" + signature_feature.substring(0, 1).toUpperCase() + LOWER_UNDERSCORE.to(LOWER_CAMEL, signature_feature.substring(1)), double[].class);
-                        String cursor_str = cursor.getString(cursor.getColumnIndex(signature_feature));
-                        String[] cursor_array = cursor_str.replace("[", "").replace("]","").split(",");
-                        cur_method.invoke(swipe, Arrays.stream(cursor_array).mapToDouble(Double::parseDouble).toArray());
-                    } else {
-                        cur_method = swipe.getClass().getMethod("set" + signature_feature.substring(0, 1).toUpperCase() + LOWER_UNDERSCORE.to(LOWER_CAMEL, signature_feature.substring(1)), double.class);
-                        cur_method.invoke(swipe, cursor.getDouble(cursor.getColumnIndex(signature_feature)));
+                if(cursor.getColumnIndex(signature_feature) != -1) {
+                    java.lang.reflect.Method cur_method = null;
+                    try {
+                        if (signature_feature == COL_SIGNATURE_SEGMENTS_X || signature_feature == COL_SIGNATURE_SEGMENTS_Y) {
+                            cur_method = swipe.getClass().getMethod("set" + signature_feature.substring(0, 1).toUpperCase() + LOWER_UNDERSCORE.to(LOWER_CAMEL, signature_feature.substring(1)), double[].class);
+                            String cursor_str = cursor.getString(cursor.getColumnIndex(signature_feature));
+                            String[] cursor_array = cursor_str.replace("[", "").replace("]", "").split(",");
+                            cur_method.invoke(swipe, Arrays.stream(cursor_array).mapToDouble(Double::parseDouble).toArray());
+                        } else {
+                            cur_method = swipe.getClass().getMethod("set" + signature_feature.substring(0, 1).toUpperCase() + LOWER_UNDERSCORE.to(LOWER_CAMEL, signature_feature.substring(1)), double.class);
+                            cur_method.invoke(swipe, cursor.getDouble(cursor.getColumnIndex(signature_feature)));
+                        }
+                    } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+                        e.printStackTrace();
                     }
-                } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-                    e.printStackTrace();
                 }
             }
 
@@ -940,9 +942,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         featureData.put(COL_KEYSTROKE_DURATIONS, cursor.getInt(cursor.getColumnIndex(COL_KEYSTROKE_DURATIONS)));
         featureData.put(COL_KEYSTROKE_INTERVALS, cursor.getInt(cursor.getColumnIndex(COL_KEYSTROKE_INTERVALS)));
         featureData.put(COL_SIGNATURE, cursor.getInt(cursor.getColumnIndex(COL_SIGNATURE)));
-        featureData.put(COL_SIGNATURE_START_END_POS, cursor.getInt(cursor.getColumnIndex(COL_SIGNATURE)));
-        featureData.put(COL_SIGNATURE_VELOCITY, cursor.getInt(cursor.getColumnIndex(COL_SIGNATURE)));
-        featureData.put(COL_SIGNATURE_SHAPE, cursor.getInt(cursor.getColumnIndex(COL_SIGNATURE)));
+        featureData.put(COL_SIGNATURE_START_END_POS, cursor.getInt(cursor.getColumnIndex(COL_SIGNATURE_START_END_POS)));
+        featureData.put(COL_SIGNATURE_VELOCITY, cursor.getInt(cursor.getColumnIndex(COL_SIGNATURE_VELOCITY)));
+        featureData.put(COL_SIGNATURE_SHAPE, cursor.getInt(cursor.getColumnIndex(COL_SIGNATURE_SHAPE)));
         featureData.put(COL_SIGNATURE_SHAPE_SEGMENTS, cursor.getInt(cursor.getColumnIndex(COL_SIGNATURE_SHAPE_SEGMENTS)));
 
         cursor.close();

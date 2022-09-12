@@ -107,10 +107,11 @@ public class ModelActivity extends AppCompatActivity {
 
         CheckBox signatureCheckBox = findViewById(R.id.signatureCheckBox);
         signatureCheckBox.setChecked(featureData.get(DatabaseHelper.COL_SIGNATURE) == 1);
+        boolean initialSignatureEnabled = signatureCheckBox.isChecked();
 
         CheckBox signatureStartEndPosCheckBox = findViewById(R.id.signatureStartEndPosCheckBox);
         signatureStartEndPosCheckBox.setChecked(featureData.get(DatabaseHelper.COL_SIGNATURE_START_END_POS) == 1);
-        keystrokeIntervalsCheckBox.setEnabled(signatureCheckBox.isChecked());
+        signatureStartEndPosCheckBox.setEnabled(signatureCheckBox.isChecked());
 
         CheckBox signatureVelocityCheckBox = findViewById(R.id.signatureVelocityCheckBox);
         signatureVelocityCheckBox.setChecked(featureData.get(DatabaseHelper.COL_SIGNATURE_VELOCITY) == 1);
@@ -130,13 +131,25 @@ public class ModelActivity extends AppCompatActivity {
         } else {
             signatureSegmentsSpinner.setSelection(((ArrayAdapter<String>) signatureSegmentsSpinner.getAdapter()).getPosition(featureData.get(DatabaseHelper.COL_SIGNATURE_SHAPE_SEGMENTS).toString()));
         }
-        signatureSegmentsSpinner.setEnabled(signatureShapeCheckBox.isChecked());
+        signatureSegmentsSpinner.setEnabled(signatureCheckBox.isChecked() && signatureShapeCheckBox.isChecked());
+        Integer initialSignatureSegmentSelection = Integer.parseInt((String) signatureSegmentsSpinner.getSelectedItem());
 
         signatureShapeCheckBox.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v)
             {
                 signatureSegmentsSpinner.setEnabled(signatureShapeCheckBox.isChecked());
+            }
+        });
+
+        signatureCheckBox.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v)
+            {
+                signatureStartEndPosCheckBox.setEnabled(signatureCheckBox.isChecked());
+                signatureVelocityCheckBox.setEnabled(signatureCheckBox.isChecked());
+                signatureShapeCheckBox.setEnabled(signatureCheckBox.isChecked());
+                signatureSegmentsSpinner.setEnabled(signatureCheckBox.isChecked());
             }
         });
 
@@ -195,6 +208,7 @@ public class ModelActivity extends AppCompatActivity {
                     boolean curKeystrokeEnabled = keystrokeCheckBox.isChecked();
 
                     boolean curSignatureEnabled = signatureCheckBox.isChecked();
+                    Integer curSignatureSegmentSelection = Integer.parseInt((String) signatureSegmentsSpinner.getSelectedItem());
 
                     Intent resultIntent = new Intent();
 
@@ -208,6 +222,9 @@ public class ModelActivity extends AppCompatActivity {
                     modelSelection.put("initialPinLength", initialPinLength);
 
                     modelSelection.put("curSignatureEnabled", curSignatureEnabled);
+                    modelSelection.put("initialSignatureEnabled", initialSignatureEnabled);
+                    modelSelection.put("curSignatureSegmentSelection", curSignatureSegmentSelection);
+                    modelSelection.put("initialSignatureSegmentSelection", initialSignatureSegmentSelection);
 
                     resultIntent.putExtra("modelSelection", (Serializable) modelSelection);
                     setResult(Activity.RESULT_OK, resultIntent);
