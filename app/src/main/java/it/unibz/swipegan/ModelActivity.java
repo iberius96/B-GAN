@@ -108,6 +108,38 @@ public class ModelActivity extends AppCompatActivity {
         CheckBox signatureCheckBox = findViewById(R.id.signatureCheckBox);
         signatureCheckBox.setChecked(featureData.get(DatabaseHelper.COL_SIGNATURE) == 1);
 
+        CheckBox signatureStartEndPosCheckBox = findViewById(R.id.signatureStartEndPosCheckBox);
+        signatureStartEndPosCheckBox.setChecked(featureData.get(DatabaseHelper.COL_SIGNATURE_START_END_POS) == 1);
+        keystrokeIntervalsCheckBox.setEnabled(signatureCheckBox.isChecked());
+
+        CheckBox signatureVelocityCheckBox = findViewById(R.id.signatureVelocityCheckBox);
+        signatureVelocityCheckBox.setChecked(featureData.get(DatabaseHelper.COL_SIGNATURE_VELOCITY) == 1);
+        signatureVelocityCheckBox.setEnabled(signatureCheckBox.isChecked());
+
+        CheckBox signatureShapeCheckBox = findViewById(R.id.signatureShapeCheckBox);
+        signatureShapeCheckBox.setChecked(featureData.get(DatabaseHelper.COL_SIGNATURE_SHAPE) == 1);
+        signatureShapeCheckBox.setEnabled(signatureCheckBox.isChecked());
+
+        Spinner signatureSegmentsSpinner = (Spinner) findViewById(R.id.signatureSegmentsSpinner);
+        ArrayAdapter<CharSequence> signatureSegmentsAdapter = ArrayAdapter.createFromResource(this, R.array.swipe_segments, android.R.layout.simple_spinner_item);
+        signatureSegmentsAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        signatureSegmentsSpinner.setAdapter(signatureSegmentsAdapter);
+
+        if(featureData.get(DatabaseHelper.COL_SIGNATURE_SHAPE_SEGMENTS) == 0) {
+            signatureSegmentsSpinner.setSelection(((ArrayAdapter<String>) signatureSegmentsSpinner.getAdapter()).getPosition(String.valueOf(DatabaseHelper.DEFAULT_SEGMENTS)));
+        } else {
+            signatureSegmentsSpinner.setSelection(((ArrayAdapter<String>) signatureSegmentsSpinner.getAdapter()).getPosition(featureData.get(DatabaseHelper.COL_SIGNATURE_SHAPE_SEGMENTS).toString()));
+        }
+        signatureSegmentsSpinner.setEnabled(signatureShapeCheckBox.isChecked());
+
+        signatureShapeCheckBox.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v)
+            {
+                signatureSegmentsSpinner.setEnabled(signatureShapeCheckBox.isChecked());
+            }
+        });
+
         Button saveProfileButton = findViewById(R.id.saveProfileButton);
         class MyListener implements View.OnClickListener {
             private ModelActivity modelActivity;
@@ -129,8 +161,13 @@ public class ModelActivity extends AppCompatActivity {
                         swipeStartEndPosCheckBox.isChecked() ||
                         swipeVelocityCheckBox.isChecked() ||
                         (keystrokeCheckBox.isChecked() &&
-                            (keystrokeDurationsCheckBox.isChecked() || keystrokeIntervalsCheckBox.isChecked())) ||
-                        signatureCheckBox.isChecked()
+                            (keystrokeDurationsCheckBox.isChecked() ||
+                            keystrokeIntervalsCheckBox.isChecked())) ||
+                        (signatureCheckBox.isChecked() &&
+                            (signatureVelocityCheckBox.isChecked() ||
+                            signatureStartEndPosCheckBox.isChecked() ||
+                            signatureShapeCheckBox.isChecked()))
+
                 ) {
                     dbHelper.saveFeatureData(
                             accelerationCheckBox.isChecked() ? 1 : 0,
@@ -146,23 +183,31 @@ public class ModelActivity extends AppCompatActivity {
                             Integer.parseInt((String) keystrokeLengthSpinner.getSelectedItem()),
                             keystrokeDurationsCheckBox.isChecked() ? 1 : 0,
                             keystrokeIntervalsCheckBox.isChecked() ? 1 : 0,
-                            signatureCheckBox.isChecked() ? 1 : 0
+                            signatureCheckBox.isChecked() ? 1 : 0,
+                            signatureStartEndPosCheckBox.isChecked() ? 1 : 0,
+                            signatureVelocityCheckBox.isChecked() ? 1 : 0,
+                            signatureShapeCheckBox.isChecked() ? 1 : 0,
+                            Integer.parseInt((String) signatureSegmentsSpinner.getSelectedItem())
                     );
 
                     Integer curSegmentSelection = Integer.parseInt((String) swipeSegmentSpinner.getSelectedItem());
                     Integer curPinLength = Integer.parseInt((String) keystrokeLengthSpinner.getSelectedItem());
                     boolean curKeystrokeEnabled = keystrokeCheckBox.isChecked();
 
+                    boolean curSignatureEnabled = signatureCheckBox.isChecked();
+
                     Intent resultIntent = new Intent();
 
                     Map<String, Object> modelSelection = new HashMap<>();
                     modelSelection.put("curSegmentSelection", curSegmentSelection);
                     modelSelection.put("initialSegmentSelection", initialSegmentSelection);
+
                     modelSelection.put("curKeystrokeEnabled", curKeystrokeEnabled);
                     modelSelection.put("initialKeystrokeEnabled", initialKeystrokeEnabled);
                     modelSelection.put("curPinLength", curPinLength);
                     modelSelection.put("initialPinLength", initialPinLength);
 
+                    modelSelection.put("curSignatureEnabled", curSignatureEnabled);
 
                     resultIntent.putExtra("modelSelection", (Serializable) modelSelection);
                     setResult(Activity.RESULT_OK, resultIntent);
