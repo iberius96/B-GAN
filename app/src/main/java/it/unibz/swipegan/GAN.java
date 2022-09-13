@@ -35,9 +35,10 @@ public class GAN {
     private MultiLayerNetwork discriminator;
     private MultiLayerNetwork gan;
 
-    public GAN(Integer segments, Integer pinLength) {
+    public GAN(Integer segments, Integer pinLength, Integer signatureSegments) {
         this.setSegmentFeatures(segments);
         this.setKeystrokeFeatures(pinLength);
+        this.setSignatureFeatures(signatureSegments);
         this.makeGenerator();
         this.makeDiscriminator();
         this.makeGAN();
@@ -226,6 +227,22 @@ public class GAN {
                         break;
                     default:
                         this.NUM_TRAIN_FEATURES += (pinLength - 1);
+                        break;
+                }
+            }
+        }
+    }
+
+    public void setSignatureFeatures(Integer segmentFeatures) {
+        for(String signature_feature : DatabaseHelper.signature_features) {
+            if(segmentFeatures != 0) {
+                switch (signature_feature) {
+                    case DatabaseHelper.COL_SIGNATURE_SEGMENTS_X:
+                    case DatabaseHelper.COL_SIGNATURE_SEGMENTS_Y:
+                        this.NUM_TRAIN_FEATURES += segmentFeatures;
+                        break;
+                    default:
+                        this.NUM_TRAIN_FEATURES += 1;
                         break;
                 }
             }

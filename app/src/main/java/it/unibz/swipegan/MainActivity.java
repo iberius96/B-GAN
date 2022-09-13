@@ -85,7 +85,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private ArrayList<Float> yGyroscopes = null;
     private ArrayList<Float> zGyroscopes = null;
 
-    private boolean isTrackingMagnetometer;
+    private boolean isTrackingMagnetometer = false;
     private ArrayList<Float> xOrientations = null;
     private ArrayList<Float> yOrientations = null;
     private ArrayList<Float> zOrientations = null;
@@ -166,6 +166,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         this.setKeystrokeButtonsEventListener();
 
         this.signatureView = findViewById(R.id.signature_view);
+        this.signatureView.setMainActivity(this);
+
         this.nextButton = findViewById(R.id.nextButton);
         this.clearButton = findViewById(R.id.clearButton);
         this.setSignatureVisibility(View.INVISIBLE);
@@ -239,7 +241,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         Integer segments = this.dbHelper.getFeatureData().get(DatabaseHelper.COL_SWIPE_SHAPE_SEGMENTS);
         Integer pinLength = this.dbHelper.getFeatureData().get(DatabaseHelper.COL_KEYSTROKE) == 1 ? this.dbHelper.getFeatureData().get(DatabaseHelper.COL_PIN_LENGTH) : 0;
-        new Thread(() -> this.gan = new GAN(segments, pinLength)).start();
+        Integer signatureSegments = this.dbHelper.getFeatureData().get(DatabaseHelper.COL_SIGNATURE) == 1 ? this.dbHelper.getFeatureData().get(DatabaseHelper.COL_SIGNATURE_SHAPE_SEGMENTS) : 0;
+        new Thread(() -> this.gan = new GAN(segments, pinLength, signatureSegments)).start();
     }
 
     @Override
@@ -288,6 +291,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         return output;
     }
 
+    public void setSensorsTracking(boolean tracking) {
+        this.isTrackingAccelerometer = tracking;
+        this.isTrackingGyroscope = tracking;
+        this.isTrackingMagnetometer = tracking;
+    }
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
@@ -313,9 +321,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 this.length = 0;
 
                 this.startTime = System.currentTimeMillis();
-                this.isTrackingAccelerometer = true;
-                this.isTrackingGyroscope = true;
-                this.isTrackingMagnetometer = true;
+                this.setSensorsTracking(true);
 
                 this.xLocations.add(event.getX(pointerId));
                 this.yLocations.add(event.getY(pointerId));
@@ -401,10 +407,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 if(this.dbHelper.getFeatureData().get(DatabaseHelper.COL_KEYSTROKE) == 0 && this.dbHelper.getFeatureData().get(DatabaseHelper.COL_SIGNATURE) == 0) {
                     this.resetSwipeValues();
                 } else {
-                    // Stop hold tracking until start of keystroke gesture
-                    this.isTrackingAccelerometer = false;
-                    this.isTrackingGyroscope = false;
-                    this.isTrackingMagnetometer = false;
+                    // Stop hold tracking until start of keystroke or signature gesture
+                    this.setSensorsTracking(false);
                 }
 
                 break;
@@ -501,9 +505,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         this.mGravity = null;
         this.mGeomagnetic = null;
 
-        this.isTrackingAccelerometer = false;
-        this.isTrackingGyroscope = false;
-        this.isTrackingMagnetometer = false;
+        this.setSensorsTracking(false);
     }
 
     public Swipe getSwipe() {
@@ -802,7 +804,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     ) {
                         dbHelper.resetDB(false);
                         inputTextView.setText("Inputs 0");
-                        new Thread(() -> this.gan = new GAN(curSegmentSelection, curKeystrokeEnabled ? curPinLength : 0)).start();
+                        new Thread(() -> this.gan = new GAN(
+                                curSegmentSelection,
+                                curKeystrokeEnabled ? curPinLength : 0,
+                                curSignatureEnabled ? curSignatureSegmentSelection : 0)).start();
 
                         if(curKeystrokeEnabled != initialKeystrokeEnabled || curSignatureEnabled != initialSignatureEnabled) {
                             dbHelper.generateSwipesTables(null, true, curKeystrokeEnabled, curSignatureEnabled);
@@ -862,11 +867,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         public boolean onTouch(View v, MotionEvent event) {
             switch(event.getAction()) {
                 case MotionEvent.ACTION_DOWN:
-                    if(this.mainActivity.keystrokeCount == 0) {
-                        this.mainActivity.isTrackingAccelerometer = true;
-                        this.mainActivity.isTrackingGyroscope = true;
-                        this.mainActivity.isTrackingMagnetometer = true;
-                    }
+                    if(this.mainActivity.keystrokeCount == 0) { this.mainActivity.setSensorsTracking(true); }
 
                     long prevStartTime = this.mainActivity.keystrokeStartTime;
                     this.mainActivity.keystrokeStartTime = System.nanoTime();
@@ -898,12 +899,14 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
                     if(this.mainActivity.keystrokeCount == this.mainActivity.dbHelper.getFeatureData().get(DatabaseHelper.COL_PIN_LENGTH)) {
                         this.mainActivity.pendingSwipe.setKeystrokeFullDuration();
-                        this.mainActivity.setHoldFeatures(this.mainActivity.pendingSwipe);
                         this.mainActivity.setNumpadVisibility(View.INVISIBLE);
 
                         if(this.mainActivity.dbHelper.getFeatureData().get(DatabaseHelper.COL_SIGNATURE) == 1) {
+                            this.mainActivity.setSensorsTracking(false);
                             this.mainActivity.setSignatureVisibility(View.VISIBLE);
                         } else {
+                            this.mainActivity.setHoldFeatures(this.mainActivity.pendingSwipe); // Finalize hold features
+
                             this.mainActivity.resetSwipeValues();
                             this.mainActivity.isTrackingSwipe = true;
 
@@ -938,6 +941,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     public synchronized void nextInput(View view) {
         if(this.signatureView.getXLocations().size() != 0) {
+            this.setHoldFeatures(this.pendingSwipe); // Finalize hold features
+
             ArrayList<Float> signatureXLocations = this.signatureView.getXLocations();
             ArrayList<Float> signatureYLocations = this.signatureView.getYLocations();
 

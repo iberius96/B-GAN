@@ -25,6 +25,8 @@ public class SignatureView extends View {
     private ArrayList<Float> xVelocityTranslation = null;
     private ArrayList<Float> yVelocityTranslation = null;
 
+    private MainActivity mainActivity;
+
     public SignatureView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
         paint.setAntiAlias(true);
@@ -66,6 +68,8 @@ public class SignatureView extends View {
 
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
+                this.mainActivity.setSensorsTracking(true);
+
                 // Set a new starting point
                 path.moveTo(eventX, eventY);
 
@@ -101,6 +105,8 @@ public class SignatureView extends View {
 
                 break;
             case MotionEvent.ACTION_UP:
+                this.mainActivity.setSensorsTracking(false);
+
                 float newX = event.getX(pointerId);
                 float newY = event.getY(pointerId);
                 this.xVelocityTranslation.add(Math.abs(newX - this.xLocations.get(this.xLocations.size() - 1)));
@@ -142,5 +148,9 @@ public class SignatureView extends View {
 
     public DoubleSummaryStatistics getYVelocitySummaryStatistics() {
         return this.yVelocityTranslation.stream().mapToDouble(x -> (double) x).summaryStatistics();
+    }
+
+    public void setMainActivity(MainActivity mainActivity) {
+        this.mainActivity = mainActivity;
     }
 }
