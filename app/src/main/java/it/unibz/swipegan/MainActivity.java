@@ -59,6 +59,7 @@ import weka.core.Instance;
 import weka.core.Instances;
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
+    public static final int INVISIBLE = View.INVISIBLE;
     private long startTime = 0;
     private boolean isTrainingMode = true;
     private boolean isTrainingClassifier = false;
@@ -84,7 +85,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private ArrayList<Float> yGyroscopes = null;
     private ArrayList<Float> zGyroscopes = null;
 
-    private boolean isTrackingMagnetometer;
+    private boolean isTrackingMagnetometer = false;
     private ArrayList<Float> xOrientations = null;
     private ArrayList<Float> yOrientations = null;
     private ArrayList<Float> zOrientations = null;
@@ -99,7 +100,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     private DatabaseHelper dbHelper;
 
-    private OneClassClassifier oneClassClassifiers[] = new OneClassClassifier[4];
+    private OneClassClassifier oneClassClassifiers[] = new OneClassClassifier[DatabaseHelper.ModelType.values().length];
     private GAN gan;
 
     private Button ganButton;
@@ -126,6 +127,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private Button keystrokeButton7;
     private Button keystrokeButton8;
     private Button keystrokeButton9;
+    private Button nextButton;
+    private Button clearButton;
+    private SignatureView signatureView;
 
     private int keystrokeCount = 0;
     private long keystrokeStartTime = 0;
@@ -160,6 +164,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         this.setNumpadVisibility(View.INVISIBLE);
         this.setKeystrokeButtonsEventListener();
+
+        this.signatureView = findViewById(R.id.signature_view);
+        this.signatureView.setMainActivity(this);
+
+        this.nextButton = findViewById(R.id.nextButton);
+        this.clearButton = findViewById(R.id.clearButton);
+        this.setSignatureVisibility(View.INVISIBLE);
 
         this.sittingRadioButton.setChecked(true);
 
@@ -230,7 +241,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         Integer segments = this.dbHelper.getFeatureData().get(DatabaseHelper.COL_SWIPE_SHAPE_SEGMENTS);
         Integer pinLength = this.dbHelper.getFeatureData().get(DatabaseHelper.COL_KEYSTROKE) == 1 ? this.dbHelper.getFeatureData().get(DatabaseHelper.COL_PIN_LENGTH) : 0;
-        new Thread(() -> this.gan = new GAN(segments, pinLength)).start();
+        Integer signatureSegments = this.dbHelper.getFeatureData().get(DatabaseHelper.COL_SIGNATURE) == 1 ? this.dbHelper.getFeatureData().get(DatabaseHelper.COL_SIGNATURE_SHAPE_SEGMENTS) : 0;
+        new Thread(() -> this.gan = new GAN(segments, pinLength, signatureSegments)).start();
     }
 
     @Override
@@ -279,6 +291,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         return output;
     }
 
+    public void setSensorsTracking(boolean tracking) {
+        this.isTrackingAccelerometer = tracking;
+        this.isTrackingGyroscope = tracking;
+        this.isTrackingMagnetometer = tracking;
+    }
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
@@ -304,9 +321,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 this.length = 0;
 
                 this.startTime = System.currentTimeMillis();
-                this.isTrackingAccelerometer = true;
-                this.isTrackingGyroscope = true;
-                this.isTrackingMagnetometer = true;
+                this.setSensorsTracking(true);
 
                 this.xLocations.add(event.getX(pointerId));
                 this.yLocations.add(event.getY(pointerId));
@@ -328,8 +343,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     for (int p = 0; p < pointerCount; p++) {
                         float newX = event.getHistoricalX(p, h);
                         float newY = event.getHistoricalY(p, h);
-                        this.xVelocityTranslation.add(newX - this.xLocations.get(this.xLocations.size() - 1));
-                        this.yVelocityTranslation.add(newY - this.yLocations.get(this.yLocations.size() - 1));
+                        this.xVelocityTranslation.add(Math.abs(newX - this.xLocations.get(this.xLocations.size() - 1)));
+                        this.yVelocityTranslation.add(Math.abs(newY - this.yLocations.get(this.yLocations.size() - 1)));
                         this.xLocations.add(newX);
                         this.yLocations.add(newY);
                     }
@@ -338,8 +353,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 for (int p = 0; p < pointerCount; p++) {
                     float newX = event.getX(p);
                     float newY = event.getY(p);
-                    this.xVelocityTranslation.add(newX - this.xLocations.get(this.xLocations.size() - 1));
-                    this.yVelocityTranslation.add(newY - this.yLocations.get(this.yLocations.size() - 1));
+                    this.xVelocityTranslation.add(Math.abs(newX - this.xLocations.get(this.xLocations.size() - 1)));
+                    this.yVelocityTranslation.add(Math.abs(newY - this.yLocations.get(this.yLocations.size() - 1)));
                     this.xLocations.add(newX);
                     this.yLocations.add(newY);
                 }
@@ -351,9 +366,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
                 float newX = event.getX(pointerId);
                 float newY = event.getY(pointerId);
-                this.xVelocityTranslation.add(newX - this.xLocations.get(this.xLocations.size() - 1));
-
-                this.yVelocityTranslation.add(newY - this.yLocations.get(this.yLocations.size() - 1));
+                this.xVelocityTranslation.add(Math.abs(newX - this.xLocations.get(this.xLocations.size() - 1)));
+                this.yVelocityTranslation.add(Math.abs(newY - this.yLocations.get(this.yLocations.size() - 1)));
                 this.xLocations.add(newX);
                 this.yLocations.add(newY);
 
@@ -365,7 +379,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     if(this.isTrainingMode) {
                         this.saveButton.setVisibility(View.INVISIBLE);
 
-                        if(this.dbHelper.getFeatureData().get(DatabaseHelper.COL_KEYSTROKE) == 0) {
+                        if(this.dbHelper.getFeatureData().get(DatabaseHelper.COL_KEYSTROKE) == 0 && this.dbHelper.getFeatureData().get(DatabaseHelper.COL_SIGNATURE) == 0) {
                             this.dbHelper.addTrainRecord(swipe);
                         } else {
                             this.pendingSwipe = swipe;
@@ -374,7 +388,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                         int recordsCount = this.dbHelper.getRecordsCount("REAL_SWIPES");
                         this.inputTextView.setText("Inputs " + recordsCount);
                     } else {
-                        if(this.dbHelper.getFeatureData().get(DatabaseHelper.COL_KEYSTROKE) == 0) {
+                        if(this.dbHelper.getFeatureData().get(DatabaseHelper.COL_KEYSTROKE) == 0 && this.dbHelper.getFeatureData().get(DatabaseHelper.COL_SIGNATURE) == 0) {
                             this.processTestRecord(swipe);
                         } else {
                             this.pendingSwipe = swipe;
@@ -385,16 +399,16 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                         this.isTrackingSwipe = false;
                         this.resetKeystrokeValues();
                         this.setNumpadVisibility(View.VISIBLE);
+                    } else if (this.dbHelper.getFeatureData().get(DatabaseHelper.COL_SIGNATURE) == 1) {
+                        this.setSignatureVisibility(View.VISIBLE);
                     }
                 }
 
-                if(this.dbHelper.getFeatureData().get(DatabaseHelper.COL_KEYSTROKE) == 0) {
+                if(this.dbHelper.getFeatureData().get(DatabaseHelper.COL_KEYSTROKE) == 0 && this.dbHelper.getFeatureData().get(DatabaseHelper.COL_SIGNATURE) == 0) {
                     this.resetSwipeValues();
                 } else {
-                    // Stop hold tracking until start of keystroke gesture
-                    this.isTrackingAccelerometer = false;
-                    this.isTrackingGyroscope = false;
-                    this.isTrackingMagnetometer = false;
+                    // Stop hold tracking until start of keystroke or signature gesture
+                    this.setSensorsTracking(false);
                 }
 
                 break;
@@ -410,7 +424,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         outputMessage += "\n";
 
         for(DatabaseHelper.ModelType modelType : DatabaseHelper.ModelType.values()) {
-            if(modelType == DatabaseHelper.ModelType.KEYSTROKE && this.dbHelper.getFeatureData().get(DatabaseHelper.COL_KEYSTROKE) == 0) {
+            if(
+                    (modelType == DatabaseHelper.ModelType.KEYSTROKE && this.dbHelper.getFeatureData().get(DatabaseHelper.COL_KEYSTROKE) == 0) ||
+                    (modelType == DatabaseHelper.ModelType.SIGNATURE && this.dbHelper.getFeatureData().get(DatabaseHelper.COL_SIGNATURE) == 0)
+            ) {
                 continue;
             }
 
@@ -488,9 +505,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         this.mGravity = null;
         this.mGeomagnetic = null;
 
-        this.isTrackingAccelerometer = false;
-        this.isTrackingGyroscope = false;
-        this.isTrackingMagnetometer = false;
+        this.setSensorsTracking(false);
     }
 
     public Swipe getSwipe() {
@@ -498,8 +513,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         double length = this.length;
 
-        double[] segmentsX = this.getSegmentsOffset(this.xLocations);
-        double[] segmentsY = this.getSegmentsOffset(this.yLocations);
+        double[] segmentsX = this.getSegmentsOffset(this.xLocations, this.dbHelper.getFeatureData().get(DatabaseHelper.COL_SWIPE_SHAPE_SEGMENTS));
+        double[] segmentsY = this.getSegmentsOffset(this.yLocations, this.dbHelper.getFeatureData().get(DatabaseHelper.COL_SWIPE_SHAPE_SEGMENTS));
 
         DoubleSummaryStatistics sizesStats = this.sizes.stream().mapToDouble(x -> (double) x).summaryStatistics();
         double minSize = sizesStats.getMin();
@@ -520,7 +535,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         double varXVelocity = this.xVelocityTranslation.stream().map(i -> i - avgXVelocity).map(i -> i*i).mapToDouble(i -> i).average().getAsDouble();
         double stdXVelocity = Math.sqrt(varXVelocity);
 
-        DoubleSummaryStatistics yVelocityStats = this.xVelocityTranslation.stream().mapToDouble(x -> (double) x).summaryStatistics();
+        DoubleSummaryStatistics yVelocityStats = this.yVelocityTranslation.stream().mapToDouble(x -> (double) x).summaryStatistics();
         double minYVelocity = yVelocityStats.getMin();
         double maxYVelocity = yVelocityStats.getMax();
         double avgYVelocity = yVelocityStats.getAverage();
@@ -693,9 +708,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         swipe.setVarZOrientation(varZOrientation);
     }
 
-    public double[] getSegmentsOffset(ArrayList<Float> locations) {
-        Integer segments = this.dbHelper.getFeatureData().get(DatabaseHelper.COL_SWIPE_SHAPE_SEGMENTS);
-
+    public double[] getSegmentsOffset(ArrayList<Float> locations, Integer segments) {
         // To generate x segments, a minimum of x+1 locations are required
         // If the selected nr of segments exceeds the available locations, the maximum nr of segments for the current swipe is used instead
         Integer collectable_segments = segments + 1 > locations.size() ? locations.size() - 1 : segments;
@@ -771,18 +784,33 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
                     Integer curSegmentSelection = (Integer) modelSelection.get("curSegmentSelection");
                     Integer initialSegmentSelection = (Integer) modelSelection.get("initialSegmentSelection");
+
                     boolean curKeystrokeEnabled = (boolean) modelSelection.get("curKeystrokeEnabled");
                     boolean initialKeystrokeEnabled = (boolean) modelSelection.get("initialKeystrokeEnabled");
                     Integer curPinLength = (Integer) modelSelection.get("curPinLength");
                     Integer initialPinLength = (Integer) modelSelection.get("initialPinLength");
 
-                    if((curSegmentSelection != initialSegmentSelection) || (curKeystrokeEnabled != initialKeystrokeEnabled) || (curPinLength != initialPinLength)) {
+                    boolean curSignatureEnabled = (boolean) modelSelection.get("curSignatureEnabled");
+                    boolean initialSignatureEnabled = (boolean) modelSelection.get("initialSignatureEnabled");
+                    Integer curSignatureSegmentSelection = (Integer) modelSelection.get("curSignatureSegmentSelection");
+                    Integer initialSignatureSegmentSelection = (Integer) modelSelection.get("initialSignatureSegmentSelection");
+
+                    if(
+                            (curSegmentSelection != initialSegmentSelection) ||
+                            (curKeystrokeEnabled != initialKeystrokeEnabled) ||
+                            (curPinLength != initialPinLength) ||
+                            (curSignatureEnabled != initialSignatureEnabled) ||
+                            (curSignatureSegmentSelection != initialSignatureSegmentSelection)
+                    ) {
                         dbHelper.resetDB(false);
                         inputTextView.setText("Inputs 0");
-                        new Thread(() -> this.gan = new GAN(curSegmentSelection, curKeystrokeEnabled ? curPinLength : 0)).start();
+                        new Thread(() -> this.gan = new GAN(
+                                curSegmentSelection,
+                                curKeystrokeEnabled ? curPinLength : 0,
+                                curSignatureEnabled ? curSignatureSegmentSelection : 0)).start();
 
-                        if(curKeystrokeEnabled != initialKeystrokeEnabled) {
-                            dbHelper.generateSwipesTables(null, true, curKeystrokeEnabled);
+                        if(curKeystrokeEnabled != initialKeystrokeEnabled || curSignatureEnabled != initialSignatureEnabled) {
+                            dbHelper.generateSwipesTables(null, true, curKeystrokeEnabled, curSignatureEnabled);
                         }
                     }
                 }
@@ -798,16 +826,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     private void setNumpadVisibility(Integer visibility) {
-        this.profileButton.setEnabled(visibility == View.INVISIBLE);
-        this.resetButton.setEnabled(visibility == View.INVISIBLE);
-        this.inputTextView.setEnabled(visibility == View.INVISIBLE);
-        this.trainButton.setEnabled(visibility == View.INVISIBLE);
-        this.ganButton.setEnabled(visibility == View.INVISIBLE);
-        this.swipeImageView.setVisibility((visibility == View.INVISIBLE) ? View.VISIBLE : View.INVISIBLE);
-
-        this.sittingRadioButton.setEnabled(visibility == View.INVISIBLE);
-        this.standingRadioButton.setEnabled(visibility == View.INVISIBLE);
-        this.walkingRadioButton.setEnabled(visibility == View.INVISIBLE);
+        this.setAccessoryUI(visibility);
 
         for(int i = 0; i < NUMPAD_SIZE; i++) {
             try {
@@ -848,11 +867,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         public boolean onTouch(View v, MotionEvent event) {
             switch(event.getAction()) {
                 case MotionEvent.ACTION_DOWN:
-                    if(this.mainActivity.keystrokeCount == 0) {
-                        this.mainActivity.isTrackingAccelerometer = true;
-                        this.mainActivity.isTrackingGyroscope = true;
-                        this.mainActivity.isTrackingMagnetometer = true;
-                    }
+                    if(this.mainActivity.keystrokeCount == 0) { this.mainActivity.setSensorsTracking(true); }
 
                     long prevStartTime = this.mainActivity.keystrokeStartTime;
                     this.mainActivity.keystrokeStartTime = System.nanoTime();
@@ -884,16 +899,23 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
                     if(this.mainActivity.keystrokeCount == this.mainActivity.dbHelper.getFeatureData().get(DatabaseHelper.COL_PIN_LENGTH)) {
                         this.mainActivity.pendingSwipe.setKeystrokeFullDuration();
-                        this.mainActivity.setHoldFeatures(this.mainActivity.pendingSwipe);
-                        this.mainActivity.resetSwipeValues();
-                        this.mainActivity.isTrackingSwipe = true;
                         this.mainActivity.setNumpadVisibility(View.INVISIBLE);
 
-                        if(this.mainActivity.isTrainingMode) {
-                            this.mainActivity.dbHelper.addTrainRecord(this.mainActivity.pendingSwipe);
-                            this.mainActivity.inputTextView.setText("Inputs " + this.mainActivity.dbHelper.getRecordsCount("REAL_SWIPES"));
+                        if(this.mainActivity.dbHelper.getFeatureData().get(DatabaseHelper.COL_SIGNATURE) == 1) {
+                            this.mainActivity.setSensorsTracking(false);
+                            this.mainActivity.setSignatureVisibility(View.VISIBLE);
                         } else {
-                            this.mainActivity.processTestRecord(this.mainActivity.pendingSwipe);
+                            this.mainActivity.setHoldFeatures(this.mainActivity.pendingSwipe); // Finalize hold features
+
+                            this.mainActivity.resetSwipeValues();
+                            this.mainActivity.isTrackingSwipe = true;
+
+                            if(this.mainActivity.isTrainingMode) {
+                                this.mainActivity.dbHelper.addTrainRecord(this.mainActivity.pendingSwipe);
+                                this.mainActivity.inputTextView.setText("Inputs " + this.mainActivity.dbHelper.getRecordsCount("REAL_SWIPES"));
+                            } else {
+                                this.mainActivity.processTestRecord(this.mainActivity.pendingSwipe);
+                            }
                         }
                     }
                     break;
@@ -907,6 +929,87 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         this.keystrokeCount = 0;
         this.keystrokeStartTime = 0;
         this.keystrokeEndTime = 0;
+    }
+
+    private void setSignatureVisibility(Integer visibility) {
+        this.setAccessoryUI(visibility);
+
+        this.signatureView.setVisibility(visibility);
+        this.nextButton.setVisibility(visibility);
+        this.clearButton.setVisibility(visibility);
+    }
+
+    public synchronized void nextInput(View view) {
+        if(this.signatureView.getXLocations().size() != 0) {
+            this.setHoldFeatures(this.pendingSwipe); // Finalize hold features
+
+            ArrayList<Float> signatureXLocations = this.signatureView.getXLocations();
+            ArrayList<Float> signatureYLocations = this.signatureView.getYLocations();
+
+            this.pendingSwipe.setSignatureStartX(signatureXLocations.get(0));
+            this.pendingSwipe.setSignatureStartY(signatureYLocations.get(0));
+            this.pendingSwipe.setSignatureEndX(signatureXLocations.get(signatureXLocations.size() - 1));
+            this.pendingSwipe.setSignatureEndY(signatureYLocations.get(signatureYLocations.size() - 1));
+
+            this.pendingSwipe.setSignatureEuclideanDistance(Math.sqrt(
+                            Math.pow((this.pendingSwipe.getSignatureEndX() - this.pendingSwipe.getSignatureStartX()), 2) +
+                            Math.pow((this.pendingSwipe.getSignatureEndY() - this.pendingSwipe.getSignatureStartY()), 2))
+            );
+
+            double signatureAvgX = signatureXLocations.stream().mapToDouble(x -> (double) x).summaryStatistics().getAverage();
+            double signatureVarX = signatureXLocations.stream().map(i -> i - signatureAvgX).map(i -> i*i).mapToDouble(i -> i).average().getAsDouble();
+            this.pendingSwipe.setSignatureStdX(Math.sqrt(signatureVarX));
+
+            double signatureAvgY = signatureYLocations.stream().mapToDouble(x -> (double) x).summaryStatistics().getAverage();
+            double signatureVarY = signatureYLocations.stream().map(i -> i - signatureAvgY).map(i -> i*i).mapToDouble(i -> i).average().getAsDouble();
+            this.pendingSwipe.setSignatureStdY(Math.sqrt(signatureVarY));
+
+            DoubleSummaryStatistics signatureXLocationsSummary = signatureXLocations.stream().mapToDouble(x -> (double) x).summaryStatistics();
+            this.pendingSwipe.setSignatureDiffX(signatureXLocationsSummary.getMax() - signatureXLocationsSummary.getMin());
+
+            DoubleSummaryStatistics signatureYLocationsSummary = signatureYLocations.stream().mapToDouble(x -> (double) x).summaryStatistics();
+            this.pendingSwipe.setSignatureDiffY(signatureYLocationsSummary.getMax() - signatureYLocationsSummary.getMin());
+
+            DoubleSummaryStatistics xVelocityStats = this.signatureView.getXVelocitySummaryStatistics();
+            this.pendingSwipe.setSignatureMaxXVelocity(xVelocityStats.getMax());
+            this.pendingSwipe.setSignatureAvgXVelocity(xVelocityStats.getAverage());
+
+            DoubleSummaryStatistics yVelocityStats = this.signatureView.getYVelocitySummaryStatistics();
+            this.pendingSwipe.setSignatureMaxYVelocity(yVelocityStats.getMax());
+            this.pendingSwipe.setSignatureAvgYVelocity(yVelocityStats.getAverage());
+
+            this.pendingSwipe.setSignatureSegmentsX(this.getSegmentsOffset(signatureXLocations, this.dbHelper.getFeatureData().get(DatabaseHelper.COL_SIGNATURE_SHAPE_SEGMENTS)));
+            this.pendingSwipe.setSignatureSegmentsY(this.getSegmentsOffset(signatureYLocations, this.dbHelper.getFeatureData().get(DatabaseHelper.COL_SIGNATURE_SHAPE_SEGMENTS)));
+
+            this.signatureView.clearPath();
+            this.resetSwipeValues();
+            this.isTrackingSwipe = true;
+            this.setSignatureVisibility(INVISIBLE);
+
+            if(this.isTrainingMode) {
+                this.dbHelper.addTrainRecord(this.pendingSwipe);
+                this.inputTextView.setText("Inputs " + this.dbHelper.getRecordsCount("REAL_SWIPES"));
+            } else {
+                this.processTestRecord(this.pendingSwipe);
+            }
+        }
+    }
+
+    public synchronized void clearSignature(View view) {
+        this.signatureView.clearPath();
+    }
+
+    public void setAccessoryUI(Integer visibility) {
+        this.profileButton.setEnabled(visibility == View.INVISIBLE);
+        this.resetButton.setEnabled(visibility == View.INVISIBLE);
+        this.inputTextView.setEnabled(visibility == View.INVISIBLE);
+        this.trainButton.setEnabled(visibility == View.INVISIBLE);
+        this.ganButton.setEnabled(visibility == View.INVISIBLE);
+        this.swipeImageView.setVisibility((visibility == View.INVISIBLE) ? View.VISIBLE : View.INVISIBLE);
+
+        this.sittingRadioButton.setEnabled(visibility == View.INVISIBLE);
+        this.standingRadioButton.setEnabled(visibility == View.INVISIBLE);
+        this.walkingRadioButton.setEnabled(visibility == View.INVISIBLE);
     }
 
     public void resetData(View view) {
@@ -929,7 +1032,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             ArrayList<double[]> attackerTestingData = this.dbHelper.getTestingData("Attacker");
 
             for(DatabaseHelper.ModelType modelType : DatabaseHelper.ModelType.values()) {
-                if(modelType == DatabaseHelper.ModelType.KEYSTROKE && this.dbHelper.getFeatureData().get(DatabaseHelper.COL_KEYSTROKE) == 0) {
+                if(
+                        (modelType == DatabaseHelper.ModelType.KEYSTROKE && this.dbHelper.getFeatureData().get(DatabaseHelper.COL_KEYSTROKE) == 0) ||
+                        (modelType == DatabaseHelper.ModelType.SIGNATURE && this.dbHelper.getFeatureData().get(DatabaseHelper.COL_SIGNATURE) == 0)
+                ) {
                     continue;
                 }
 
@@ -1201,14 +1307,21 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         boolean useAcceleration = featureData.get(DatabaseHelper.COL_ACCELERATION) == 1;
         boolean useAngularVelocity = featureData.get(DatabaseHelper.COL_ANGULAR_VELOCITY) == 1;
         boolean useOrientation = featureData.get(DatabaseHelper.COL_ORIENTATION) == 1;
+
         boolean useSwipeDuration = featureData.get(DatabaseHelper.COL_SWIPE_DURATION) == 1;
         boolean useSwipeShape = featureData.get(DatabaseHelper.COL_SWIPE_SHAPE) == 1;
         boolean useSwipeSize = featureData.get(DatabaseHelper.COL_SWIPE_TOUCH_SIZE) == 1;
         boolean useSwipeStartEndPos = featureData.get(DatabaseHelper.COL_SWIPE_START_END_POS) == 1;
         boolean useSwipeVelocity = featureData.get(DatabaseHelper.COL_SWIPE_VELOCITY) == 1;
+
         boolean useKeystroke = featureData.get(DatabaseHelper.COL_KEYSTROKE) == 1;
         boolean useKeystrokeDurations = featureData.get(DatabaseHelper.COL_KEYSTROKE_DURATIONS) == 1;
         boolean useKeystrokeIntervals = featureData.get(DatabaseHelper.COL_KEYSTROKE_INTERVALS) == 1;
+
+        boolean useSignature = featureData.get(DatabaseHelper.COL_SIGNATURE) == 1;
+        boolean useSignatureStartEndPos = featureData.get(DatabaseHelper.COL_SIGNATURE_START_END_POS) == 1;
+        boolean useSignatureVelocity =  featureData.get(DatabaseHelper.COL_SIGNATURE) == 1;
+        boolean useSignatureShape = featureData.get(DatabaseHelper.COL_SIGNATURE_SHAPE) == 1;
 
         ArrayList<Attribute> attributes = new ArrayList<>();
 
@@ -1314,6 +1427,32 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     attributes.add(new Attribute(LOWER_UNDERSCORE.to(LOWER_CAMEL, DatabaseHelper.COL_KEYSTROKE_INTERVALS) + "_" + i));
                     attributes.add(new Attribute(LOWER_UNDERSCORE.to(LOWER_CAMEL, DatabaseHelper.COL_KEYSTROKE_START_INTERVALS) + "_" + i));
                     attributes.add(new Attribute(LOWER_UNDERSCORE.to(LOWER_CAMEL, DatabaseHelper.COL_KEYSTROKE_END_INTERVALS) + "_" + i));
+                }
+            }
+        }
+        if(useSignature && (modelType == DatabaseHelper.ModelType.SIGNATURE || modelType == DatabaseHelper.ModelType.FULL)) {
+            if(useSignatureStartEndPos) {
+                attributes.add(new Attribute(DatabaseHelper.COL_SIGNATURE_START_X));
+                attributes.add(new Attribute(DatabaseHelper.COL_SIGNATURE_START_Y));
+                attributes.add(new Attribute(DatabaseHelper.COL_SIGNATURE_END_X));
+                attributes.add(new Attribute(DatabaseHelper.COL_SIGNATURE_END_Y));
+                attributes.add(new Attribute(DatabaseHelper.COL_SIGNATURE_STD_X));
+                attributes.add(new Attribute(DatabaseHelper.COL_SIGNATURE_STD_Y));
+                attributes.add(new Attribute(DatabaseHelper.COL_SIGNATURE_DIFF_X));
+                attributes.add(new Attribute(DatabaseHelper.COL_SIGNATURE_DIFF_Y));
+                attributes.add(new Attribute(DatabaseHelper.COL_SIGNATURE_EUCLIDEAN_DISTANCE));
+            }
+            if(useSignatureVelocity) {
+                attributes.add(new Attribute(DatabaseHelper.COL_SIGNATURE_AVG_X_VELOCITY));
+                attributes.add(new Attribute(DatabaseHelper.COL_SIGNATURE_AVG_Y_VELOCITY));
+                attributes.add(new Attribute(DatabaseHelper.COL_SIGNATURE_MAX_X_VELOCITY));
+                attributes.add(new Attribute(DatabaseHelper.COL_SIGNATURE_MAX_Y_VELOCITY));
+            }
+            if(useSignatureShape) {
+                for(String dimension : new String[]{"x", "y"}) {
+                    for(int i = 0; i < dbHelper.getFeatureData().get(DatabaseHelper.COL_SIGNATURE_SHAPE_SEGMENTS); i++) {
+                        attributes.add(new Attribute("signature_segments_" + dimension + "_" + i));
+                    }
                 }
             }
         }

@@ -10,6 +10,24 @@
         android:layout_height="wrap_content"
         android:background="#00FFFFFF">
 
+        <CheckBox
+            android:id="@+id/signatureShapeCheckBox"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:text="Shape"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/signatureVelocityCheckBox" />
+
+        <CheckBox
+            android:id="@+id/signatureVelocityCheckBox"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:text="Velocity"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/signatureStartEndPosCheckBox" />
+
         <TextView
             android:id="@+id/keystrokeTitleTextView"
             android:layout_width="wrap_content"
@@ -21,7 +39,20 @@
             android:textSize="16sp"
             android:textStyle="bold"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/swipeVelocityCheckBox" />
+            app:layout_constraintTop_toBottomOf="@+id/orientationCheckBox" />
+
+        <TextView
+            android:id="@+id/signatureTitleTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:layout_marginTop="14dp"
+            android:text="Signature"
+            android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/keystrokeIntervalsCheckBox" />
 
         <TextView
             android:id="@+id/nicknameTextView"
@@ -57,7 +88,7 @@
             android:textSize="16sp"
             android:textStyle="bold"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/descTextView" />
+            app:layout_constraintTop_toBottomOf="@+id/swipeVelocityCheckBox" />
 
         <TextView
             android:id="@+id/swipeTitleTextView"
@@ -70,7 +101,7 @@
             android:textSize="16sp"
             android:textStyle="bold"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/orientationCheckBox" />
+            app:layout_constraintTop_toBottomOf="@+id/descTextView" />
 
         <TextView
             android:id="@+id/holdDescTextView"
@@ -91,6 +122,15 @@
             android:text="Nr. of segments:"
             app:layout_constraintStart_toEndOf="@+id/swipeShapeCheckBox"
             app:layout_constraintTop_toBottomOf="@+id/swipeDurationCheckBox" />
+
+        <TextView
+            android:id="@+id/signatureSegmentTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:text="Nr. of segments:"
+            app:layout_constraintStart_toEndOf="@+id/signatureVelocityCheckBox"
+            tools:layout_editor_absoluteY="914dp" />
 
         <TextView
             android:id="@+id/keystrokeLengthTextView"
@@ -131,6 +171,16 @@
             android:text="Enable numpad"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/keystrokeTitleTextView" />
+
+        <CheckBox
+            android:id="@+id/signatureCheckBox"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:layout_marginTop="14dp"
+            android:text="Enable signature"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/signatureTitleTextView" />
 
         <CheckBox
             android:id="@+id/keystrokeDurationsCheckBox"
@@ -178,6 +228,16 @@
             android:text="Start/End position"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/swipeTouchSizeCheckBox" />
+
+        <CheckBox
+            android:id="@+id/signatureStartEndPosCheckBox"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:layout_marginTop="14dp"
+            android:text="Start/End position"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/signatureDescTextView" />
 
         <CheckBox
             android:id="@+id/swipeVelocityCheckBox"
@@ -237,7 +297,7 @@
             android:text="Cancel"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/keystrokeIntervalsCheckBox" />
+            app:layout_constraintTop_toBottomOf="@+id/signatureShapeCheckBox" />
 
         <Spinner
             android:id="@+id/swipeSegmentsSpinner"
@@ -245,6 +305,13 @@
             android:layout_height="wrap_content"
             app:layout_constraintStart_toEndOf="@+id/swipeSegmentTextView"
             app:layout_constraintTop_toBottomOf="@+id/swipeDurationCheckBox" />
+
+        <Spinner
+            android:id="@+id/signatureSegmentsSpinner"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintStart_toEndOf="@+id/signatureSegmentTextView"
+            app:layout_constraintTop_toBottomOf="@+id/signatureVelocityCheckBox" />
 
         <Spinner
             android:id="@+id/keystrokeLengthSpinner"
@@ -263,6 +330,16 @@
             android:text="Features gathered from keystrokes"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/keystrokeCheckBox" />
+
+        <TextView
+            android:id="@+id/signatureDescTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:layout_marginTop="14dp"
+            android:text="Features gathered from signature"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/signatureCheckBox" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>

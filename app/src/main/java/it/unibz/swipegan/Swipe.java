@@ -92,16 +92,37 @@ public class Swipe {
     private double[] keystrokeEndIntervals;
     private double keystrokeFullDuration = -1;
 
+    //Signature features
+    private double signatureStartX;
+    private double signatureStartY;
+    private double signatureEndX;
+    private double signatureEndY;
+    private double signatureStdX;
+    private double signatureStdY;
+    private double signatureDiffX;
+    private double signatureDiffY;
+    private double signatureEuclideanDistance;
+    private double signatureAvgXVelocity;
+    private double signatureAvgYVelocity;
+    private double signatureMaxXVelocity;
+    private double signatureMaxYVelocity;
+    private double[] signatureSegmentsX;
+    private double[] signatureSegmentsY;
+
     private double holdingPosition;
     private String userId;
 
     // Test swipe features
     private double authenticationHold = 0.0;
     private double authenticationSwipe = 0.0;
+    private double authenticationKeystroke = 0.0;
+    private double authenticationSignature = 0.0;
     private double authenticationFull = 0.0;
 
     private double authenticationTimeHold = 0.0;
     private double authenticationTimeSwipe = 0.0;
+    private double authenticationTimeKeystroke = 0.0;
+    private double authenticationTimeSignature = 0.0;
     private double authenticationTimeFull = 0.0;
 
     private int classifierSamples = 0;
@@ -730,6 +751,126 @@ public class Swipe {
         this.keystrokeFullDuration = keystrokeFullDuration;
     }
 
+    public double getSignatureStartX() {
+        return signatureStartX;
+    }
+
+    public void setSignatureStartX(double signatureStartX) {
+        this.signatureStartX = signatureStartX;
+    }
+
+    public double getSignatureStartY() {
+        return signatureStartY;
+    }
+
+    public void setSignatureStartY(double signatureStartY) {
+        this.signatureStartY = signatureStartY;
+    }
+
+    public double getSignatureEndX() {
+        return signatureEndX;
+    }
+
+    public void setSignatureEndX(double signatureEndX) {
+        this.signatureEndX = signatureEndX;
+    }
+
+    public double getSignatureEndY() {
+        return signatureEndY;
+    }
+
+    public void setSignatureEndY(double signatureEndY) {
+        this.signatureEndY = signatureEndY;
+    }
+
+    public double getSignatureStdX() {
+        return signatureStdX;
+    }
+
+    public void setSignatureStdX(double signatureStdX) {
+        this.signatureStdX = signatureStdX;
+    }
+
+    public double getSignatureStdY() {
+        return signatureStdY;
+    }
+
+    public void setSignatureStdY(double signatureStdY) {
+        this.signatureStdY = signatureStdY;
+    }
+
+    public double getSignatureDiffX() {
+        return signatureDiffX;
+    }
+
+    public void setSignatureDiffX(double signatureDiffX) {
+        this.signatureDiffX = signatureDiffX;
+    }
+
+    public double getSignatureDiffY() {
+        return signatureDiffY;
+    }
+
+    public void setSignatureDiffY(double signatureDiffY) {
+        this.signatureDiffY = signatureDiffY;
+    }
+
+    public double getSignatureEuclideanDistance() {
+        return signatureEuclideanDistance;
+    }
+
+    public void setSignatureEuclideanDistance(double signatureEuclideanDistance) {
+        this.signatureEuclideanDistance = signatureEuclideanDistance;
+    }
+
+    public double getSignatureAvgXVelocity() {
+        return signatureAvgXVelocity;
+    }
+
+    public void setSignatureAvgXVelocity(double signatureAvgXVelocity) {
+        this.signatureAvgXVelocity = signatureAvgXVelocity;
+    }
+
+    public double getSignatureAvgYVelocity() {
+        return signatureAvgYVelocity;
+    }
+
+    public void setSignatureAvgYVelocity(double signatureAvgYVelocity) {
+        this.signatureAvgYVelocity = signatureAvgYVelocity;
+    }
+
+    public double getSignatureMaxXVelocity() {
+        return signatureMaxXVelocity;
+    }
+
+    public void setSignatureMaxXVelocity(double signatureMaxXVelocity) {
+        this.signatureMaxXVelocity = signatureMaxXVelocity;
+    }
+
+    public double getSignatureMaxYVelocity() {
+        return signatureMaxYVelocity;
+    }
+
+    public void setSignatureMaxYVelocity(double signatureMaxYVelocity) {
+        this.signatureMaxYVelocity = signatureMaxYVelocity;
+    }
+
+    public double[] getSignatureSegmentsX() {
+        return signatureSegmentsX;
+    }
+
+    public void setSignatureSegmentsX(double[] signatureSegmentsX) {
+        this.signatureSegmentsX = signatureSegmentsX;
+    }
+
+    public double[] getSignatureSegmentsY() {
+        return signatureSegmentsY;
+    }
+
+    public void setSignatureSegmentsY(double[] signatureSegmentsY) {
+        this.signatureSegmentsY = signatureSegmentsY;
+    }
+
     public double getHoldingPosition() {
         return holdingPosition;
     }
@@ -751,6 +892,10 @@ public class Swipe {
             return authenticationHold;
         } else if(modelType == DatabaseHelper.ModelType.SWIPE) {
             return authenticationSwipe;
+        } else if(modelType == DatabaseHelper.ModelType.KEYSTROKE) {
+            return authenticationKeystroke;
+        } else if(modelType == DatabaseHelper.ModelType.SIGNATURE) {
+            return authenticationSignature;
         } else {
             return authenticationFull;
         }
@@ -761,6 +906,10 @@ public class Swipe {
             this.authenticationHold = authentication;
         } else if(modelType == DatabaseHelper.ModelType.SWIPE) {
             this.authenticationSwipe = authentication;
+        } else if(modelType == DatabaseHelper.ModelType.KEYSTROKE) {
+            this.authenticationKeystroke = authentication;
+        } else if(modelType == DatabaseHelper.ModelType.SIGNATURE) {
+            this.authenticationSignature = authentication;
         } else {
             this.authenticationFull = authentication;
         }
@@ -771,6 +920,10 @@ public class Swipe {
             return authenticationTimeHold;
         } else if(modelType == DatabaseHelper.ModelType.SWIPE) {
             return authenticationTimeSwipe;
+        } else if(modelType == DatabaseHelper.ModelType.KEYSTROKE) {
+            return authenticationTimeKeystroke;
+        } else if(modelType == DatabaseHelper.ModelType.SIGNATURE) {
+            return authenticationTimeSignature;
         } else {
             return authenticationTimeFull;
         }
@@ -781,6 +934,10 @@ public class Swipe {
             this.authenticationTimeHold = authenticationTime;
         } else if(modelType == DatabaseHelper.ModelType.SWIPE) {
             this.authenticationTimeSwipe = authenticationTime;
+        } else if(modelType == DatabaseHelper.ModelType.KEYSTROKE) {
+            this.authenticationTimeKeystroke = authenticationTime;
+        } else if(modelType == DatabaseHelper.ModelType.SIGNATURE) {
+            this.authenticationTimeSignature = authenticationTime;
         } else {
             this.authenticationTimeFull = authenticationTime;
         }
@@ -876,6 +1033,31 @@ public class Swipe {
                     e.printStackTrace();
                 }
             }
+
+            for(String signature_feature : DatabaseHelper.signature_features) {
+                String min_key = "MIN_" + signature_feature.toUpperCase();
+                String max_key = "MAX_" + signature_feature.toUpperCase();
+
+                java.lang.reflect.Method cur_method = null;
+                try {
+                    cur_method = swipe.getClass().getMethod("get" + signature_feature.substring(0, 1).toUpperCase() + LOWER_UNDERSCORE.to(LOWER_CAMEL, signature_feature.substring(1)));
+
+                    if(signature_feature == DatabaseHelper.COL_SIGNATURE_SEGMENTS_X || signature_feature == DatabaseHelper.COL_SIGNATURE_SEGMENTS_Y) {
+                        double[] segment_vals = (double[]) cur_method.invoke(swipe);
+
+                        for(int i = 0; i < segment_vals.length; i++) {
+                            map.put(min_key + "_" + i, map.get(min_key + "_" + i) == null || segment_vals[i] < map.get(min_key + "_" + i) ? segment_vals[i] : map.get(min_key + "_" + i));
+                            map.put(max_key + "_" + i, map.get(max_key + "_" + i) == null || segment_vals[i] > map.get(max_key + "_" + i) ? segment_vals[i] : map.get(max_key + "_" + i));
+                        }
+                    } else {
+                        Double cur_value = (Double) cur_method.invoke(swipe);
+                        map.put(min_key, map.get(min_key) == null || cur_value < map.get(min_key) ? cur_value : map.get(min_key));
+                        map.put(max_key, map.get(max_key) == null || cur_value > map.get(max_key) ? cur_value : map.get(max_key));
+                    }
+                } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+                    e.printStackTrace();
+                }
+            }
         }
 
         return map;
@@ -956,6 +1138,29 @@ public class Swipe {
             }
         }
 
+        for(String signature_feature : DatabaseHelper.signature_features) {
+            String min_key = "MIN_" + signature_feature.toUpperCase();
+            String max_key = "MAX_" + signature_feature.toUpperCase();
+
+            java.lang.reflect.Method cur_method = null;
+            try {
+                cur_method = this.getClass().getMethod("get" + signature_feature.substring(0, 1).toUpperCase() + LOWER_UNDERSCORE.to(LOWER_CAMEL, signature_feature.substring(1)));
+
+                if(signature_feature == DatabaseHelper.COL_SIGNATURE_SEGMENTS_X || signature_feature == DatabaseHelper.COL_SIGNATURE_SEGMENTS_Y) {
+                    double[] segment_vals = (double[]) cur_method.invoke(this);
+
+                    for(int i = 0; i < segment_vals.length; i++) {
+                        ret.add((segment_vals[i] - map.get(min_key + "_" + i)) / (map.get(max_key + "_" + i) - map.get(min_key + "_" + i)));
+                    }
+                } else {
+                    Double cur_value = (Double) cur_method.invoke(this);
+                    ret.add((cur_value - map.get(min_key)) / (map.get(max_key) - map.get(min_key)));
+                }
+            } catch (IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
+                e.printStackTrace();
+            }
+        }
+
         double[] retArray = new double[ret.size()];
         for(int i =0 ; i < ret.size(); i++) {
             if(Double.isNaN(ret.get(i))) {
@@ -981,7 +1186,7 @@ public class Swipe {
                 if(head_feature == DatabaseHelper.COL_SEGMENTS_X || head_feature == DatabaseHelper.COL_SEGMENTS_Y) {
                     Integer segments_size = map.entrySet()
                             .stream()
-                            .filter(x -> x.getKey().contains(head_feature.toUpperCase()))
+                            .filter(x -> x.getKey().startsWith(head_feature.toUpperCase(), 4)) // Offset for prefix MIN_ / MAX_
                             .collect(Collectors.toMap(x -> x.getKey(), x -> x.getValue())).size() / 2;
 
                     double[] normalized_segments = new double[segments_size];
@@ -1048,6 +1253,36 @@ public class Swipe {
                         cur_method = swipe.getClass().getMethod("set" + keystroke_feature.substring(0, 1).toUpperCase() + LOWER_UNDERSCORE.to(LOWER_CAMEL, keystroke_feature.substring(1)), double[].class);
                         cur_method.invoke(swipe, normalized_keystroke);
                     }
+                }
+            } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+                e.printStackTrace();
+            }
+        }
+
+        for(String signature_feature : DatabaseHelper.signature_features) {
+            String min_key = "MIN_" + signature_feature.toUpperCase();
+            String max_key = "MAX_" + signature_feature.toUpperCase();
+
+            Method cur_method = null;
+            try {
+                if(signature_feature == DatabaseHelper.COL_SIGNATURE_SEGMENTS_X || signature_feature == DatabaseHelper.COL_SIGNATURE_SEGMENTS_Y) {
+                    Integer segments_size = map.entrySet()
+                            .stream()
+                            .filter(x -> x.getKey().contains(signature_feature.toUpperCase()))
+                            .collect(Collectors.toMap(x -> x.getKey(), x -> x.getValue())).size() / 2;
+
+                    double[] normalized_segments = new double[segments_size];
+                    for(int i = 0; i < segments_size; i++) {
+                        normalized_segments[i] = values[values_idx] * (map.get(max_key + "_" + i) - map.get(min_key + "_" + i)) + map.get(min_key + "_" + i);
+                        values_idx = values_idx + 1;
+                    }
+
+                    cur_method = swipe.getClass().getMethod("set" + signature_feature.substring(0, 1).toUpperCase() + LOWER_UNDERSCORE.to(LOWER_CAMEL, signature_feature.substring(1)), double[].class);
+                    cur_method.invoke(swipe, normalized_segments);
+                } else {
+                    cur_method = swipe.getClass().getMethod("set" + signature_feature.substring(0, 1).toUpperCase() + LOWER_UNDERSCORE.to(LOWER_CAMEL, signature_feature.substring(1)), double.class);
+                    cur_method.invoke(swipe, values[values_idx] * (map.get(max_key) - map.get(min_key)) + map.get(min_key));
+                    values_idx = values_idx + 1;
                 }
             } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
                 e.printStackTrace();
@@ -1131,11 +1366,26 @@ public class Swipe {
                 "\n avgZOrientation=" + avgZOrientation +
                 "\n stdZOrientation=" + stdZOrientation +
                 "\n varZOrientation=" + varZOrientation +
-                "\n keystrokeDurations=" + keystrokeDurations +
-                "\n keystrokeIntervals=" + keystrokeIntervals +
-                "\n keystrokeStartIntervals=" + keystrokeStartIntervals +
-                "\n keystrokeEndIntervals=" + keystrokeEndIntervals +
+                "\n keystrokeDurations=" + Arrays.toString(keystrokeDurations) +
+                "\n keystrokeIntervals=" + Arrays.toString(keystrokeIntervals) +
+                "\n keystrokeStartIntervals=" + Arrays.toString(keystrokeStartIntervals) +
+                "\n keystrokeEndIntervals=" + Arrays.toString(keystrokeEndIntervals) +
                 "\n keystrokeFullDuration=" + keystrokeFullDuration +
+                "\n signatureStartX" + signatureStartX +
+                "\n signatureStartY" + signatureStartY +
+                "\n signatureEndX" + signatureEndX +
+                "\n signatureEndY" + signatureEndY +
+                "\n signatureStdX" + signatureStdX +
+                "\n signatureStdY" + signatureStdY +
+                "\n signatureDiffX" + signatureDiffX +
+                "\n signatureDiffY" + signatureDiffY +
+                "\n signatureEuclideanDistance" + signatureEuclideanDistance +
+                "\n signatureAvgXVelocity" + signatureAvgXVelocity +
+                "\n signatureAvgYVelocity" + signatureAvgYVelocity +
+                "\n signatureMaxXVelocity" + signatureMaxXVelocity +
+                "\n signatureMaxYVelocity" + signatureMaxYVelocity +
+                "\n signatureSegmentsX" + Arrays.toString(signatureSegmentsX) +
+                "\n signatureSegmentsY" + Arrays.toString(signatureSegmentsY) +
                 "\n holdingPosition=" + holdingPosition +
                 "\n userId=" + userId +
                 '}';
@@ -1146,14 +1396,21 @@ public class Swipe {
         boolean useAcceleration = featureData.get(DatabaseHelper.COL_ACCELERATION) == 1;
         boolean useAngularVelocity = featureData.get(DatabaseHelper.COL_ANGULAR_VELOCITY) == 1;
         boolean useOrientation = featureData.get(DatabaseHelper.COL_ORIENTATION) == 1;
+
         boolean useSwipeDuration = featureData.get(DatabaseHelper.COL_SWIPE_DURATION) == 1;
         boolean useSwipeShape = featureData.get(DatabaseHelper.COL_SWIPE_SHAPE) == 1;
         boolean useSwipeSize = featureData.get(DatabaseHelper.COL_SWIPE_TOUCH_SIZE) == 1;
         boolean useSwipeStartEndPos = featureData.get(DatabaseHelper.COL_SWIPE_START_END_POS) == 1;
         boolean useSwipeVelocity = featureData.get(DatabaseHelper.COL_SWIPE_VELOCITY) == 1;
+
         boolean useKeystroke = featureData.get(DatabaseHelper.COL_KEYSTROKE) == 1;
         boolean useKeystrokeDurations = featureData.get(DatabaseHelper.COL_KEYSTROKE_DURATIONS) == 1;
         boolean useKeystrokeIntervals = featureData.get(DatabaseHelper.COL_KEYSTROKE_INTERVALS) == 1;
+
+        boolean useSignature = featureData.get(DatabaseHelper.COL_SIGNATURE) == 1;
+        boolean useSignatureStartEndPos = featureData.get(DatabaseHelper.COL_SIGNATURE_START_END_POS) == 1;
+        boolean useSignatureVelocity =  featureData.get(DatabaseHelper.COL_SIGNATURE) == 1;
+        boolean useSignatureShape = featureData.get(DatabaseHelper.COL_SIGNATURE_SHAPE) == 1;
 
         ArrayList<Double> featureSet = new ArrayList<>();
 
@@ -1249,12 +1506,37 @@ public class Swipe {
             if(useKeystroke) {
                 if(useKeystrokeDurations) {
                     for(Double keystrokeDuration : this.getKeystrokeDurations()) { featureSet.add(keystrokeDuration); }
-                    featureSet.add(keystrokeFullDuration);
+                    featureSet.add(this.getKeystrokeFullDuration());
                 }
                 if(useKeystrokeIntervals) {
                     for(Double keystrokeInterval : this.getKeystrokeIntervals()) { featureSet.add(keystrokeInterval); }
                     for(Double keystrokeStartInterval : this.getKeystrokeStartIntervals()) { featureSet.add(keystrokeStartInterval); }
                     for(Double keystrokeEndInterval : this.getKeystrokeEndIntervals()) { featureSet.add(keystrokeEndInterval); }
+                }
+            }
+        }
+        if(modelType == DatabaseHelper.ModelType.SIGNATURE || modelType == DatabaseHelper.ModelType.FULL) {
+            if (useSignature) {
+                if(useSignatureStartEndPos) {
+                    featureSet.add(this.getSignatureStartX());
+                    featureSet.add(this.getSignatureStartY());
+                    featureSet.add(this.getSignatureEndX());
+                    featureSet.add(this.getSignatureEndY());
+                    featureSet.add(this.getSignatureStdX());
+                    featureSet.add(this.getSignatureStdY());
+                    featureSet.add(this.getSignatureDiffX());
+                    featureSet.add(this.getSignatureDiffY());
+                    featureSet.add(this.getSignatureEuclideanDistance());
+                }
+                if(useSignatureVelocity) {
+                    featureSet.add(this.getSignatureAvgXVelocity());
+                    featureSet.add(this.getSignatureAvgYVelocity());
+                    featureSet.add(this.getSignatureMaxXVelocity());
+                    featureSet.add(this.getSignatureMaxYVelocity());
+                }
+                if(useSignatureShape) {
+                    for(Double signatureSegmentX : this.getSignatureSegmentsX()) { featureSet.add(signatureSegmentX); }
+                    for(Double signatureSegmentY : this.getSignatureSegmentsY()) { featureSet.add(signatureSegmentY); }
                 }
             }
         }
