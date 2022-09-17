@@ -8,6 +8,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -901,17 +902,19 @@ public class Swipe {
         }
     }
 
-    public void setAuthentication(double authentication, DatabaseHelper.ModelType modelType) {
-        if (modelType == DatabaseHelper.ModelType.HOLD) {
-            this.authenticationHold = authentication;
-        } else if(modelType == DatabaseHelper.ModelType.SWIPE) {
-            this.authenticationSwipe = authentication;
-        } else if(modelType == DatabaseHelper.ModelType.KEYSTROKE) {
-            this.authenticationKeystroke = authentication;
-        } else if(modelType == DatabaseHelper.ModelType.SIGNATURE) {
-            this.authenticationSignature = authentication;
-        } else {
-            this.authenticationFull = authentication;
+    public void setAuthentication(double authentication, List<DatabaseHelper.ModelType> modelType) {
+        if(modelType.size() == 1) {
+            if (modelType.contains(DatabaseHelper.ModelType.HOLD)) {
+                this.authenticationHold = authentication;
+            } else if (modelType.contains(DatabaseHelper.ModelType.SWIPE)) {
+                this.authenticationSwipe = authentication;
+            } else if (modelType.contains(DatabaseHelper.ModelType.KEYSTROKE)) {
+                this.authenticationKeystroke = authentication;
+            } else if (modelType.contains(DatabaseHelper.ModelType.SIGNATURE)) {
+                this.authenticationSignature = authentication;
+            } else {
+                this.authenticationFull = authentication;
+            }
         }
     }
 
@@ -929,17 +932,19 @@ public class Swipe {
         }
     }
 
-    public void setAuthenticationTime(double authenticationTime, DatabaseHelper.ModelType modelType) {
-        if (modelType == DatabaseHelper.ModelType.HOLD) {
-            this.authenticationTimeHold = authenticationTime;
-        } else if(modelType == DatabaseHelper.ModelType.SWIPE) {
-            this.authenticationTimeSwipe = authenticationTime;
-        } else if(modelType == DatabaseHelper.ModelType.KEYSTROKE) {
-            this.authenticationTimeKeystroke = authenticationTime;
-        } else if(modelType == DatabaseHelper.ModelType.SIGNATURE) {
-            this.authenticationTimeSignature = authenticationTime;
-        } else {
-            this.authenticationTimeFull = authenticationTime;
+    public void setAuthenticationTime(double authenticationTime, List<DatabaseHelper.ModelType> modelType) {
+        if(modelType.size() == 1) {
+            if (modelType.contains(DatabaseHelper.ModelType.HOLD)) {
+                this.authenticationTimeHold = authenticationTime;
+            } else if (modelType.contains(DatabaseHelper.ModelType.SWIPE)) {
+                this.authenticationTimeSwipe = authenticationTime;
+            } else if (modelType.contains(DatabaseHelper.ModelType.KEYSTROKE)) {
+                this.authenticationTimeKeystroke = authenticationTime;
+            } else if (modelType.contains(DatabaseHelper.ModelType.SIGNATURE)) {
+                this.authenticationTimeSignature = authenticationTime;
+            } else {
+                this.authenticationTimeFull = authenticationTime;
+            }
         }
     }
 
@@ -1391,7 +1396,7 @@ public class Swipe {
                 '}';
     }
 
-    public Instance getAsWekaInstance(Instances dataSet, boolean isTrainInstance, DatabaseHelper dbHelper, DatabaseHelper.ModelType modelType) {
+    public Instance getAsWekaInstance(Instances dataSet, boolean isTrainInstance, DatabaseHelper dbHelper, List<DatabaseHelper.ModelType> trainingModel) {
         Map<String, Integer> featureData = dbHelper.getFeatureData();
         boolean useAcceleration = featureData.get(DatabaseHelper.COL_ACCELERATION) == 1;
         boolean useAngularVelocity = featureData.get(DatabaseHelper.COL_ANGULAR_VELOCITY) == 1;
@@ -1414,7 +1419,7 @@ public class Swipe {
 
         ArrayList<Double> featureSet = new ArrayList<>();
 
-        if(modelType == DatabaseHelper.ModelType.SWIPE || modelType == DatabaseHelper.ModelType.FULL) {
+        if(trainingModel.contains(DatabaseHelper.ModelType.SWIPE) || trainingModel.contains(DatabaseHelper.ModelType.FULL)) {
             if (useSwipeDuration) {
                 featureSet.add(this.getDuration());
             }
@@ -1449,7 +1454,7 @@ public class Swipe {
                 featureSet.add(this.getVarYVelocity());
             }
         }
-        if(modelType == DatabaseHelper.ModelType.HOLD || modelType == DatabaseHelper.ModelType.FULL) {
+        if(trainingModel.contains(DatabaseHelper.ModelType.HOLD) || trainingModel.contains(DatabaseHelper.ModelType.FULL)) {
             if (useAcceleration) {
                 featureSet.add(this.getMinXAccelerometer());
                 featureSet.add(this.getMaxXAccelerometer());
@@ -1502,7 +1507,7 @@ public class Swipe {
                 featureSet.add(this.getVarZOrientation());
             }
         }
-        if(modelType == DatabaseHelper.ModelType.KEYSTROKE || modelType == DatabaseHelper.ModelType.FULL) {
+        if(trainingModel.contains(DatabaseHelper.ModelType.KEYSTROKE) || trainingModel.contains(DatabaseHelper.ModelType.FULL)) {
             if(useKeystroke) {
                 if(useKeystrokeDurations) {
                     for(Double keystrokeDuration : this.getKeystrokeDurations()) { featureSet.add(keystrokeDuration); }
@@ -1515,7 +1520,7 @@ public class Swipe {
                 }
             }
         }
-        if(modelType == DatabaseHelper.ModelType.SIGNATURE || modelType == DatabaseHelper.ModelType.FULL) {
+        if(trainingModel.contains(DatabaseHelper.ModelType.SIGNATURE) || trainingModel.contains(DatabaseHelper.ModelType.FULL)) {
             if (useSignature) {
                 if(useSignatureStartEndPos) {
                     featureSet.add(this.getSignatureStartX());

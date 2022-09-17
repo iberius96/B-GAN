@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -97,6 +98,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public static final String COL_HOLDING_HAND = "holding_hand";
 
     // Feature data columns
+    public static final String COL_MODELS_COMBINATIONS = "models_combinations";
     public static final String COL_ACCELERATION = "acceleration";
     public static final String COL_ANGULAR_VELOCITY = "angular_velocity";
     public static final String COL_ORIENTATION = "orientation";
@@ -180,13 +182,19 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         COL_SIGNATURE_SEGMENTS_X, COL_SIGNATURE_SEGMENTS_Y
     };
 
-    public static enum ModelType {
+    public enum ModelType {
         HOLD,
         SWIPE,
         KEYSTROKE,
         SIGNATURE,
         FULL
     };
+
+    public enum ModelsCombinations {
+        FULL,
+        INDIVIDUAL_FULL,
+        ALL
+    }
 
     public static final Integer BASE_FEATURES = 66; // TODO: Change this hardcoded value
     public static final Integer DEFAULT_SEGMENTS = 10;
@@ -248,6 +256,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         String createFeatureDataTable = "CREATE TABLE " + FEATURE_DATA
                 + " (id INTEGER PRIMARY KEY AUTOINCREMENT, "
+                + COL_MODELS_COMBINATIONS + " integer(1), "
                 + COL_ACCELERATION + " integer(1), "
                 + COL_ANGULAR_VELOCITY + " integer(1), "
                 + COL_ORIENTATION + " integer(1), "
@@ -315,13 +324,16 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             ContentValues contentValues = new ContentValues();
 
             String[] feature_cols = {
+                    COL_MODELS_COMBINATIONS,
                     COL_ACCELERATION, COL_ANGULAR_VELOCITY, COL_ORIENTATION,
                     COL_SWIPE_DURATION, COL_SWIPE_SHAPE, COL_SWIPE_SHAPE_SEGMENTS, COL_SWIPE_TOUCH_SIZE, COL_SWIPE_START_END_POS, COL_SWIPE_VELOCITY,
                     COL_KEYSTROKE, COL_PIN_LENGTH, COL_KEYSTROKE_DURATIONS, COL_KEYSTROKE_INTERVALS,
                     COL_SIGNATURE, COL_SIGNATURE_START_END_POS, COL_SIGNATURE_VELOCITY, COL_SIGNATURE_SHAPE, COL_SIGNATURE_SHAPE_SEGMENTS};
 
             for(String feature_col : feature_cols) {
-                if (feature_col == COL_SWIPE_SHAPE_SEGMENTS || feature_col == COL_SIGNATURE_SHAPE_SEGMENTS) {
+                if(feature_col == COL_MODELS_COMBINATIONS) {
+                    contentValues.put(feature_col, ModelsCombinations.INDIVIDUAL_FULL.ordinal());
+                } else if (feature_col == COL_SWIPE_SHAPE_SEGMENTS || feature_col == COL_SIGNATURE_SHAPE_SEGMENTS) {
                     contentValues.put(feature_col, DEFAULT_SEGMENTS);
                 } else if(feature_col == COL_PIN_LENGTH) {
                     contentValues.put(feature_col, DEFAULT_PIN_LENGTH);
@@ -796,7 +808,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL("DELETE FROM " + REAL_RESULTS);
     }
 
-    public boolean saveRealResults(double instances, double TAR, double FRR, double avgSampleTime, double trainingTime, int classifierSamples, ModelType modelType) {
+    public boolean saveRealResults(double instances, double TAR, double FRR, double avgSampleTime, double trainingTime, int classifierSamples, List<ModelType> trainingModel) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
 
@@ -806,14 +818,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         contentValues.put(COL_AVG_SAMPLE_TIME, avgSampleTime);
         contentValues.put(COL_TRAINING_TIME, trainingTime);
         contentValues.put(COL_CLASSIFIER_SAMPLES, classifierSamples);
-        contentValues.put(COL_MODEL_TYPE, modelType.name());
+        contentValues.put(COL_MODEL_TYPE, trainingModel.toString());
 
         long result = db.insert(REAL_RESULTS, null, contentValues);
         //if inserted incorrectly it will return -1
         return result != -1;
     }
 
-    public boolean saveGANResults(double instances, double TAR, double FRR, double avgSampleTime, double trainingTime, double ganTime, int classifierSamples, ModelType modelType) {
+    public boolean saveGANResults(double instances, double TAR, double FRR, double avgSampleTime, double trainingTime, double ganTime, int classifierSamples, List<ModelType> trainingModel) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
 
@@ -824,14 +836,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         contentValues.put(COL_TRAINING_TIME, trainingTime);
         contentValues.put(COL_GAN_TIME, ganTime);
         contentValues.put(COL_CLASSIFIER_SAMPLES, classifierSamples);
-        contentValues.put(COL_MODEL_TYPE, modelType.name());
+        contentValues.put(COL_MODEL_TYPE, trainingModel.toString());
 
         long result = db.insert(GAN_RESULTS, null, contentValues);
         //if inserted incorrectly it will return -1
         return result != -1;
     }
 
-    public boolean saveTestResults(double instances, double TAR, double FRR, double TRR, double FAR, double avgSampleTime, double avgTestTime, int classifierSamples, ModelType modelType) {
+    public boolean saveTestResults(double instances, double TAR, double FRR, double TRR, double FAR, double avgSampleTime, double avgTestTime, int classifierSamples, List<ModelType> trainingModel) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
 
@@ -843,7 +855,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         contentValues.put(COL_AVG_SAMPLE_TIME, avgSampleTime);
         contentValues.put(COL_AVG_TEST_TIME, avgTestTime);
         contentValues.put(COL_CLASSIFIER_SAMPLES, classifierSamples);
-        contentValues.put(COL_MODEL_TYPE, modelType.name());
+        contentValues.put(COL_MODEL_TYPE, trainingModel.toString());
 
         long result = db.insert(TEST_RESULTS, null, contentValues);
         //if inserted incorrectly it will return -1
@@ -887,6 +899,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     public boolean saveFeatureData(
+            int models_combinations,
             int acceleration, int angular_velocity, int orientation,
             int swipe_duration, int swipe_shape, int swipe_shape_segments, int swipe_touch_size, int swipe_start_end_pos, int swipe_velocity,
             int keystroke, int pin_length, int keystroke_durations, int keystroke_intervals,
@@ -896,6 +909,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         ContentValues contentValues = new ContentValues();
 
+        contentValues.put(COL_MODELS_COMBINATIONS, models_combinations);
         contentValues.put(COL_ACCELERATION, acceleration);
         contentValues.put(COL_ANGULAR_VELOCITY, angular_velocity);
         contentValues.put(COL_ORIENTATION, orientation);
@@ -928,6 +942,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         Map<String, Integer> featureData = new HashMap<>();
 
+        featureData.put(COL_MODELS_COMBINATIONS, cursor.getInt(cursor.getColumnIndex(COL_MODELS_COMBINATIONS)));
         featureData.put(COL_ACCELERATION, cursor.getInt(cursor.getColumnIndex(COL_ACCELERATION)));
         featureData.put(COL_ANGULAR_VELOCITY, cursor.getInt(cursor.getColumnIndex(COL_ANGULAR_VELOCITY)));
         featureData.put(COL_ORIENTATION, cursor.getInt(cursor.getColumnIndex(COL_ORIENTATION)));
@@ -952,34 +967,38 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return featureData;
     }
 
-    public Integer getEnabledFeatureTypesCount(ModelType model) {
-        Integer ret = 0;
+    public boolean isModelFullyEnabled(List<ModelType> models) {
+        for(ModelType model : models) {
+            Integer feature_count = 0;
 
-        if(model == ModelType.HOLD || model == ModelType.FULL) {
-            ret +=  getFeatureData().get(COL_ACCELERATION) +
-                    getFeatureData().get(COL_ANGULAR_VELOCITY) +
-                    getFeatureData().get(COL_ORIENTATION);
-        }
-        if(model == ModelType.SWIPE || model == ModelType.FULL) {
-            ret +=  getFeatureData().get(COL_SWIPE_DURATION) +
-                    getFeatureData().get(COL_SWIPE_SHAPE) +
-                    getFeatureData().get(COL_SWIPE_TOUCH_SIZE) +
-                    getFeatureData().get(COL_SWIPE_START_END_POS) +
-                    getFeatureData().get(COL_SWIPE_VELOCITY);
-        }
-        if((model == ModelType.KEYSTROKE || model == ModelType.FULL) && getFeatureData().get(COL_KEYSTROKE) == 1) {
-            ret +=  getFeatureData().get(COL_KEYSTROKE_DURATIONS) +
-                    getFeatureData().get(COL_KEYSTROKE_INTERVALS);
-        }
-        if((model == ModelType.SIGNATURE || model == ModelType.FULL) && getFeatureData().get(COL_SIGNATURE) == 1) {
-            ret +=  getFeatureData().get(COL_SIGNATURE) +
-                    getFeatureData().get(COL_SIGNATURE_START_END_POS) +
-                    getFeatureData().get(COL_SIGNATURE_VELOCITY) +
-                    getFeatureData().get(COL_SIGNATURE_SHAPE) +
-                    getFeatureData().get(COL_SIGNATURE_SHAPE_SEGMENTS);
+            if (model == ModelType.HOLD || model == ModelType.FULL) {
+                feature_count += getFeatureData().get(COL_ACCELERATION) +
+                        getFeatureData().get(COL_ANGULAR_VELOCITY) +
+                        getFeatureData().get(COL_ORIENTATION);
+            }
+            if (model == ModelType.SWIPE || model == ModelType.FULL) {
+                feature_count += getFeatureData().get(COL_SWIPE_DURATION) +
+                        getFeatureData().get(COL_SWIPE_SHAPE) +
+                        getFeatureData().get(COL_SWIPE_TOUCH_SIZE) +
+                        getFeatureData().get(COL_SWIPE_START_END_POS) +
+                        getFeatureData().get(COL_SWIPE_VELOCITY);
+            }
+            if ((model == ModelType.KEYSTROKE || model == ModelType.FULL) && getFeatureData().get(COL_KEYSTROKE) == 1) {
+                feature_count += getFeatureData().get(COL_KEYSTROKE_DURATIONS) +
+                        getFeatureData().get(COL_KEYSTROKE_INTERVALS);
+            }
+            if ((model == ModelType.SIGNATURE || model == ModelType.FULL) && getFeatureData().get(COL_SIGNATURE) == 1) {
+                feature_count += getFeatureData().get(COL_SIGNATURE) +
+                        getFeatureData().get(COL_SIGNATURE_START_END_POS) +
+                        getFeatureData().get(COL_SIGNATURE_VELOCITY) +
+                        getFeatureData().get(COL_SIGNATURE_SHAPE) +
+                        getFeatureData().get(COL_SIGNATURE_SHAPE_SEGMENTS);
+            }
+
+            if(feature_count == 0) { return false; }
         }
 
-        return ret;
+        return true;
     }
 
     public boolean saveResourceData(Double[] cpu_temps, Double[] memory_usage, Double power_draw, Double training_time, String model_type) {

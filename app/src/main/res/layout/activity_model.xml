@@ -68,12 +68,22 @@
             app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
-            android:id="@+id/descTextView"
+            android:id="@+id/descFeatureTextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="20dp"
             android:layout_marginTop="14dp"
-            android:text="Select the features used for training the model"
+            android:text="Select the features used for training the models"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/modelDescTextView" />
+
+        <TextView
+            android:id="@+id/modelDescTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:layout_marginTop="20dp"
+            android:text="Select the models to train"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/nicknameTextView" />
 
@@ -101,7 +111,7 @@
             android:textSize="16sp"
             android:textStyle="bold"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/descTextView" />
+            app:layout_constraintTop_toBottomOf="@+id/descFeatureTextView" />
 
         <TextView
             android:id="@+id/holdDescTextView"
@@ -340,6 +350,14 @@
             android:text="Features gathered from signature"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/signatureCheckBox" />
+
+        <Spinner
+            android:id="@+id/modelsSpinner"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="14dp"
+            app:layout_constraintStart_toEndOf="@+id/modelDescTextView"
+            app:layout_constraintTop_toBottomOf="@+id/nicknameTextView" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>

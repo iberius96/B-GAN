@@ -40,6 +40,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
 import com.google.android.material.snackbar.Snackbar;
+import com.google.common.base.Predicate;
+import com.google.common.collect.Collections2;
 
 import java.io.File;
 import java.lang.reflect.Field;
@@ -47,8 +49,10 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.DoubleSummaryStatistics;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
@@ -100,7 +104,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     private DatabaseHelper dbHelper;
 
-    private OneClassClassifier oneClassClassifiers[] = new OneClassClassifier[DatabaseHelper.ModelType.values().length];
+    private OneClassClassifier oneClassClassifiers[];
+    private List<List<DatabaseHelper.ModelType>> trainingModels;
     private GAN gan;
 
     private Button ganButton;
@@ -423,16 +428,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         outputMessage += String.format("%1$-15s %2$-16s %3$-18s", "Inputs", "Prediction", "Test time");
         outputMessage += "\n";
 
-        for(DatabaseHelper.ModelType modelType : DatabaseHelper.ModelType.values()) {
-            if(
-                    (modelType == DatabaseHelper.ModelType.KEYSTROKE && this.dbHelper.getFeatureData().get(DatabaseHelper.COL_KEYSTROKE) == 0) ||
-                    (modelType == DatabaseHelper.ModelType.SIGNATURE && this.dbHelper.getFeatureData().get(DatabaseHelper.COL_SIGNATURE) == 0)
-            ) {
+        for(List<DatabaseHelper.ModelType> model : this.trainingModels) {
+            if(!dbHelper.isModelFullyEnabled(model)) {
                 continue;
             }
 
             long startTime = System.nanoTime();
-            double prediction = this.getPredictionFrom(swipe, modelType);
+            double prediction = this.getPredictionFrom(swipe, model);
             long endTime = System.nanoTime();
             double testingTime = (double) (endTime - startTime) / 1_000_000_000;
 
@@ -445,8 +447,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
             int classifierSamples = this.dbHelper.getRecordsCount("REAL_SWIPES");
 
-            swipe.setAuthentication(authenticationValue, modelType);
-            swipe.setAuthenticationTime(testingTime, modelType);
+            swipe.setAuthentication(authenticationValue, model);
+            swipe.setAuthenticationTime(testingTime, model);
             swipe.setClassifierSamples(classifierSamples);
 
             outputMessage += String.format("%1$-18s", String.format("%02d", classifierSamples));
@@ -454,7 +456,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             outputMessage += String.format("%1$-18s", String.format("%.4f", testingTime));
             outputMessage += "\n";
 
-            if(modelType == DatabaseHelper.ModelType.FULL) {
+            if(model.contains(DatabaseHelper.ModelType.FULL)) {
                 if (prediction == 0.0) {
                     this.showSnackBar("Authentication: ACCEPTED", "#238823");
                 } else {
@@ -466,7 +468,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         this.dbHelper.addTestRecord(swipe);
     }
 
-    private double getPredictionFrom(Swipe swipe, DatabaseHelper.ModelType modelType) {
+    private double getPredictionFrom(Swipe swipe, List<DatabaseHelper.ModelType> modelType) {
         Instance instance = swipe.getAsWekaInstance(this.getWekaDataset(modelType), false, dbHelper, modelType);
         instance.setDataset(this.getWekaDataset(modelType));
 
@@ -474,9 +476,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         try {
             // classifyInstances returns the index of the most likely class identified (NaN if neither class was identified)
-            prediction = this.oneClassClassifiers[modelType.ordinal()].classifyInstance(instance);
+            prediction = this.oneClassClassifiers[this.trainingModels.indexOf(modelType)].classifyInstance(instance);
             System.out.println("Prediction: " + prediction);
-            System.out.println("Distribution: " + Arrays.toString(this.oneClassClassifiers[modelType.ordinal()].distributionForInstance(instance)));
+            System.out.println("Distribution: " + Arrays.toString(this.oneClassClassifiers[this.trainingModels.indexOf(modelType)].distributionForInstance(instance)));
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -1031,15 +1033,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             ArrayList<double[]> userTestingData = this.dbHelper.getTestingData("User");
             ArrayList<double[]> attackerTestingData = this.dbHelper.getTestingData("Attacker");
 
-            for(DatabaseHelper.ModelType modelType : DatabaseHelper.ModelType.values()) {
-                if(
-                        (modelType == DatabaseHelper.ModelType.KEYSTROKE && this.dbHelper.getFeatureData().get(DatabaseHelper.COL_KEYSTROKE) == 0) ||
-                        (modelType == DatabaseHelper.ModelType.SIGNATURE && this.dbHelper.getFeatureData().get(DatabaseHelper.COL_SIGNATURE) == 0)
-                ) {
+            for(List<DatabaseHelper.ModelType> model : this.trainingModels) {
+                if(!dbHelper.isModelFullyEnabled(model)) {
                     continue;
                 }
 
-                int cur_idx = modelType.ordinal();
+                int cur_idx = this.trainingModels.indexOf(model);
 
                 System.out.println(Arrays.toString(attackerTestingData.stream().mapToDouble(x -> x[cur_idx]).toArray()));
 
@@ -1051,12 +1050,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 double averageSwipeDuration = testSwipes.stream().mapToDouble(Swipe::getDuration).average().getAsDouble() / 1_000.0;
 
                 userTestingData.addAll(attackerTestingData);
-                double avgTestTime = userTestingData.stream().mapToDouble(x -> x[cur_idx+4]).average().getAsDouble();
+                double avgTestTime = userTestingData.stream().mapToDouble(x -> x[cur_idx+5]).average().getAsDouble(); // TODO: Fix hard-coded index offset
 
                 int classifierSamples = this.dbHelper.getRecordsCount("REAL_SWIPES");
-                this.dbHelper.saveTestResults(instances, TAR, FRR, TRR, FAR, averageSwipeDuration, avgTestTime, classifierSamples, modelType);
+                this.dbHelper.saveTestResults(instances, TAR, FRR, TRR, FAR, averageSwipeDuration, avgTestTime, classifierSamples, model);
 
-                if(modelType == DatabaseHelper.ModelType.FULL) {
+                if(model.contains(DatabaseHelper.ModelType.FULL)) {
                     strSummary += String.format("%1$-12s", String.format("%02.0f", instances));
                     strSummary += String.format("%1$-10s", String.format("%.1f", TAR));
                     strSummary += String.format("%1$-11s", String.format("%.1f", FRR));
@@ -1145,6 +1144,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
             ArrayList<Swipe> swipes = dbHelper.getAllSwipes("REAL_SWIPES");
             try {
+                this.trainingModels = this.getActiveModels();
+                this.oneClassClassifiers = new OneClassClassifier[this.trainingModels.size()];
+
                 if (isGanMode) {
                     ResourceMonitor resourceMonitor = new ResourceMonitor();
                     resourceMonitor.start(
@@ -1164,21 +1166,23 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     resourceMonitor.setTrainingTime(ganTime);
                     resourceMonitor.stop(dbHelper, "GAN");
 
-                    for(DatabaseHelper.ModelType modelType : DatabaseHelper.ModelType.values()) {
-                        if(dbHelper.getEnabledFeatureTypesCount(modelType) == 0) {
+                    for(List<DatabaseHelper.ModelType> trainingModel : trainingModels) {
+                        if(!dbHelper.isModelFullyEnabled(trainingModel)) {
                             continue;
                         }
 
-                        uiHandler.post(() -> {progressTextView.setText("Training " + modelType.name() + " classifier");});
-                        trainClassifierWith(swipes, true, ganTime, modelType); }
+                        uiHandler.post(() -> {progressTextView.setText("Training " + trainingModel.toString() + " classifier");});
+                        trainClassifierWith(swipes, true, ganTime, trainingModel);
+                    }
                 } else {
-                    for(DatabaseHelper.ModelType modelType : DatabaseHelper.ModelType.values()) {
-                        if(dbHelper.getEnabledFeatureTypesCount(modelType) == 0) {
+                    for(List<DatabaseHelper.ModelType> trainingModel : trainingModels) {
+                        if(!dbHelper.isModelFullyEnabled(trainingModel)) {
                             continue;
                         }
 
-                        uiHandler.post(() -> {progressTextView.setText("Training " + modelType.name() + " classifier");});
-                        trainClassifierWith(swipes, false, 0.0, modelType); }
+                        uiHandler.post(() -> {progressTextView.setText("Training " + trainingModel.toString() + " classifier");});
+                        trainClassifierWith(swipes, false, 0.0, trainingModel);
+                    }
                 }
 
                 uiHandler.post(uiRunnable);
@@ -1192,12 +1196,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     }
 
-    public void trainClassifierWith(ArrayList<Swipe> trainSwipes, boolean hasGan, double ganTime, DatabaseHelper.ModelType modelType) {
-        Instances dataSet = this.getWekaDataset(modelType);
+    public void trainClassifierWith(ArrayList<Swipe> trainSwipes, boolean hasGan, double ganTime, List<DatabaseHelper.ModelType> trainingModel) {
+        Instances dataSet = this.getWekaDataset(trainingModel);
 
         for(int i=0 ; i < trainSwipes.size(); i++)
         {
-            Instance newInstance = trainSwipes.get(i).getAsWekaInstance(dataSet,true, dbHelper, modelType);
+            Instance newInstance = trainSwipes.get(i).getAsWekaInstance(dataSet,true, dbHelper, trainingModel);
             dataSet.add(newInstance);
         }
 
@@ -1226,12 +1230,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             double rfTrainingTime = (double) (rfEndTime - rfStartTime) / 1_000_000_000;
 
             resourceMonitor.setTrainingTime(rfTrainingTime);
-            resourceMonitor.stop(dbHelper, modelType.name());
+            resourceMonitor.stop(dbHelper, trainingModel.toString());
 
             Evaluation eTest = new Evaluation(dataSet);
             eTest.crossValidateModel(oneClassClassifier, dataSet, 5, new Random(1));
 
-            this.oneClassClassifiers[modelType.ordinal()] = oneClassClassifier;
+            this.oneClassClassifiers[this.trainingModels.indexOf(trainingModel)] = oneClassClassifier;
 
             double instances = eTest.numInstances();
             double TAR = eTest.pctCorrect();
@@ -1247,9 +1251,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             finalSummary += "\n";
 
            if(hasGan) {
-               this.dbHelper.saveGANResults(instances, TAR, FRR, averageSwipeDuration, rfTrainingTime, ganTime, trainSwipes.size(), modelType);
+               this.dbHelper.saveGANResults(instances, TAR, FRR, averageSwipeDuration, rfTrainingTime, ganTime, trainSwipes.size(), trainingModel);
            } else {
-               this.dbHelper.saveRealResults(instances, TAR, FRR, averageSwipeDuration, rfTrainingTime, trainSwipes.size(), modelType);
+               this.dbHelper.saveRealResults(instances, TAR, FRR, averageSwipeDuration, rfTrainingTime, trainSwipes.size(), trainingModel);
            }
 
         } catch (Exception e) {
@@ -1258,7 +1262,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         System.out.println(finalSummary);
 
-        if(modelType == DatabaseHelper.ModelType.FULL) {
+        if(trainingModel.contains(DatabaseHelper.ModelType.FULL)) {
             this.isTrainingClassifier = false;
 
             final String strSummary = finalSummary;
@@ -1267,6 +1271,28 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             runOnUiThread(() -> context.enableUserInteraction());
             runOnUiThread(() -> context.showAlertDialog("TRAINING RESULTS", strSummary));
         }
+    }
+
+    private List<List<DatabaseHelper.ModelType>> getActiveModels() {
+        List<List<DatabaseHelper.ModelType>> activeModels = new ArrayList<>();
+        Integer modelsCombination = dbHelper.getFeatureData().get(DatabaseHelper.COL_MODELS_COMBINATIONS);
+
+        if(modelsCombination == DatabaseHelper.ModelsCombinations.FULL.ordinal()) {
+            activeModels.add(Arrays.asList(DatabaseHelper.ModelType.FULL));
+        } else if(modelsCombination == DatabaseHelper.ModelsCombinations.INDIVIDUAL_FULL.ordinal()) {
+            for(DatabaseHelper.ModelType modelType : DatabaseHelper.ModelType.values()) {
+                activeModels.add(Arrays.asList(modelType));
+            }
+        } else {
+            Generator.subset(DatabaseHelper.ModelType.HOLD, DatabaseHelper.ModelType.SWIPE, DatabaseHelper.ModelType.KEYSTROKE, DatabaseHelper.ModelType.SIGNATURE)
+                    .simple()
+                    .stream()
+                    .filter(s -> !s.isEmpty())
+                    .forEach(x -> activeModels.add(x));
+            activeModels.add(Arrays.asList(DatabaseHelper.ModelType.FULL));
+        }
+
+        return activeModels;
     }
 
     public synchronized void saveData(View view) {
@@ -1302,7 +1328,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         snackbar.show();
     }
 
-    public Instances getWekaDataset(DatabaseHelper.ModelType modelType) {
+    public Instances getWekaDataset(List<DatabaseHelper.ModelType> trainingModel) {
         Map<String, Integer> featureData = dbHelper.getFeatureData();
         boolean useAcceleration = featureData.get(DatabaseHelper.COL_ACCELERATION) == 1;
         boolean useAngularVelocity = featureData.get(DatabaseHelper.COL_ANGULAR_VELOCITY) == 1;
@@ -1325,7 +1351,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         ArrayList<Attribute> attributes = new ArrayList<>();
 
-        if(modelType == DatabaseHelper.ModelType.SWIPE || modelType == DatabaseHelper.ModelType.FULL) {
+        if(trainingModel.contains(DatabaseHelper.ModelType.SWIPE) || trainingModel.contains(DatabaseHelper.ModelType.FULL)) {
             if (useSwipeDuration) {
                 attributes.add(new Attribute("duration"));
             }
@@ -1364,7 +1390,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 attributes.add(new Attribute("varYVelocity"));
             }
         }
-        if(modelType == DatabaseHelper.ModelType.HOLD || modelType == DatabaseHelper.ModelType.FULL) {
+        if(trainingModel.contains(DatabaseHelper.ModelType.HOLD) || trainingModel.contains(DatabaseHelper.ModelType.FULL)) {
             if (useAcceleration) {
                 attributes.add(new Attribute("minXAccelerometer"));
                 attributes.add(new Attribute("maxXAccelerometer"));
@@ -1417,7 +1443,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 attributes.add(new Attribute("varZOrientation"));
             }
         }
-        if(useKeystroke && (modelType == DatabaseHelper.ModelType.KEYSTROKE || modelType == DatabaseHelper.ModelType.FULL)) {
+        if(useKeystroke && (trainingModel.contains(DatabaseHelper.ModelType.KEYSTROKE) || trainingModel.contains(DatabaseHelper.ModelType.FULL))) {
             if(useKeystrokeDurations) {
                 for (int i = 0; i < dbHelper.getFeatureData().get(DatabaseHelper.COL_PIN_LENGTH); i++) { attributes.add(new Attribute(LOWER_UNDERSCORE.to(LOWER_CAMEL, DatabaseHelper.COL_KEYSTROKE_DURATIONS) + "_" + i)); }
                 attributes.add(new Attribute(DatabaseHelper.COL_KEYSTROKE_FULL_DURATION));
@@ -1430,7 +1456,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 }
             }
         }
-        if(useSignature && (modelType == DatabaseHelper.ModelType.SIGNATURE || modelType == DatabaseHelper.ModelType.FULL)) {
+        if(useSignature && (trainingModel.contains(DatabaseHelper.ModelType.SIGNATURE) || trainingModel.contains(DatabaseHelper.ModelType.FULL))) {
             if(useSignatureStartEndPos) {
                 attributes.add(new Attribute(DatabaseHelper.COL_SIGNATURE_START_X));
                 attributes.add(new Attribute(DatabaseHelper.COL_SIGNATURE_START_Y));
