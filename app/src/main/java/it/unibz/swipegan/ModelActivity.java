@@ -26,6 +26,13 @@ public class ModelActivity extends AppCompatActivity {
         DatabaseHelper dbHelper = DatabaseHelper.getInstance(getApplicationContext());
         Map<String, Integer> featureData = dbHelper.getFeatureData();
 
+        Spinner modelsSpinner = (Spinner) findViewById(R.id.modelsSpinner);
+        ArrayAdapter<CharSequence> modelsSpinnerAdapter = ArrayAdapter.createFromResource(this, R.array.models_combinations, android.R.layout.simple_spinner_item);
+        modelsSpinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        modelsSpinner.setAdapter(modelsSpinnerAdapter);
+        modelsSpinner.setSelection(dbHelper.getFeatureData().get(DatabaseHelper.COL_MODELS_COMBINATIONS));
+        Integer initialModelsSelection = modelsSpinner.getSelectedItemPosition();
+
         CheckBox accelerationCheckBox = findViewById(R.id.accelerationCheckBox);
         accelerationCheckBox.setChecked(featureData.get(DatabaseHelper.COL_ACCELERATION) == 1);
 
@@ -42,9 +49,9 @@ public class ModelActivity extends AppCompatActivity {
         swipeShapeCheckBox.setChecked(featureData.get(DatabaseHelper.COL_SWIPE_SHAPE) == 1);
 
         Spinner swipeSegmentSpinner = (Spinner) findViewById(R.id.swipeSegmentsSpinner);
-        ArrayAdapter<CharSequence> swipeSegmentdapter = ArrayAdapter.createFromResource(this, R.array.swipe_segments, android.R.layout.simple_spinner_item);
-        swipeSegmentdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        swipeSegmentSpinner.setAdapter(swipeSegmentdapter);
+        ArrayAdapter<CharSequence> swipeSegmentAdapter = ArrayAdapter.createFromResource(this, R.array.swipe_segments, android.R.layout.simple_spinner_item);
+        swipeSegmentAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        swipeSegmentSpinner.setAdapter(swipeSegmentAdapter);
 
         if(featureData.get(DatabaseHelper.COL_SWIPE_SHAPE_SEGMENTS) == 0) {
             swipeSegmentSpinner.setSelection(((ArrayAdapter<String>) swipeSegmentSpinner.getAdapter()).getPosition(String.valueOf(DatabaseHelper.DEFAULT_SEGMENTS)));
@@ -183,6 +190,7 @@ public class ModelActivity extends AppCompatActivity {
 
                 ) {
                     dbHelper.saveFeatureData(
+                            modelsSpinner.getSelectedItemPosition(),
                             accelerationCheckBox.isChecked() ? 1 : 0,
                             angularVelocityCheckBox.isChecked() ? 1 : 0,
                             orientationCheckBox.isChecked() ? 1 : 0,
@@ -203,6 +211,7 @@ public class ModelActivity extends AppCompatActivity {
                             Integer.parseInt((String) signatureSegmentsSpinner.getSelectedItem())
                     );
 
+                    Integer curModelsSelection = modelsSpinner.getSelectedItemPosition();
                     Integer curSegmentSelection = Integer.parseInt((String) swipeSegmentSpinner.getSelectedItem());
                     Integer curPinLength = Integer.parseInt((String) keystrokeLengthSpinner.getSelectedItem());
                     boolean curKeystrokeEnabled = keystrokeCheckBox.isChecked();
@@ -213,6 +222,9 @@ public class ModelActivity extends AppCompatActivity {
                     Intent resultIntent = new Intent();
 
                     Map<String, Object> modelSelection = new HashMap<>();
+                    modelSelection.put("initialModelsSelection", initialModelsSelection);
+                    modelSelection.put("curModelsSelection", curModelsSelection);
+
                     modelSelection.put("curSegmentSelection", curSegmentSelection);
                     modelSelection.put("initialSegmentSelection", initialSegmentSelection);
 
