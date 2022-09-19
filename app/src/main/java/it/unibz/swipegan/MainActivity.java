@@ -40,8 +40,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
 import com.google.android.material.snackbar.Snackbar;
-import com.google.common.base.Predicate;
-import com.google.common.collect.Collections2;
 
 import java.io.File;
 import java.lang.reflect.Field;
@@ -49,12 +47,12 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.DoubleSummaryStatistics;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.stream.DoubleStream;
 
 import weka.classifiers.evaluation.Evaluation;
 import weka.classifiers.meta.OneClassClassifier;
@@ -428,6 +426,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         outputMessage += String.format("%1$-15s %2$-16s %3$-18s", "Inputs", "Prediction", "Test time");
         outputMessage += "\n";
 
+        double[] authenticationValues = new double[this.trainingModels.size()];
+        double[] authenticationTimes = new double[this.trainingModels.size()];
+
         for(List<DatabaseHelper.ModelType> model : this.trainingModels) {
             if(!dbHelper.isModelFullyEnabled(model)) {
                 continue;
@@ -445,13 +446,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 authenticationValue = prediction == 0.0 ? 1.0 : 0.0;
             }
 
-            int classifierSamples = this.dbHelper.getRecordsCount("REAL_SWIPES");
+            authenticationValues[this.trainingModels.indexOf(model)] = authenticationValue;
+            authenticationTimes[this.trainingModels.indexOf(model)] = testingTime;
 
-            swipe.setAuthentication(authenticationValue, model);
-            swipe.setAuthenticationTime(testingTime, model);
-            swipe.setClassifierSamples(classifierSamples);
-
-            outputMessage += String.format("%1$-18s", String.format("%02d", classifierSamples));
+            outputMessage += String.format("%1$-18s", String.format("%02d", this.dbHelper.getRecordsCount("REAL_SWIPES")));
             outputMessage += String.format("%1$-18s", prediction == 0.0 ? "Accepted" : "Rejected");
             outputMessage += String.format("%1$-18s", String.format("%.4f", testingTime));
             outputMessage += "\n";
@@ -465,6 +463,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             }
         }
 
+        swipe.setAuthentication(authenticationValues);
+        swipe.setAuthenticationTime(authenticationTimes);
+        swipe.setClassifierSamples(this.dbHelper.getRecordsCount("REAL_SWIPES"));
         this.dbHelper.addTestRecord(swipe);
     }
 
@@ -1030,27 +1031,31 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 return;
             }
 
-            ArrayList<double[]> userTestingData = this.dbHelper.getTestingData("User");
-            ArrayList<double[]> attackerTestingData = this.dbHelper.getTestingData("Attacker");
+            ArrayList<double[]> userAuthentication = this.dbHelper.getTestingData("User", DatabaseHelper.COL_AUTHENTICATION);
+            ArrayList<double[]> userAuthenticationTime = this.dbHelper.getTestingData("User", DatabaseHelper.COL_AUTHENTICATION_TIME);
+
+            ArrayList<double[]> attackerAuthentication = this.dbHelper.getTestingData("Attacker", DatabaseHelper.COL_AUTHENTICATION);
+            ArrayList<double[]> attackerAuthenticationTime = this.dbHelper.getTestingData("Attacker", DatabaseHelper.COL_AUTHENTICATION_TIME);
 
             for(List<DatabaseHelper.ModelType> model : this.trainingModels) {
                 if(!dbHelper.isModelFullyEnabled(model)) {
                     continue;
                 }
 
-                int cur_idx = this.trainingModels.indexOf(model);
+                double[] curUserAuthentication = userAuthentication.stream().mapToDouble(x -> x[this.trainingModels.indexOf(model)]).toArray();
+                double[] curAttackerAuthentication = attackerAuthentication.stream().mapToDouble(x -> x[this.trainingModels.indexOf(model)]).toArray();
 
-                System.out.println(Arrays.toString(attackerTestingData.stream().mapToDouble(x -> x[cur_idx]).toArray()));
-
-                double instances = userTestingData.size() + attackerTestingData.size();
-                double TAR = userTestingData.isEmpty() ? 0.0 : userTestingData.stream().mapToDouble(x -> x[cur_idx]).sum() / userTestingData.size() * 100;
-                double FRR = userTestingData.isEmpty() ? 0.0 : (userTestingData.size() - (userTestingData.stream().mapToDouble(x -> x[cur_idx]).sum())) / userTestingData.size() * 100;
-                double TRR = attackerTestingData.isEmpty() ? 0.0 : (attackerTestingData.stream().mapToDouble(x -> x[cur_idx]).sum()) / attackerTestingData.size() * 100;
-                double FAR = attackerTestingData.isEmpty() ? 0.0 : (attackerTestingData.size() - (attackerTestingData.stream().mapToDouble(x -> x[cur_idx]).sum())) / attackerTestingData.size() * 100;
+                double instances = curUserAuthentication.length + curAttackerAuthentication.length;
+                double TAR = curUserAuthentication.length == 0 ? 0.0 : Arrays.stream(curUserAuthentication).sum() / curUserAuthentication.length * 100;
+                double FRR = curUserAuthentication.length == 0 ? 0.0 : (curUserAuthentication.length - (Arrays.stream(curUserAuthentication).sum())) / curUserAuthentication.length * 100;
+                double TRR = curAttackerAuthentication.length == 0 ? 0.0 : (Arrays.stream(curAttackerAuthentication).sum()) / curAttackerAuthentication.length * 100;
+                double FAR = curAttackerAuthentication.length == 0 ? 0.0 : (curAttackerAuthentication.length - (Arrays.stream(curAttackerAuthentication).sum())) / curAttackerAuthentication.length * 100;
                 double averageSwipeDuration = testSwipes.stream().mapToDouble(Swipe::getDuration).average().getAsDouble() / 1_000.0;
 
-                userTestingData.addAll(attackerTestingData);
-                double avgTestTime = userTestingData.stream().mapToDouble(x -> x[cur_idx+5]).average().getAsDouble(); // TODO: Fix hard-coded index offset
+                DoubleStream curUserAuthenticationTime = userAuthenticationTime.stream().mapToDouble(x -> x[this.trainingModels.indexOf(model)]);
+                DoubleStream curAttackerAuthenticationTime = attackerAuthenticationTime.stream().mapToDouble(x -> x[this.trainingModels.indexOf(model)]);
+
+                double avgTestTime = DoubleStream.concat(curUserAuthenticationTime, curAttackerAuthenticationTime).average().getAsDouble();
 
                 int classifierSamples = this.dbHelper.getRecordsCount("REAL_SWIPES");
                 this.dbHelper.saveTestResults(instances, TAR, FRR, TRR, FAR, averageSwipeDuration, avgTestTime, classifierSamples, model);
@@ -1288,6 +1293,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     .simple()
                     .stream()
                     .filter(s -> !s.isEmpty())
+                    .filter(s -> s.size() != DatabaseHelper.ModelType.values().length - 1)
                     .forEach(x -> activeModels.add(x));
             activeModels.add(Arrays.asList(DatabaseHelper.ModelType.FULL));
         }

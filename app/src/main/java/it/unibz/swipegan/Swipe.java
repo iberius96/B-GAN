@@ -114,17 +114,8 @@ public class Swipe {
     private String userId;
 
     // Test swipe features
-    private double authenticationHold = 0.0;
-    private double authenticationSwipe = 0.0;
-    private double authenticationKeystroke = 0.0;
-    private double authenticationSignature = 0.0;
-    private double authenticationFull = 0.0;
-
-    private double authenticationTimeHold = 0.0;
-    private double authenticationTimeSwipe = 0.0;
-    private double authenticationTimeKeystroke = 0.0;
-    private double authenticationTimeSignature = 0.0;
-    private double authenticationTimeFull = 0.0;
+    private double[] authentication;
+    private double[] authenticationTime;
 
     private int classifierSamples = 0;
 
@@ -888,64 +879,20 @@ public class Swipe {
         this.userId = userId;
     }
 
-    public double getAuthentication(DatabaseHelper.ModelType modelType) {
-        if (modelType == DatabaseHelper.ModelType.HOLD) {
-            return authenticationHold;
-        } else if(modelType == DatabaseHelper.ModelType.SWIPE) {
-            return authenticationSwipe;
-        } else if(modelType == DatabaseHelper.ModelType.KEYSTROKE) {
-            return authenticationKeystroke;
-        } else if(modelType == DatabaseHelper.ModelType.SIGNATURE) {
-            return authenticationSignature;
-        } else {
-            return authenticationFull;
-        }
+    public double[] getAuthentication() {
+        return this.authentication;
     }
 
-    public void setAuthentication(double authentication, List<DatabaseHelper.ModelType> modelType) {
-        if(modelType.size() == 1) {
-            if (modelType.contains(DatabaseHelper.ModelType.HOLD)) {
-                this.authenticationHold = authentication;
-            } else if (modelType.contains(DatabaseHelper.ModelType.SWIPE)) {
-                this.authenticationSwipe = authentication;
-            } else if (modelType.contains(DatabaseHelper.ModelType.KEYSTROKE)) {
-                this.authenticationKeystroke = authentication;
-            } else if (modelType.contains(DatabaseHelper.ModelType.SIGNATURE)) {
-                this.authenticationSignature = authentication;
-            } else {
-                this.authenticationFull = authentication;
-            }
-        }
+    public void setAuthentication(double[] authentication) {
+        this.authentication = authentication;
     }
 
-    public double getAuthenticationTime(DatabaseHelper.ModelType modelType) {
-        if (modelType == DatabaseHelper.ModelType.HOLD) {
-            return authenticationTimeHold;
-        } else if(modelType == DatabaseHelper.ModelType.SWIPE) {
-            return authenticationTimeSwipe;
-        } else if(modelType == DatabaseHelper.ModelType.KEYSTROKE) {
-            return authenticationTimeKeystroke;
-        } else if(modelType == DatabaseHelper.ModelType.SIGNATURE) {
-            return authenticationTimeSignature;
-        } else {
-            return authenticationTimeFull;
-        }
+    public double[] getAuthenticationTime() {
+        return this.authenticationTime;
     }
 
-    public void setAuthenticationTime(double authenticationTime, List<DatabaseHelper.ModelType> modelType) {
-        if(modelType.size() == 1) {
-            if (modelType.contains(DatabaseHelper.ModelType.HOLD)) {
-                this.authenticationTimeHold = authenticationTime;
-            } else if (modelType.contains(DatabaseHelper.ModelType.SWIPE)) {
-                this.authenticationTimeSwipe = authenticationTime;
-            } else if (modelType.contains(DatabaseHelper.ModelType.KEYSTROKE)) {
-                this.authenticationTimeKeystroke = authenticationTime;
-            } else if (modelType.contains(DatabaseHelper.ModelType.SIGNATURE)) {
-                this.authenticationTimeSignature = authenticationTime;
-            } else {
-                this.authenticationTimeFull = authenticationTime;
-            }
-        }
+    public void setAuthenticationTime(double[] authenticationTime) {
+        this.authenticationTime = authenticationTime;
     }
 
     public int getClassifierSamples() {

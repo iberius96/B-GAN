@@ -51,17 +51,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String FEATURE_DATA = "FEATURE_DATA";
     private static final String RESOURCE_DATA = "RESOURCE_DATA";
 
-    private static final String COL_AUTHENTICATION_HOLD = "AUTHENTICATION_HOLD";
-    private static final String COL_AUTHENTICATION_SWIPE = "AUTHENTICATION_SWIPE";
-    private static final String COL_AUTHENTICATION_KEYSTROKE = "AUTHENTICATION_KEYSTROKE";
-    private static final String COL_AUTHENTICATION_SIGNATURE = "AUTHENTICATION_SIGNATURE";
-    private static final String COL_AUTHENTICATION_FULL = "AUTHENTICATION_FULL";
-
-    private static final String COL_AUTHENTICATION_TIME_HOLD = "AUTHENTICATION_TIME_HOLD";
-    private static final String COL_AUTHENTICATION_TIME_SWIPE = "AUTHENTICATION_TIME_SWIPE";
-    private static final String COL_AUTHENTICATION_TIME_KEYSTROKE = "AUTHENTICATION_TIME_KEYSTROKE";
-    private static final String COL_AUTHENTICATION_TIME_SIGNATURE = "AUTHENTICATION_TIME_SIGNATURE";
-    private static final String COL_AUTHENTICATION_TIME_FULL = "AUTHENTICATION_TIME_FULL";
+    public static final String COL_AUTHENTICATION = "AUTHENTICATION";
+    public static final String COL_AUTHENTICATION_TIME = "AUTHENTICATION_TIME";
 
     private static final String COL_DURATION = "duration";
     private static final String COL_LENGTH = "length";
@@ -393,16 +384,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             if(swipes_tables[i] == TEST_SWIPES) {
                 create_statement = create_statement.replace(
                         COL_USER_ID,
-                        COL_AUTHENTICATION_HOLD + " float(53), " +
-                                COL_AUTHENTICATION_SWIPE + " float(53), " +
-                                (hasKeystrokes ? (COL_AUTHENTICATION_KEYSTROKE + " float(53), ") : "") +
-                                (hasSignature ? (COL_AUTHENTICATION_SIGNATURE + " float(53), ") : "") +
-                                COL_AUTHENTICATION_FULL + " float(53), " +
-                                COL_AUTHENTICATION_TIME_HOLD + " float(53), " +
-                                COL_AUTHENTICATION_TIME_SWIPE + " float(53), " +
-                                (hasKeystrokes ? (COL_AUTHENTICATION_TIME_KEYSTROKE + " float(53), ") : "") +
-                                (hasSignature ? (COL_AUTHENTICATION_TIME_SIGNATURE + " float(53), ") : "") +
-                                COL_AUTHENTICATION_TIME_FULL + " float(53), " +
+                        COL_AUTHENTICATION + " varchar(255), " +
+                                COL_AUTHENTICATION_TIME + " varchar(255), " +
                                 COL_CLASSIFIER_SAMPLES + " float(53), " +
                                 COL_USER_ID
                 );
@@ -512,24 +495,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         contentValues.put(COL_USER_ID, swipe.getUserId());
 
         if(tableName == TEST_SWIPES) {
-            contentValues.put(COL_AUTHENTICATION_HOLD, swipe.getAuthentication(ModelType.HOLD));
-            contentValues.put(COL_AUTHENTICATION_SWIPE, swipe.getAuthentication(ModelType.SWIPE));
-            contentValues.put(COL_AUTHENTICATION_FULL, swipe.getAuthentication(ModelType.FULL));
-
-            contentValues.put(COL_AUTHENTICATION_TIME_HOLD, swipe.getAuthenticationTime(ModelType.HOLD));
-            contentValues.put(COL_AUTHENTICATION_TIME_SWIPE, swipe.getAuthenticationTime(ModelType.SWIPE));
-            contentValues.put(COL_AUTHENTICATION_TIME_FULL, swipe.getAuthenticationTime(ModelType.FULL));
-
-            if(this.getFeatureData().get(COL_KEYSTROKE) == 1) {
-                contentValues.put(COL_AUTHENTICATION_KEYSTROKE, swipe.getAuthentication(ModelType.KEYSTROKE));
-                contentValues.put(COL_AUTHENTICATION_TIME_KEYSTROKE, swipe.getAuthenticationTime(ModelType.KEYSTROKE));
-            }
-
-            if(this.getFeatureData().get(COL_SIGNATURE) == 1) {
-                contentValues.put(COL_AUTHENTICATION_SIGNATURE, swipe.getAuthentication(ModelType.SIGNATURE));
-                contentValues.put(COL_AUTHENTICATION_TIME_SIGNATURE, swipe.getAuthenticationTime(ModelType.SIGNATURE));
-            }
-
+            contentValues.put(COL_AUTHENTICATION, Arrays.toString(swipe.getAuthentication()));
+            contentValues.put(COL_AUTHENTICATION_TIME, Arrays.toString(swipe.getAuthenticationTime()));
             contentValues.put(COL_CLASSIFIER_SAMPLES, swipe.getClassifierSamples());
         }
 
@@ -754,8 +721,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return count;
     }
 
-    // REFACTOR
-    public ArrayList<double[]> getTestingData(String userId) {
+    public ArrayList<double[]> getTestingData(String userId, String column) {
         SQLiteDatabase db = this.getReadableDatabase();
         String query = "SELECT * FROM " + TEST_SWIPES + " WHERE " + COL_USER_ID + " == '" + userId + "'";
         ArrayList<double[]> testingData = new ArrayList<>();
@@ -763,20 +729,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         cursor.moveToFirst();
 
         while(!cursor.isAfterLast()) {
-            double[] testingValues = new double[10];
-            testingValues[0] = cursor.getDouble(cursor.getColumnIndex(COL_AUTHENTICATION_HOLD));
-            testingValues[1] = cursor.getDouble(cursor.getColumnIndex(COL_AUTHENTICATION_SWIPE));
-            testingValues[2] = this.getFeatureData().get(COL_KEYSTROKE) == 1 ? cursor.getDouble(cursor.getColumnIndex(COL_AUTHENTICATION_KEYSTROKE)) : 0;
-            testingValues[3] = this.getFeatureData().get(COL_SIGNATURE) == 1 ? cursor.getDouble(cursor.getColumnIndex(COL_AUTHENTICATION_SIGNATURE)) : 0;
-            testingValues[4] = cursor.getDouble(cursor.getColumnIndex(COL_AUTHENTICATION_FULL));
+            String cursor_str = cursor.getString(cursor.getColumnIndex(column));
+            String[] cursor_array = cursor_str.replace("[", "").replace("]", "").split(",");
 
-            testingValues[5] = cursor.getDouble(cursor.getColumnIndex(COL_AUTHENTICATION_TIME_HOLD));
-            testingValues[6] = cursor.getDouble(cursor.getColumnIndex(COL_AUTHENTICATION_TIME_SWIPE));
-            testingValues[7] = this.getFeatureData().get(COL_KEYSTROKE) == 1 ? cursor.getDouble(cursor.getColumnIndex(COL_AUTHENTICATION_TIME_KEYSTROKE)) : 0;
-            testingValues[8] = this.getFeatureData().get(COL_SIGNATURE) == 1 ? cursor.getDouble(cursor.getColumnIndex(COL_AUTHENTICATION_TIME_SIGNATURE)) : 0;
-            testingValues[9] = cursor.getDouble(cursor.getColumnIndex(COL_AUTHENTICATION_TIME_FULL));
-
-            testingData.add(testingValues);
+            testingData.add(Arrays.stream(cursor_array).mapToDouble(Double::parseDouble).toArray());
             cursor.move(1);
         }
         cursor.close();
