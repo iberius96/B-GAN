@@ -47,6 +47,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String GAN_RESULTS = "GAN_RESULTS";
     private static final String TEST_RESULTS = "TEST_RESULTS";
 
+    private static final String TEST_AUTHENTICATION = "TEST_AUTHENTICATION";
+
     private static final String USER_DATA = "USER_DATA";
     private static final String FEATURE_DATA = "FEATURE_DATA";
     private static final String RESOURCE_DATA = "RESOURCE_DATA";
@@ -280,6 +282,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 + COL_MODEL_TYPE + " varchar(20))";
 
         this.generateSwipesTables(db,false, true, true);
+        this.generateTestAuthenticationTable(db, false, null);
 
         db.execSQL(createRealResultsTable);
         db.execSQL(createGanResultsTable);
@@ -394,6 +397,29 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
     }
 
+    public void generateTestAuthenticationTable(SQLiteDatabase db, boolean regenerate, List<List<ModelType>> activeModels) {
+        if(db == null) { db = this.getWritableDatabase(); }
+        if(regenerate) { db.execSQL("DROP TABLE " + TEST_AUTHENTICATION); }
+
+        String create_statement = "CREATE TABLE " + TEST_AUTHENTICATION
+                + " (id INTEGER PRIMARY KEY AUTOINCREMENT, ";
+
+        if(activeModels == null) {
+            activeModels = new ArrayList<>();
+            for(DatabaseHelper.ModelType modelType : DatabaseHelper.ModelType.values()) { activeModels.add(Arrays.asList(modelType)); }
+        }
+
+        for(List<ModelType> trainingModel : activeModels) {
+            String modelStr = trainingModel.toString().replace(", ", "_").replace("[", "").replace("]", "");
+            create_statement += modelStr + "_" + COL_AUTHENTICATION + " float(53), ";
+            create_statement += modelStr + "_" + COL_AUTHENTICATION_TIME + " float(53), ";
+        }
+
+        create_statement += COL_USER_ID + " varchar(20))";
+        System.out.println(create_statement);
+        db.execSQL(create_statement);
+    }
+
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         String[] upgrade_tables = {
@@ -406,6 +432,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             REAL_RESULTS,
             GAN_RESULTS,
             TEST_RESULTS,
+            TEST_AUTHENTICATION,
             USER_DATA,
             FEATURE_DATA,
             RESOURCE_DATA
@@ -495,6 +522,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         contentValues.put(COL_USER_ID, swipe.getUserId());
 
         if(tableName == TEST_SWIPES) {
+            this.addSwipeAuthentication(db, swipe);
+
             contentValues.put(COL_AUTHENTICATION, Arrays.toString(swipe.getAuthentication()));
             contentValues.put(COL_AUTHENTICATION_TIME, Arrays.toString(swipe.getAuthenticationTime()));
             contentValues.put(COL_CLASSIFIER_SAMPLES, swipe.getClassifierSamples());
@@ -503,6 +532,46 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         long result = db.insert(tableName, null, contentValues);
         //if inserted incorrectly it will return -1
         return result != -1;
+    }
+
+    private void addSwipeAuthentication(SQLiteDatabase db, Swipe swipe) {
+        ContentValues contentValues = new ContentValues();
+
+        double[] swipeAuthentication = swipe.getAuthentication();
+        double[] swipeAuthenticationTime = swipe.getAuthenticationTime();
+        List<List<ModelType>> activeModels = this.getActiveModels();
+
+        for(List<ModelType> activeModel : activeModels) {
+            String modelStr = activeModel.toString().replace(", ", "_").replace("[", "").replace("]", "");
+            contentValues.put(modelStr + "_" + COL_AUTHENTICATION, swipeAuthentication[activeModels.indexOf(activeModel)]);
+            contentValues.put(modelStr + "_" + COL_AUTHENTICATION_TIME, swipeAuthenticationTime[activeModels.indexOf(activeModel)]);
+        }
+
+        contentValues.put(COL_USER_ID, swipe.getUserId());
+        db.insert(TEST_AUTHENTICATION, null, contentValues);
+    }
+
+    public List<List<DatabaseHelper.ModelType>> getActiveModels() {
+        List<List<DatabaseHelper.ModelType>> activeModels = new ArrayList<>();
+        Integer modelsCombination = this.getFeatureData().get(DatabaseHelper.COL_MODELS_COMBINATIONS);
+
+        if(modelsCombination == DatabaseHelper.ModelsCombinations.FULL.ordinal()) {
+            activeModels.add(Arrays.asList(DatabaseHelper.ModelType.FULL));
+        } else if(modelsCombination == DatabaseHelper.ModelsCombinations.INDIVIDUAL_FULL.ordinal()) {
+            for(DatabaseHelper.ModelType modelType : DatabaseHelper.ModelType.values()) {
+                activeModels.add(Arrays.asList(modelType));
+            }
+        } else {
+            Generator.subset(DatabaseHelper.ModelType.HOLD, DatabaseHelper.ModelType.SWIPE, DatabaseHelper.ModelType.KEYSTROKE, DatabaseHelper.ModelType.SIGNATURE)
+                    .simple()
+                    .stream()
+                    .filter(s -> !s.isEmpty())
+                    .filter(s -> s.size() != DatabaseHelper.ModelType.values().length - 1)
+                    .forEach(x -> activeModels.add(x));
+            activeModels.add(Arrays.asList(DatabaseHelper.ModelType.FULL));
+        }
+
+        return activeModels;
     }
 
     public boolean addTrainRecord(Swipe swipe) {
@@ -745,6 +814,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL("DELETE FROM " + TEST_SWIPES);
         db.execSQL("DELETE FROM " + TEST_SWIPES_NORMALIZED);
         db.execSQL("DELETE FROM " + TEST_RESULTS);
+        db.execSQL("DELETE FROM " + TEST_AUTHENTICATION);
     }
 
     public void deleteGANData() {
@@ -1031,6 +1101,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                                 colNames[i].equals(COL_NICKNAME) ||
                                 colNames[i].equals(COL_NICKNAME) ||
                                 colNames[i].equals(COL_MODEL_TYPE) ||
+                                colNames[i].equals(COL_AUTHENTICATION) ||
+                                colNames[i].equals(COL_AUTHENTICATION_TIME) ||
                                 colNames[i].equals(COL_SEGMENTS_X) ||
                                 colNames[i].equals(COL_SEGMENTS_Y) ||
                                 colNames[i].equals(COL_KEYSTROKE_DURATIONS) ||
@@ -1068,6 +1140,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                                     colNames[i].equals(COL_NICKNAME) ||
                                     colNames[i].equals(COL_NICKNAME) ||
                                     colNames[i].equals(COL_MODEL_TYPE) ||
+                                    colNames[i].equals(COL_AUTHENTICATION) ||
+                                    colNames[i].equals(COL_AUTHENTICATION_TIME) ||
                                     colNames[i].equals(COL_SEGMENTS_X) ||
                                     colNames[i].equals(COL_SEGMENTS_Y) ||
                                     colNames[i].equals(COL_KEYSTROKE_DURATIONS) ||
@@ -1113,6 +1187,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         this.saveAsCSV(REAL_RESULTS, currentDateTime + "_" + "realResults.csv", resolver, downloadPath);
         this.saveAsCSV(GAN_RESULTS, currentDateTime + "_" + "ganResults.csv", resolver, downloadPath);
         this.saveAsCSV(TEST_RESULTS, currentDateTime + "_" + "testResults.csv", resolver, downloadPath);
+        this.saveAsCSV(TEST_AUTHENTICATION, currentDateTime + "_" + "testAuthentication.csv", resolver, downloadPath);
         this.saveAsCSV(USER_DATA, currentDateTime + "_" + "userData.csv", resolver, downloadPath);
         this.saveAsCSV(FEATURE_DATA, currentDateTime + "_" + "featureData.csv", resolver, downloadPath);
         this.saveAsCSV(RESOURCE_DATA, currentDateTime + "_" + "resourceData.csv", resolver, downloadPath);
@@ -1133,6 +1208,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             db.execSQL("DELETE FROM " + TEST_SWIPES);
             db.execSQL("DELETE FROM " + REAL_RESULTS);
             db.execSQL("DELETE FROM " + TEST_RESULTS);
+            db.execSQL("DELETE FROM " + TEST_AUTHENTICATION);
         }
     }
 

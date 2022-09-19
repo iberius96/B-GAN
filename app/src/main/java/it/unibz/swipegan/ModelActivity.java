@@ -31,6 +31,7 @@ public class ModelActivity extends AppCompatActivity {
         modelsSpinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         modelsSpinner.setAdapter(modelsSpinnerAdapter);
         modelsSpinner.setSelection(dbHelper.getFeatureData().get(DatabaseHelper.COL_MODELS_COMBINATIONS));
+        Integer initialModelsSelection = modelsSpinner.getSelectedItemPosition();
 
         CheckBox accelerationCheckBox = findViewById(R.id.accelerationCheckBox);
         accelerationCheckBox.setChecked(featureData.get(DatabaseHelper.COL_ACCELERATION) == 1);
@@ -210,6 +211,7 @@ public class ModelActivity extends AppCompatActivity {
                             Integer.parseInt((String) signatureSegmentsSpinner.getSelectedItem())
                     );
 
+                    Integer curModelsSelection = modelsSpinner.getSelectedItemPosition();
                     Integer curSegmentSelection = Integer.parseInt((String) swipeSegmentSpinner.getSelectedItem());
                     Integer curPinLength = Integer.parseInt((String) keystrokeLengthSpinner.getSelectedItem());
                     boolean curKeystrokeEnabled = keystrokeCheckBox.isChecked();
@@ -220,6 +222,9 @@ public class ModelActivity extends AppCompatActivity {
                     Intent resultIntent = new Intent();
 
                     Map<String, Object> modelSelection = new HashMap<>();
+                    modelSelection.put("initialModelsSelection", initialModelsSelection);
+                    modelSelection.put("curModelsSelection", curModelsSelection);
+
                     modelSelection.put("curSegmentSelection", curSegmentSelection);
                     modelSelection.put("initialSegmentSelection", initialSegmentSelection);
 

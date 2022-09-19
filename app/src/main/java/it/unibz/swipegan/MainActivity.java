@@ -785,6 +785,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 if (resultCode == Activity.RESULT_OK) {
                     Map<String, Object> modelSelection = (HashMap<String, Object>) data.getSerializableExtra("modelSelection");
 
+                    Integer curModelsSelection = (Integer) modelSelection.get("curModelsSelection");
+                    Integer initialModelsSelection = (Integer) modelSelection.get("initialModelsSelection");
+
                     Integer curSegmentSelection = (Integer) modelSelection.get("curSegmentSelection");
                     Integer initialSegmentSelection = (Integer) modelSelection.get("initialSegmentSelection");
 
@@ -797,6 +800,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     boolean initialSignatureEnabled = (boolean) modelSelection.get("initialSignatureEnabled");
                     Integer curSignatureSegmentSelection = (Integer) modelSelection.get("curSignatureSegmentSelection");
                     Integer initialSignatureSegmentSelection = (Integer) modelSelection.get("initialSignatureSegmentSelection");
+
+                    if(curModelsSelection != initialModelsSelection) {
+                        dbHelper.generateTestAuthenticationTable(null, true, dbHelper.getActiveModels());
+                    }
 
                     if(
                             (curSegmentSelection != initialSegmentSelection) ||
@@ -1149,7 +1156,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
             ArrayList<Swipe> swipes = dbHelper.getAllSwipes("REAL_SWIPES");
             try {
-                this.trainingModels = this.getActiveModels();
+                this.trainingModels = dbHelper.getActiveModels();
                 this.oneClassClassifiers = new OneClassClassifier[this.trainingModels.size()];
 
                 if (isGanMode) {
@@ -1276,29 +1283,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             runOnUiThread(() -> context.enableUserInteraction());
             runOnUiThread(() -> context.showAlertDialog("TRAINING RESULTS", strSummary));
         }
-    }
-
-    private List<List<DatabaseHelper.ModelType>> getActiveModels() {
-        List<List<DatabaseHelper.ModelType>> activeModels = new ArrayList<>();
-        Integer modelsCombination = dbHelper.getFeatureData().get(DatabaseHelper.COL_MODELS_COMBINATIONS);
-
-        if(modelsCombination == DatabaseHelper.ModelsCombinations.FULL.ordinal()) {
-            activeModels.add(Arrays.asList(DatabaseHelper.ModelType.FULL));
-        } else if(modelsCombination == DatabaseHelper.ModelsCombinations.INDIVIDUAL_FULL.ordinal()) {
-            for(DatabaseHelper.ModelType modelType : DatabaseHelper.ModelType.values()) {
-                activeModels.add(Arrays.asList(modelType));
-            }
-        } else {
-            Generator.subset(DatabaseHelper.ModelType.HOLD, DatabaseHelper.ModelType.SWIPE, DatabaseHelper.ModelType.KEYSTROKE, DatabaseHelper.ModelType.SIGNATURE)
-                    .simple()
-                    .stream()
-                    .filter(s -> !s.isEmpty())
-                    .filter(s -> s.size() != DatabaseHelper.ModelType.values().length - 1)
-                    .forEach(x -> activeModels.add(x));
-            activeModels.add(Arrays.asList(DatabaseHelper.ModelType.FULL));
-        }
-
-        return activeModels;
     }
 
     public synchronized void saveData(View view) {
