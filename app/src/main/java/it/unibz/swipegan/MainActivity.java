@@ -47,18 +47,23 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.DoubleSummaryStatistics;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.stream.Collectors;
 import java.util.stream.DoubleStream;
 
+import weka.classifiers.Classifier;
 import weka.classifiers.evaluation.Evaluation;
 import weka.classifiers.meta.OneClassClassifier;
+import weka.classifiers.meta.generators.Generator;
 import weka.core.Attribute;
 import weka.core.Instance;
 import weka.core.Instances;
+import weka.filters.unsupervised.attribute.AddValues;
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
     public static final int INVISIBLE = View.INVISIBLE;
@@ -102,7 +107,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     private DatabaseHelper dbHelper;
 
-    private OneClassClassifier oneClassClassifiers[];
+    private CustomOneClassClassifier oneClassClassifiers[];
     private List<List<DatabaseHelper.ModelType>> trainingModels;
     private GAN gan;
 
@@ -140,6 +145,17 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private Swipe pendingSwipe = null;
 
     private static final Integer NUMPAD_SIZE = 10;
+
+    // Classifier options
+    String m_DefaultNumericGenerator = "weka.classifiers.meta.generators.GaussianGenerator -S 1 -M 0.0 -SD 1.0"; //-num
+    String m_DefaultNominalGenerator = "weka.classifiers.meta.generators.NominalGenerator -S 1"; //-nom
+    String m_TargetRejectionRate = "0.001"; //-trr
+    String m_TargetClassLabel = "1"; //-tcl
+    String m_NumRepeats = "10"; //-cvr
+    String m_PercentHeldout = "10.0"; //-cvf
+    String m_ProportionGenerated = "0.5"; //-P
+    String m_Seed = "1"; //-S
+    String m_Classifier = "weka.classifiers.trees.RandomForest"; //-W
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -377,7 +393,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 this.duration = (int) (System.currentTimeMillis() - this.startTime);
 
                 double distance = Math.sqrt(Math.pow(this.yLocations.get(this.yLocations.size() - 1) - this.yLocations.get(0), 2) + Math.pow(this.xLocations.get(this.xLocations.size() - 1) - this.xLocations.get(0), 2));
-                if(distance > 20) {
+                if(distance > 250) {
                     Swipe swipe = this.getSwipe();
                     if(this.isTrainingMode) {
                         this.saveButton.setVisibility(View.INVISIBLE);
@@ -479,7 +495,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             // classifyInstances returns the index of the most likely class identified (NaN if neither class was identified)
             prediction = this.oneClassClassifiers[this.trainingModels.indexOf(modelType)].classifyInstance(instance);
             System.out.println("Prediction: " + prediction);
-            System.out.println("Distribution: " + Arrays.toString(this.oneClassClassifiers[this.trainingModels.indexOf(modelType)].distributionForInstance(instance)));
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -785,6 +800,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 if (resultCode == Activity.RESULT_OK) {
                     Map<String, Object> modelSelection = (HashMap<String, Object>) data.getSerializableExtra("modelSelection");
 
+                    List<List<DatabaseHelper.ModelType>> curActiveModels = dbHelper.getActiveModels().stream().filter(s -> dbHelper.isModelFullyEnabled(s)).collect(Collectors.toList());
+                    List<List<DatabaseHelper.ModelType>> initialActiveModels = (List<List<DatabaseHelper.ModelType>>) modelSelection.get("initialActiveModels");
+
                     Integer curModelsSelection = (Integer) modelSelection.get("curModelsSelection");
                     Integer initialModelsSelection = (Integer) modelSelection.get("initialModelsSelection");
 
@@ -801,8 +819,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     Integer curSignatureSegmentSelection = (Integer) modelSelection.get("curSignatureSegmentSelection");
                     Integer initialSignatureSegmentSelection = (Integer) modelSelection.get("initialSignatureSegmentSelection");
 
-                    if(curModelsSelection != initialModelsSelection) {
-                        dbHelper.generateTestAuthenticationTable(null, true, dbHelper.getActiveModels());
+                    if(
+                            (curModelsSelection != initialModelsSelection) ||
+                            (!curActiveModels.equals(initialActiveModels))
+                    ) {
+                        dbHelper.generateTestAuthenticationTable(null, true, curActiveModels);
                     }
 
                     if(
@@ -1157,7 +1178,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             ArrayList<Swipe> swipes = dbHelper.getAllSwipes("REAL_SWIPES");
             try {
                 this.trainingModels = dbHelper.getActiveModels();
-                this.oneClassClassifiers = new OneClassClassifier[this.trainingModels.size()];
+                this.oneClassClassifiers = new CustomOneClassClassifier[this.trainingModels.size()];
 
                 if (isGanMode) {
                     ResourceMonitor resourceMonitor = new ResourceMonitor();
@@ -1224,9 +1245,19 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         System.out.println("ARFF representation of Dataset");
         System.out.println(dataSet.toString());
 
-        OneClassClassifier oneClassClassifier = new OneClassClassifier();
+        CustomOneClassClassifier oneClassClassifier = new CustomOneClassClassifier();
         try {
-            String[] options = {"-num", "weka.classifiers.meta.generators.GaussianGenerator -S 1 -M 0.0 -SD 1.0", "-nom", "weka.classifiers.meta.generators.NominalGenerator -S 1", "-trr", "0.001", "-tcl", "1", "-cvr", "10", "-cvf", "10.0", "-P", "0.5", "-S", "1", "-W", "weka.classifiers.trees.RandomForest", "--", "-I", "100", "-num-slots", "1", "-K", "0", "-S", "1", "", "", "", "", "", "", "", ""};
+            String[] options = {
+                    "-num", m_DefaultNumericGenerator,
+                    "-nom", m_DefaultNominalGenerator,
+                    "-trr", m_TargetRejectionRate,
+                    "-tcl", m_TargetClassLabel,
+                    "-cvr", m_NumRepeats,
+                    "-cvf", m_PercentHeldout,
+                    "-P", m_ProportionGenerated,
+                    "-S", m_Seed,
+                    "-W", m_Classifier, "--", "-I", "100", "-num-slots", "1", "-K", "0", "-S", "1", "", "", "", "", "", "", "", ""};
+
             oneClassClassifier.setOptions(options);
             oneClassClassifier.setTargetClassLabel("User");
 

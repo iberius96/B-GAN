@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import static com.google.common.base.CaseFormat.LOWER_CAMEL;
 import static com.google.common.base.CaseFormat.LOWER_UNDERSCORE;
@@ -539,7 +540,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         double[] swipeAuthentication = swipe.getAuthentication();
         double[] swipeAuthenticationTime = swipe.getAuthenticationTime();
-        List<List<ModelType>> activeModels = this.getActiveModels();
+        List<List<DatabaseHelper.ModelType>> activeModels = getActiveModels().stream().filter(s -> isModelFullyEnabled(s)).collect(Collectors.toList());
 
         for(List<ModelType> activeModel : activeModels) {
             String modelStr = activeModel.toString().replace(", ", "_").replace("[", "").replace("]", "");

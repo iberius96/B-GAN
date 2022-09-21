@@ -15,7 +15,9 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class ModelActivity extends AppCompatActivity {
     @Override
@@ -25,6 +27,8 @@ public class ModelActivity extends AppCompatActivity {
 
         DatabaseHelper dbHelper = DatabaseHelper.getInstance(getApplicationContext());
         Map<String, Integer> featureData = dbHelper.getFeatureData();
+
+        List<List<DatabaseHelper.ModelType>> initialActiveModels = dbHelper.getActiveModels().stream().filter(s -> dbHelper.isModelFullyEnabled(s)).collect(Collectors.toList());
 
         Spinner modelsSpinner = (Spinner) findViewById(R.id.modelsSpinner);
         ArrayAdapter<CharSequence> modelsSpinnerAdapter = ArrayAdapter.createFromResource(this, R.array.models_combinations, android.R.layout.simple_spinner_item);
@@ -222,6 +226,8 @@ public class ModelActivity extends AppCompatActivity {
                     Intent resultIntent = new Intent();
 
                     Map<String, Object> modelSelection = new HashMap<>();
+                    modelSelection.put("initialActiveModels", initialActiveModels);
+
                     modelSelection.put("initialModelsSelection", initialModelsSelection);
                     modelSelection.put("curModelsSelection", curModelsSelection);
 
