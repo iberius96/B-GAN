@@ -155,7 +155,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     String m_PercentHeldout = "10.0"; //-cvf
     String m_ProportionGenerated = "0.5"; //-P
     String m_Seed = "1"; //-S
-    String m_Classifier = "weka.classifiers.trees.RandomForest"; //-W
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -1256,7 +1255,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     "-cvf", m_PercentHeldout,
                     "-P", m_ProportionGenerated,
                     "-S", m_Seed,
-                    "-W", m_Classifier, "--", "-I", "100", "-num-slots", "1", "-K", "0", "-S", "1", "", "", "", "", "", "", "", ""};
+                    "-W", "weka.classifiers.trees.RandomForest", "--", "-I", "100", "-num-slots", "1", "-K", "0", "-S", "1", "", "", "", "", "", "", "", ""};
 
             oneClassClassifier.setOptions(options);
             oneClassClassifier.setTargetClassLabel("User");

@@ -66,41 +66,6 @@
             </Attribute>
           </value>
         </entry>
-        <entry key="$USER_HOME$/Library/Caches/Google/AndroidStudio2021.2/device-explorer/samsung-sm_g991b-R5CR809X1NW/storage/self/primary/Download/SwipeGAN/2022-09-20_19-10_testAuthentication.csv">
-          <value>
-            <Attribute>
-              <option name="separator" value="," />
-            </Attribute>
-          </value>
-        </entry>
-        <entry key="$USER_HOME$/Library/Caches/Google/AndroidStudio2021.2/device-explorer/samsung-sm_g991b-R5CR809X1NW/storage/self/primary/Download/SwipeGAN/2022-09-21_11-37_ganResults.csv">
-          <value>
-            <Attribute>
-              <option name="separator" value="," />
-            </Attribute>
-          </value>
-        </entry>
-        <entry key="$USER_HOME$/Library/Caches/Google/AndroidStudio2021.2/device-explorer/samsung-sm_g991b-R5CR809X1NW/storage/self/primary/Download/SwipeGAN/2022-09-21_11-37_testAuthentication.csv">
-          <value>
-            <Attribute>
-              <option name="separator" value="," />
-            </Attribute>
-          </value>
-        </entry>
-        <entry key="$USER_HOME$/Library/Caches/Google/AndroidStudio2021.2/device-explorer/samsung-sm_g991b-R5CR809X1NW/storage/self/primary/Download/SwipeGAN/2022-09-21_11-37_testResults.csv">
-          <value>
-            <Attribute>
-              <option name="separator" value="," />
-            </Attribute>
-          </value>
-        </entry>
-        <entry key="$USER_HOME$/Library/Caches/Google/AndroidStudio2021.2/device-explorer/samsung-sm_g991b-R5CR809X1NW/storage/self/primary/Download/SwipeGAN/2022-09-21_11-37_testSwipes.csv">
-          <value>
-            <Attribute>
-              <option name="separator" value="," />
-            </Attribute>
-          </value>
-        </entry>
       </map>
     </option>
   </component>

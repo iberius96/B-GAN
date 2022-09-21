@@ -87,28 +87,28 @@ public class Swipe {
     private double stdZOrientation;
 
     //Keystroke features
-    private double[] keystrokeDurations;
-    private double[] keystrokeIntervals;
-    private double[] keystrokeStartIntervals;
-    private double[] keystrokeEndIntervals;
+    private double[] keystrokeDurations = null;
+    private double[] keystrokeIntervals = null;
+    private double[] keystrokeStartIntervals = null;
+    private double[] keystrokeEndIntervals = null;
     private double keystrokeFullDuration = -1;
 
     //Signature features
-    private double signatureStartX;
-    private double signatureStartY;
-    private double signatureEndX;
-    private double signatureEndY;
-    private double signatureStdX;
-    private double signatureStdY;
-    private double signatureDiffX;
-    private double signatureDiffY;
-    private double signatureEuclideanDistance;
-    private double signatureAvgXVelocity;
-    private double signatureAvgYVelocity;
-    private double signatureMaxXVelocity;
-    private double signatureMaxYVelocity;
-    private double[] signatureSegmentsX;
-    private double[] signatureSegmentsY;
+    private double signatureStartX = -1;
+    private double signatureStartY = -1;
+    private double signatureEndX = -1;
+    private double signatureEndY = -1;
+    private double signatureStdX = -1;
+    private double signatureStdY = -1;
+    private double signatureDiffX = -1;
+    private double signatureDiffY = -1;
+    private double signatureEuclideanDistance = -1;
+    private double signatureAvgXVelocity = -1;
+    private double signatureAvgYVelocity = -1;
+    private double signatureMaxXVelocity = -1;
+    private double signatureMaxYVelocity = -1;
+    private double[] signatureSegmentsX = null;
+    private double[] signatureSegmentsY = null;
 
     private double holdingPosition;
     private String userId;
@@ -997,14 +997,19 @@ public class Swipe {
                     if(signature_feature == DatabaseHelper.COL_SIGNATURE_SEGMENTS_X || signature_feature == DatabaseHelper.COL_SIGNATURE_SEGMENTS_Y) {
                         double[] segment_vals = (double[]) cur_method.invoke(swipe);
 
-                        for(int i = 0; i < segment_vals.length; i++) {
-                            map.put(min_key + "_" + i, map.get(min_key + "_" + i) == null || segment_vals[i] < map.get(min_key + "_" + i) ? segment_vals[i] : map.get(min_key + "_" + i));
-                            map.put(max_key + "_" + i, map.get(max_key + "_" + i) == null || segment_vals[i] > map.get(max_key + "_" + i) ? segment_vals[i] : map.get(max_key + "_" + i));
+                        if (segment_vals != null) {
+                            for (int i = 0; i < segment_vals.length; i++) {
+                                map.put(min_key + "_" + i, map.get(min_key + "_" + i) == null || segment_vals[i] < map.get(min_key + "_" + i) ? segment_vals[i] : map.get(min_key + "_" + i));
+                                map.put(max_key + "_" + i, map.get(max_key + "_" + i) == null || segment_vals[i] > map.get(max_key + "_" + i) ? segment_vals[i] : map.get(max_key + "_" + i));
+                            }
                         }
                     } else {
                         Double cur_value = (Double) cur_method.invoke(swipe);
-                        map.put(min_key, map.get(min_key) == null || cur_value < map.get(min_key) ? cur_value : map.get(min_key));
-                        map.put(max_key, map.get(max_key) == null || cur_value > map.get(max_key) ? cur_value : map.get(max_key));
+
+                        if(cur_value != -1) {
+                            map.put(min_key, map.get(min_key) == null || cur_value < map.get(min_key) ? cur_value : map.get(min_key));
+                            map.put(max_key, map.get(max_key) == null || cur_value > map.get(max_key) ? cur_value : map.get(max_key));
+                        }
                     }
                 } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
                     e.printStackTrace();
@@ -1101,12 +1106,14 @@ public class Swipe {
                 if(signature_feature == DatabaseHelper.COL_SIGNATURE_SEGMENTS_X || signature_feature == DatabaseHelper.COL_SIGNATURE_SEGMENTS_Y) {
                     double[] segment_vals = (double[]) cur_method.invoke(this);
 
-                    for(int i = 0; i < segment_vals.length; i++) {
-                        ret.add((segment_vals[i] - map.get(min_key + "_" + i)) / (map.get(max_key + "_" + i) - map.get(min_key + "_" + i)));
+                    if (segment_vals != null) {
+                        for (int i = 0; i < segment_vals.length; i++) {
+                            ret.add((segment_vals[i] - map.get(min_key + "_" + i)) / (map.get(max_key + "_" + i) - map.get(min_key + "_" + i)));
+                        }
                     }
                 } else {
                     Double cur_value = (Double) cur_method.invoke(this);
-                    ret.add((cur_value - map.get(min_key)) / (map.get(max_key) - map.get(min_key)));
+                    if(cur_value != -1) { ret.add((cur_value - map.get(min_key)) / (map.get(max_key) - map.get(min_key))); }
                 }
             } catch (IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
                 e.printStackTrace();
