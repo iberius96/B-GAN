@@ -400,6 +400,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                         if(this.dbHelper.getFeatureData().get(DatabaseHelper.COL_KEYSTROKE) == 0 && this.dbHelper.getFeatureData().get(DatabaseHelper.COL_SIGNATURE) == 0) {
                             this.dbHelper.addTrainRecord(swipe);
                         } else {
+                            this.attackSwitch.setEnabled(false);
                             this.pendingSwipe = swipe;
                         }
 
@@ -409,6 +410,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                         if(this.dbHelper.getFeatureData().get(DatabaseHelper.COL_KEYSTROKE) == 0 && this.dbHelper.getFeatureData().get(DatabaseHelper.COL_SIGNATURE) == 0) {
                             this.processTestRecord(swipe);
                         } else {
+                            this.attackSwitch.setEnabled(false);
                             this.pendingSwipe = swipe;
                         }
                     }
@@ -482,6 +484,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         swipe.setAuthenticationTime(authenticationTimes);
         swipe.setClassifierSamples(this.dbHelper.getRecordsCount("REAL_SWIPES"));
         this.dbHelper.addTestRecord(swipe);
+
+        this.attackSwitch.setEnabled(true); // Re-enable attack toggle
     }
 
     private double getPredictionFrom(Swipe swipe, List<DatabaseHelper.ModelType> modelType) {

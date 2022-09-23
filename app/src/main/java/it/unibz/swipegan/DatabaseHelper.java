@@ -54,6 +54,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String FEATURE_DATA = "FEATURE_DATA";
     private static final String RESOURCE_DATA = "RESOURCE_DATA";
 
+    private static final String RAW_DATA = "RAW_DATA";
+
     public static final String COL_AUTHENTICATION = "AUTHENTICATION";
     public static final String COL_AUTHENTICATION_TIME = "AUTHENTICATION_TIME";
 
@@ -142,6 +144,24 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public static final String COL_SIGNATURE_MAX_Y_VELOCITY = "signature_max_y_velocity";
     public static final String COL_SIGNATURE_SEGMENTS_X = "signature_segments_x";
     public static final String COL_SIGNATURE_SEGMENTS_Y = "signature_segments_y";
+
+    // Raw data columns
+    public static final String COL_INTERACTION = "interaction";
+    public static final String COL_TIMESTAMP = "timestamp";
+    public static final String COL_SIZE = "size";
+    public static final String COL_X = "x";
+    public static final String COL_Y = "y";
+    public static final String COL_VELOCITY = "velocity";
+    public static final String COL_ACCELEROMETER_X = "accelerometer_x";
+    public static final String COL_ACCELEROMETER_Y = "accelerometer_y";
+    public static final String COL_ACCELEROMETER_Z = "accelerometer_z";
+    public static final String COL_GYROSCOPE_X = "gyroscope_x";
+    public static final String COL_GYROSCOPE_Y = "gyroscope_y";
+    public static final String COL_GYROSCOPE_Z = "gyroscope_z";
+    public static final String COL_ORIENTATION_X = "orientation_x";
+    public static final String COL_ORIENTATION_Y = "orientation_y";
+    public static final String COL_ORIENTATION_Z = "orientation_z";
+    public static final String COL_GESTURE_ID = "gesture_id";
 
     public static final String[] head_features = {
             COL_DURATION,
@@ -282,6 +302,26 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 + COL_TRAINING_TIME + " float(53), "
                 + COL_MODEL_TYPE + " varchar(20))";
 
+        String createRawDataTable = "CREATE TABLE " + RAW_DATA
+                + " (id INTEGER PRIMARY KEY AUTOINCREMENT, "
+                + COL_INTERACTION + " float(53), "
+                + COL_TIMESTAMP + " float(53), "
+                + COL_SIZE + " float(53), "
+                + COL_X + " float(53), "
+                + COL_Y + " float(53), "
+                + COL_VELOCITY + " float(53), "
+                + COL_ACCELEROMETER_X + " float(53), "
+                + COL_ACCELEROMETER_Y + " float(53), "
+                + COL_ACCELEROMETER_Z + " float(53), "
+                + COL_GYROSCOPE_X + " float(53), "
+                + COL_GYROSCOPE_Y + " float(53), "
+                + COL_GYROSCOPE_Z + " float(53), "
+                + COL_ORIENTATION_X + " float(53), "
+                + COL_ORIENTATION_Y + " float(53), "
+                + COL_ORIENTATION_Z + " float(53), "
+                + COL_GESTURE_ID + " float(53), "
+                + COL_USER_ID + " varchar(20))";
+
         this.generateSwipesTables(db,false, true, true);
         this.generateTestAuthenticationTable(db, false, null);
 
@@ -292,6 +332,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL(createUserDataTable);
         db.execSQL(createFeatureDataTable);
         db.execSQL(createResourceDataTable);
+
+        db.execSQL(createRawDataTable);
 
         // Insert default user data
         Cursor user_cursor = db.rawQuery("SELECT * FROM " + USER_DATA, null);
@@ -346,6 +388,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         if(regenerate) {
             for (String swipe_table : swipes_tables) { db.execSQL("DROP TABLE " + swipe_table); }
+            db.execSQL("DROP TABLE " + RAW_DATA);
         }
 
         String swipes_base = "CREATE TABLE " + "BASE_TABLE"
@@ -436,7 +479,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             TEST_AUTHENTICATION,
             USER_DATA,
             FEATURE_DATA,
-            RESOURCE_DATA
+            RESOURCE_DATA,
+            RAW_DATA
         };
 
         for(int i = 0; i < upgrade_tables.length; i++) {
@@ -1192,6 +1236,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         this.saveAsCSV(USER_DATA, currentDateTime + "_" + "userData.csv", resolver, downloadPath);
         this.saveAsCSV(FEATURE_DATA, currentDateTime + "_" + "featureData.csv", resolver, downloadPath);
         this.saveAsCSV(RESOURCE_DATA, currentDateTime + "_" + "resourceData.csv", resolver, downloadPath);
+        this.saveAsCSV(RAW_DATA, currentDateTime + "_" + "rawData.csv", resolver, downloadPath);
     }
 
     public void resetDB(boolean GANOnly) {
@@ -1210,6 +1255,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             db.execSQL("DELETE FROM " + REAL_RESULTS);
             db.execSQL("DELETE FROM " + TEST_RESULTS);
             db.execSQL("DELETE FROM " + TEST_AUTHENTICATION);
+            db.execSQL("DELETE FROM " + RAW_DATA);
         }
     }
 
