@@ -73,6 +73,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private boolean isTrackingSwipe = true;
     private int holdingPosition = 0;
 
+    private DatabaseHelper.ModelType currentGesture = DatabaseHelper.ModelType.SWIPE;
+
     private ArrayList<Float> xLocations = null;
     private ArrayList<Float> yLocations = null;
     private ArrayList<Float> xVelocityTranslation = null;
@@ -155,6 +157,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     String m_PercentHeldout = "10.0"; //-cvf
     String m_ProportionGenerated = "0.5"; //-P
     String m_Seed = "1"; //-S
+
+    RawDataCollector rawDataCollector;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -251,6 +255,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         this.sensorManager.registerListener(MainActivity.this, gyroscope, SensorManager.SENSOR_DELAY_NORMAL);
         this.sensorManager.registerListener(MainActivity.this, magnetometer, SensorManager.SENSOR_DELAY_NORMAL);
 
+        this.rawDataCollector = new RawDataCollector();
+
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
             ActivityCompat.requestPermissions(this, new String[]{READ_EXTERNAL_STORAGE, WRITE_EXTERNAL_STORAGE}, PackageManager.PERMISSION_GRANTED);
             StrictMode.VmPolicy.Builder builder = new StrictMode.VmPolicy.Builder();
@@ -315,6 +321,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         this.isTrackingMagnetometer = tracking;
     }
 
+    public boolean isTrackingSensors() {
+        return  this.isTrackingAccelerometer == true &&
+                this.isTrackingGyroscope == true &&
+                this.isTrackingMagnetometer == true;
+    }
+
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         if (this.isTrainingClassifier) {
@@ -344,6 +356,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 this.xLocations.add(event.getX(pointerId));
                 this.yLocations.add(event.getY(pointerId));
                 this.sizes.add(event.getSize(pointerId));
+
+                if(!rawDataCollector.isRunning()) {
+                    rawDataCollector.start(this);
+                }
 
                 break;
             case MotionEvent.ACTION_MOVE:
@@ -418,8 +434,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     if(this.dbHelper.getFeatureData().get(DatabaseHelper.COL_KEYSTROKE) == 1) {
                         this.isTrackingSwipe = false;
                         this.resetKeystrokeValues();
+                        this.currentGesture = DatabaseHelper.ModelType.KEYSTROKE;
                         this.setNumpadVisibility(View.VISIBLE);
                     } else if (this.dbHelper.getFeatureData().get(DatabaseHelper.COL_SIGNATURE) == 1) {
+                        this.currentGesture = DatabaseHelper.ModelType.SIGNATURE;
                         this.setSignatureVisibility(View.VISIBLE);
                     }
                 }
@@ -436,6 +454,26 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 this.resetSwipeValues();
                 break;
         }
+    }
+
+    public double[] getRawData() {
+        return new double[]{
+                this.sizes.size() != 0 ? this.sizes.get(this.sizes.size() - 1) : 0,
+                this.xLocations.size() != 0 ? this.xLocations.get(this.xLocations.size() - 1) : 0,
+                this.yLocations.size() != 0 ? this.yLocations.get(this.yLocations.size() - 1) : 0,
+                this.xVelocityTranslation.size() != 0 ? this.xVelocityTranslation.get(this.xVelocityTranslation.size() - 1) : 0,
+                this.yVelocityTranslation.size() != 0 ? this.yVelocityTranslation.get(this.yVelocityTranslation.size() - 1) : 0,
+                this.xAccelerometers.size() != 0 ? this.xAccelerometers.get(this.xAccelerometers.size() - 1) : 0,
+                this.yAccelerometers.size() != 0 ? this.yAccelerometers.get(this.yAccelerometers.size() - 1) : 0,
+                this.zAccelerometers.size() != 0 ? this.zAccelerometers.get(this.zAccelerometers.size() - 1) : 0,
+                this.xGyroscopes.size() != 0 ? this.xGyroscopes.get(this.xGyroscopes.size() - 1) : 0,
+                this.yGyroscopes.size() != 0 ? this.yGyroscopes.get(this.yGyroscopes.size() - 1) : 0,
+                this.zGyroscopes.size() != 0 ? this.zGyroscopes.get(this.zGyroscopes.size() - 1) : 0,
+                this.xOrientations.size() != 0 ? this.xOrientations.get(this.xOrientations.size() - 1) : 0,
+                this.yOrientations.size() != 0 ? this.yOrientations.get(this.yOrientations.size() - 1) : 0,
+                this.zOrientations.size() != 0 ? this.zOrientations.get(this.zOrientations.size() - 1) : 0,
+                this.currentGesture.ordinal()
+        };
     }
 
     private void processTestRecord(Swipe swipe) {
@@ -505,6 +543,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     private void resetSwipeValues() {
+        if(rawDataCollector.isRunning()) {
+            rawDataCollector.stop();
+        }
+
         this.xLocations.clear();
         this.yLocations.clear();
         this.xVelocityTranslation.clear();
@@ -937,6 +979,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
                         if(this.mainActivity.dbHelper.getFeatureData().get(DatabaseHelper.COL_SIGNATURE) == 1) {
                             this.mainActivity.setSensorsTracking(false);
+                            this.mainActivity.currentGesture = DatabaseHelper.ModelType.SIGNATURE;
                             this.mainActivity.setSignatureVisibility(View.VISIBLE);
                         } else {
                             this.mainActivity.setHoldFeatures(this.mainActivity.pendingSwipe); // Finalize hold features
@@ -1018,6 +1061,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             this.signatureView.clearPath();
             this.resetSwipeValues();
             this.isTrackingSwipe = true;
+            this.currentGesture = DatabaseHelper.ModelType.SWIPE;
             this.setSignatureVisibility(INVISIBLE);
 
             if(this.isTrainingMode) {

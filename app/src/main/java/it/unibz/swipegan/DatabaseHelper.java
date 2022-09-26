@@ -54,7 +54,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String FEATURE_DATA = "FEATURE_DATA";
     private static final String RESOURCE_DATA = "RESOURCE_DATA";
 
-    private static final String RAW_DATA = "RAW_DATA";
+    private static final String TRAIN_RAW_DATA = "TRAIN_RAW_DATA";
 
     public static final String COL_AUTHENTICATION = "AUTHENTICATION";
     public static final String COL_AUTHENTICATION_TIME = "AUTHENTICATION_TIME";
@@ -151,7 +151,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public static final String COL_SIZE = "size";
     public static final String COL_X = "x";
     public static final String COL_Y = "y";
-    public static final String COL_VELOCITY = "velocity";
+    public static final String COL_VELOCITY_X = "velocity_x";
+    public static final String COL_VELOCITY_Y = "velocity_Y";
     public static final String COL_ACCELEROMETER_X = "accelerometer_x";
     public static final String COL_ACCELEROMETER_Y = "accelerometer_y";
     public static final String COL_ACCELEROMETER_Z = "accelerometer_z";
@@ -302,14 +303,15 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 + COL_TRAINING_TIME + " float(53), "
                 + COL_MODEL_TYPE + " varchar(20))";
 
-        String createRawDataTable = "CREATE TABLE " + RAW_DATA
+        String createRawDataTable = "CREATE TABLE " + TRAIN_RAW_DATA
                 + " (id INTEGER PRIMARY KEY AUTOINCREMENT, "
                 + COL_INTERACTION + " float(53), "
                 + COL_TIMESTAMP + " float(53), "
                 + COL_SIZE + " float(53), "
                 + COL_X + " float(53), "
                 + COL_Y + " float(53), "
-                + COL_VELOCITY + " float(53), "
+                + COL_VELOCITY_X + " float(53), "
+                + COL_VELOCITY_Y + " float(53), "
                 + COL_ACCELEROMETER_X + " float(53), "
                 + COL_ACCELEROMETER_Y + " float(53), "
                 + COL_ACCELEROMETER_Z + " float(53), "
@@ -388,7 +390,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         if(regenerate) {
             for (String swipe_table : swipes_tables) { db.execSQL("DROP TABLE " + swipe_table); }
-            db.execSQL("DROP TABLE " + RAW_DATA);
+            db.execSQL("DROP TABLE " + TRAIN_RAW_DATA);
         }
 
         String swipes_base = "CREATE TABLE " + "BASE_TABLE"
@@ -480,7 +482,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             USER_DATA,
             FEATURE_DATA,
             RESOURCE_DATA,
-            RAW_DATA
+            TRAIN_RAW_DATA
         };
 
         for(int i = 0; i < upgrade_tables.length; i++) {
@@ -1236,7 +1238,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         this.saveAsCSV(USER_DATA, currentDateTime + "_" + "userData.csv", resolver, downloadPath);
         this.saveAsCSV(FEATURE_DATA, currentDateTime + "_" + "featureData.csv", resolver, downloadPath);
         this.saveAsCSV(RESOURCE_DATA, currentDateTime + "_" + "resourceData.csv", resolver, downloadPath);
-        this.saveAsCSV(RAW_DATA, currentDateTime + "_" + "rawData.csv", resolver, downloadPath);
+        this.saveAsCSV(TRAIN_RAW_DATA, currentDateTime + "_" + "rawData.csv", resolver, downloadPath);
     }
 
     public void resetDB(boolean GANOnly) {
@@ -1255,7 +1257,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             db.execSQL("DELETE FROM " + REAL_RESULTS);
             db.execSQL("DELETE FROM " + TEST_RESULTS);
             db.execSQL("DELETE FROM " + TEST_AUTHENTICATION);
-            db.execSQL("DELETE FROM " + RAW_DATA);
+            db.execSQL("DELETE FROM " + TRAIN_RAW_DATA);
         }
     }
 
