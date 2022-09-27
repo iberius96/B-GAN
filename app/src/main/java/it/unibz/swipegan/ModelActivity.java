@@ -8,6 +8,7 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.EditText;
 import android.widget.Spinner;
 
 import androidx.appcompat.app.AlertDialog;
@@ -36,6 +37,20 @@ public class ModelActivity extends AppCompatActivity {
         modelsSpinner.setAdapter(modelsSpinnerAdapter);
         modelsSpinner.setSelection(dbHelper.getFeatureData().get(DatabaseHelper.COL_MODELS_COMBINATIONS));
         Integer initialModelsSelection = modelsSpinner.getSelectedItemPosition();
+
+        CheckBox rawDataCheckBox = findViewById(R.id.rawDataCheckBox);
+        rawDataCheckBox.setChecked(featureData.get(DatabaseHelper.COL_RAW_DATA) == 1);
+
+        EditText rawDataFrequencyEditTextNumber = findViewById(R.id.rawDataFrequencyEditTextNumber);
+        rawDataFrequencyEditTextNumber.setText(String.valueOf(featureData.get(DatabaseHelper.COL_RAW_DATA_FREQUENCY)));
+
+        rawDataCheckBox.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v)
+            {
+                rawDataFrequencyEditTextNumber.setEnabled(rawDataCheckBox.isChecked());
+            }
+        });
 
         CheckBox accelerationCheckBox = findViewById(R.id.accelerationCheckBox);
         accelerationCheckBox.setChecked(featureData.get(DatabaseHelper.COL_ACCELERATION) == 1);
@@ -212,7 +227,9 @@ public class ModelActivity extends AppCompatActivity {
                             signatureStartEndPosCheckBox.isChecked() ? 1 : 0,
                             signatureVelocityCheckBox.isChecked() ? 1 : 0,
                             signatureShapeCheckBox.isChecked() ? 1 : 0,
-                            Integer.parseInt((String) signatureSegmentsSpinner.getSelectedItem())
+                            Integer.parseInt((String) signatureSegmentsSpinner.getSelectedItem()),
+                            rawDataCheckBox.isChecked() ? 1 : 0,
+                            Integer.parseInt(rawDataFrequencyEditTextNumber.getText().toString())
                     );
 
                     Integer curModelsSelection = modelsSpinner.getSelectedItemPosition();

@@ -111,6 +111,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public static final String COL_SIGNATURE_VELOCITY = "signature_velocity";
     public static final String COL_SIGNATURE_SHAPE = "signature_shape";
     public static final String COL_SIGNATURE_SHAPE_SEGMENTS = "signature_shape_segments";
+    public static final String COL_RAW_DATA = "raw_data";
+    public static final String COL_RAW_DATA_FREQUENCY = "raw_data_frequency";
 
     // Resource columns
     private static final String COL_MIN_CPU_TEMP = "min_cpu_temp";
@@ -146,8 +148,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public static final String COL_SIGNATURE_SEGMENTS_Y = "signature_segments_y";
 
     // Raw data columns
-    public static final String COL_INTERACTION = "interaction";
-    public static final String COL_TIMESTAMP = "timestamp";
     public static final String COL_SIZE = "size";
     public static final String COL_X = "x";
     public static final String COL_Y = "y";
@@ -197,6 +197,22 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         COL_SIGNATURE_SEGMENTS_X, COL_SIGNATURE_SEGMENTS_Y
     };
 
+    public static final String[] raw_features = {
+        COL_SIZE,
+        COL_X, COL_Y,
+        COL_VELOCITY_X, COL_VELOCITY_Y,
+        COL_ACCELEROMETER_X,
+        COL_ACCELEROMETER_Y,
+        COL_ACCELEROMETER_Z,
+        COL_GYROSCOPE_X,
+        COL_GYROSCOPE_Y,
+        COL_GYROSCOPE_Z,
+        COL_ORIENTATION_X,
+        COL_ORIENTATION_Y,
+        COL_ORIENTATION_Z,
+        COL_GESTURE_ID
+    };
+
     public enum ModelType {
         HOLD,
         SWIPE,
@@ -214,6 +230,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public static final Integer BASE_FEATURES = 66; // TODO: Change this hardcoded value
     public static final Integer DEFAULT_SEGMENTS = 10;
     public static final Integer DEFAULT_PIN_LENGTH = 4;
+    public static final Integer DEFAULT_FREQUENCY = 50;
 
     public DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, 1);
@@ -289,7 +306,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 + COL_SIGNATURE_START_END_POS + " integer(1), "
                 + COL_SIGNATURE_VELOCITY + " integer(1), "
                 + COL_SIGNATURE_SHAPE + " integer(1), "
-                + COL_SIGNATURE_SHAPE_SEGMENTS + " integer(2))";
+                + COL_SIGNATURE_SHAPE_SEGMENTS + " integer(2), "
+                + COL_RAW_DATA + " integer(1), "
+                + COL_RAW_DATA_FREQUENCY + " integer(3))";
 
         String createResourceDataTable = "CREATE TABLE " + RESOURCE_DATA
                 + " (id INTEGER PRIMARY KEY AUTOINCREMENT, "
@@ -305,8 +324,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         String createRawDataTable = "CREATE TABLE " + TRAIN_RAW_DATA
                 + " (id INTEGER PRIMARY KEY AUTOINCREMENT, "
-                + COL_INTERACTION + " float(53), "
-                + COL_TIMESTAMP + " float(53), "
                 + COL_SIZE + " float(53), "
                 + COL_X + " float(53), "
                 + COL_Y + " float(53), "
@@ -321,8 +338,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 + COL_ORIENTATION_X + " float(53), "
                 + COL_ORIENTATION_Y + " float(53), "
                 + COL_ORIENTATION_Z + " float(53), "
-                + COL_GESTURE_ID + " float(53), "
-                + COL_USER_ID + " varchar(20))";
+                + COL_GESTURE_ID + " float(53))";
 
         this.generateSwipesTables(db,false, true, true);
         this.generateTestAuthenticationTable(db, false, null);
@@ -367,7 +383,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                     COL_ACCELERATION, COL_ANGULAR_VELOCITY, COL_ORIENTATION,
                     COL_SWIPE_DURATION, COL_SWIPE_SHAPE, COL_SWIPE_SHAPE_SEGMENTS, COL_SWIPE_TOUCH_SIZE, COL_SWIPE_START_END_POS, COL_SWIPE_VELOCITY,
                     COL_KEYSTROKE, COL_PIN_LENGTH, COL_KEYSTROKE_DURATIONS, COL_KEYSTROKE_INTERVALS,
-                    COL_SIGNATURE, COL_SIGNATURE_START_END_POS, COL_SIGNATURE_VELOCITY, COL_SIGNATURE_SHAPE, COL_SIGNATURE_SHAPE_SEGMENTS};
+                    COL_SIGNATURE, COL_SIGNATURE_START_END_POS, COL_SIGNATURE_VELOCITY, COL_SIGNATURE_SHAPE, COL_SIGNATURE_SHAPE_SEGMENTS,
+                    COL_RAW_DATA, COL_RAW_DATA_FREQUENCY};
 
             for(String feature_col : feature_cols) {
                 if(feature_col == COL_MODELS_COMBINATIONS) {
@@ -376,6 +393,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                     contentValues.put(feature_col, DEFAULT_SEGMENTS);
                 } else if(feature_col == COL_PIN_LENGTH) {
                     contentValues.put(feature_col, DEFAULT_PIN_LENGTH);
+                } else if (feature_col == COL_RAW_DATA_FREQUENCY){
+                    contentValues.put(feature_col, DEFAULT_FREQUENCY);
                 } else {
                     contentValues.put(feature_col, 1);
                 }
@@ -578,6 +597,18 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         long result = db.insert(tableName, null, contentValues);
         //if inserted incorrectly it will return -1
+        return result != -1;
+    }
+
+    public boolean addRawDataEntry(Map<String, Double> rawDataEntry, String tableName) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues contentValues = new ContentValues();
+
+        for(String raw_feature : raw_features) {
+            contentValues.put(raw_feature, rawDataEntry.get(raw_feature));
+        }
+
+        long result = db.insert(tableName, null, contentValues);
         return result != -1;
     }
 
@@ -976,7 +1007,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             int acceleration, int angular_velocity, int orientation,
             int swipe_duration, int swipe_shape, int swipe_shape_segments, int swipe_touch_size, int swipe_start_end_pos, int swipe_velocity,
             int keystroke, int pin_length, int keystroke_durations, int keystroke_intervals,
-            int signature, int signature_start_end_pos, int signature_velocity, int signature_shape, int signature_shape_segments) {
+            int signature, int signature_start_end_pos, int signature_velocity, int signature_shape, int signature_shape_segments,
+            int raw_data, int raw_data_frequency) {
         SQLiteDatabase db = this.getWritableDatabase();
         db.execSQL("DELETE FROM " + FEATURE_DATA);
 
@@ -1001,6 +1033,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         contentValues.put(COL_SIGNATURE_VELOCITY, signature_velocity);
         contentValues.put(COL_SIGNATURE_SHAPE, signature_shape);
         contentValues.put(COL_SIGNATURE_SHAPE_SEGMENTS, signature_shape_segments);
+        contentValues.put(COL_RAW_DATA, raw_data);
+        contentValues.put(COL_RAW_DATA_FREQUENCY, raw_data_frequency);
 
         long result = db.insert(FEATURE_DATA, null, contentValues);
         return result != -1;
@@ -1034,6 +1068,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         featureData.put(COL_SIGNATURE_VELOCITY, cursor.getInt(cursor.getColumnIndex(COL_SIGNATURE_VELOCITY)));
         featureData.put(COL_SIGNATURE_SHAPE, cursor.getInt(cursor.getColumnIndex(COL_SIGNATURE_SHAPE)));
         featureData.put(COL_SIGNATURE_SHAPE_SEGMENTS, cursor.getInt(cursor.getColumnIndex(COL_SIGNATURE_SHAPE_SEGMENTS)));
+        featureData.put(COL_RAW_DATA, cursor.getInt(cursor.getColumnIndex(COL_RAW_DATA)));
+        featureData.put(COL_RAW_DATA_FREQUENCY, cursor.getInt(cursor.getColumnIndex(COL_RAW_DATA_FREQUENCY)));
 
         cursor.close();
 

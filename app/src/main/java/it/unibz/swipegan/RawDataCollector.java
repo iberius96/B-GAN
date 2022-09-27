@@ -4,12 +4,15 @@ import java.util.Arrays;
 
 public class RawDataCollector implements Runnable {
 
-    private final Integer frequency = 50;
+    private Integer frequency;
     private Thread resourceMonitorThread;
     private MainActivity mainActivity;
+    private DatabaseHelper dbHelper;
 
-    public void start(MainActivity mainActivity) {
+    public void start(MainActivity mainActivity, DatabaseHelper dbHelper) {
         this.mainActivity = mainActivity;
+        this.dbHelper = dbHelper;
+        this.frequency = this.dbHelper.getFeatureData().get(DatabaseHelper.COL_RAW_DATA_FREQUENCY);
 
         if (resourceMonitorThread == null) {
             resourceMonitorThread = new Thread(this);
@@ -33,16 +36,16 @@ public class RawDataCollector implements Runnable {
         long dueDate = System.currentTimeMillis();
         while (!resourceMonitorThread.interrupted()) {
             if(this.mainActivity.isTrackingSensors()) {
-                System.out.println(Arrays.toString(this.mainActivity.getRawData()));
+                dbHelper.addRawDataEntry(this.mainActivity.getRawData(), "TRAIN_RAW_DATA");
             }
 
             dueDate = dueDate + (1000 / this.frequency);
             long sleepInterval = dueDate - System.currentTimeMillis();
             if (sleepInterval > 0) {
                 try {
-                    Thread.sleep(sleepInterval);
+                    Thread.currentThread().sleep(sleepInterval);
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    Thread.currentThread().interrupt();
                 }
             }
         }

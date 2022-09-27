@@ -47,7 +47,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.DoubleSummaryStatistics;
 import java.util.HashMap;
 import java.util.List;
@@ -56,14 +55,10 @@ import java.util.Random;
 import java.util.stream.Collectors;
 import java.util.stream.DoubleStream;
 
-import weka.classifiers.Classifier;
 import weka.classifiers.evaluation.Evaluation;
-import weka.classifiers.meta.OneClassClassifier;
-import weka.classifiers.meta.generators.Generator;
 import weka.core.Attribute;
 import weka.core.Instance;
 import weka.core.Instances;
-import weka.filters.unsupervised.attribute.AddValues;
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
     public static final int INVISIBLE = View.INVISIBLE;
@@ -304,6 +299,14 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 this.zOrientations.add(orientation[0]);
             }
         }
+
+        if(
+                this.dbHelper.getFeatureData().get(DatabaseHelper.COL_RAW_DATA) == 1 &&
+                this.isTrackingSensors() &&
+                !rawDataCollector.isRunning()
+        ) {
+            rawDataCollector.start(this, dbHelper);
+        }
     }
 
     private float[] applyLowPassFilter(float[] input, float[] output) {
@@ -356,10 +359,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 this.xLocations.add(event.getX(pointerId));
                 this.yLocations.add(event.getY(pointerId));
                 this.sizes.add(event.getSize(pointerId));
-
-                if(!rawDataCollector.isRunning()) {
-                    rawDataCollector.start(this);
-                }
 
                 break;
             case MotionEvent.ACTION_MOVE:
@@ -456,24 +455,26 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         }
     }
 
-    public double[] getRawData() {
-        return new double[]{
-                this.sizes.size() != 0 ? this.sizes.get(this.sizes.size() - 1) : 0,
-                this.xLocations.size() != 0 ? this.xLocations.get(this.xLocations.size() - 1) : 0,
-                this.yLocations.size() != 0 ? this.yLocations.get(this.yLocations.size() - 1) : 0,
-                this.xVelocityTranslation.size() != 0 ? this.xVelocityTranslation.get(this.xVelocityTranslation.size() - 1) : 0,
-                this.yVelocityTranslation.size() != 0 ? this.yVelocityTranslation.get(this.yVelocityTranslation.size() - 1) : 0,
-                this.xAccelerometers.size() != 0 ? this.xAccelerometers.get(this.xAccelerometers.size() - 1) : 0,
-                this.yAccelerometers.size() != 0 ? this.yAccelerometers.get(this.yAccelerometers.size() - 1) : 0,
-                this.zAccelerometers.size() != 0 ? this.zAccelerometers.get(this.zAccelerometers.size() - 1) : 0,
-                this.xGyroscopes.size() != 0 ? this.xGyroscopes.get(this.xGyroscopes.size() - 1) : 0,
-                this.yGyroscopes.size() != 0 ? this.yGyroscopes.get(this.yGyroscopes.size() - 1) : 0,
-                this.zGyroscopes.size() != 0 ? this.zGyroscopes.get(this.zGyroscopes.size() - 1) : 0,
-                this.xOrientations.size() != 0 ? this.xOrientations.get(this.xOrientations.size() - 1) : 0,
-                this.yOrientations.size() != 0 ? this.yOrientations.get(this.yOrientations.size() - 1) : 0,
-                this.zOrientations.size() != 0 ? this.zOrientations.get(this.zOrientations.size() - 1) : 0,
-                this.currentGesture.ordinal()
-        };
+    public Map<String, Double> getRawData() {
+        Map<String, Double> rawData = new HashMap<String, Double>();
+
+        rawData.put(DatabaseHelper.COL_SIZE, this.sizes.size() != 0 ? this.sizes.get(this.sizes.size() - 1) : 0.0);
+        rawData.put(DatabaseHelper.COL_X, this.xLocations.size() != 0 ? this.xLocations.get(this.xLocations.size() - 1) : 0.0);
+        rawData.put(DatabaseHelper.COL_Y, this.yLocations.size() != 0 ? this.yLocations.get(this.yLocations.size() - 1) : 0.0);
+        rawData.put(DatabaseHelper.COL_VELOCITY_X, this.xVelocityTranslation.size() != 0 ? this.xVelocityTranslation.get(this.xVelocityTranslation.size() - 1) : 0.0);
+        rawData.put(DatabaseHelper.COL_VELOCITY_Y, this.yVelocityTranslation.size() != 0 ? this.yVelocityTranslation.get(this.yVelocityTranslation.size() - 1) : 0.0);
+        rawData.put(DatabaseHelper.COL_ACCELEROMETER_X, this.xAccelerometers.size() != 0 ? this.xAccelerometers.get(this.xAccelerometers.size() - 1) : 0.0);
+        rawData.put(DatabaseHelper.COL_ACCELEROMETER_Y, this.yAccelerometers.size() != 0 ? this.yAccelerometers.get(this.yAccelerometers.size() - 1) : 0.0);
+        rawData.put(DatabaseHelper.COL_ACCELEROMETER_Z, this.zAccelerometers.size() != 0 ? this.zAccelerometers.get(this.zAccelerometers.size() - 1) : 0.0);
+        rawData.put(DatabaseHelper.COL_GYROSCOPE_X, this.xGyroscopes.size() != 0 ? this.xGyroscopes.get(this.xGyroscopes.size() - 1) : 0.0);
+        rawData.put(DatabaseHelper.COL_GYROSCOPE_Y, this.yGyroscopes.size() != 0 ? this.yGyroscopes.get(this.yGyroscopes.size() - 1) : 0.0);
+        rawData.put(DatabaseHelper.COL_GYROSCOPE_Z, this.zGyroscopes.size() != 0 ? this.zGyroscopes.get(this.zGyroscopes.size() - 1) : 0.0);
+        rawData.put(DatabaseHelper.COL_ORIENTATION_X, this.xOrientations.size() != 0 ? this.xOrientations.get(this.xOrientations.size() - 1) : 0.0);
+        rawData.put(DatabaseHelper.COL_ORIENTATION_Y, this.yOrientations.size() != 0 ? this.yOrientations.get(this.yOrientations.size() - 1) : 0.0);
+        rawData.put(DatabaseHelper.COL_ORIENTATION_Z, this.zOrientations.size() != 0 ? this.zOrientations.get(this.zOrientations.size() - 1) : 0.0);
+        rawData.put(DatabaseHelper.COL_GESTURE_ID, (double) this.currentGesture.ordinal());
+
+        return rawData;
     }
 
     private void processTestRecord(Swipe swipe) {
