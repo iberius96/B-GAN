@@ -40,9 +40,11 @@ public class ModelActivity extends AppCompatActivity {
 
         CheckBox rawDataCheckBox = findViewById(R.id.rawDataCheckBox);
         rawDataCheckBox.setChecked(featureData.get(DatabaseHelper.COL_RAW_DATA) == 1);
+        boolean initialRawDataEnabled = rawDataCheckBox.isChecked();
 
         EditText rawDataFrequencyEditTextNumber = findViewById(R.id.rawDataFrequencyEditTextNumber);
         rawDataFrequencyEditTextNumber.setText(String.valueOf(featureData.get(DatabaseHelper.COL_RAW_DATA_FREQUENCY)));
+        Integer initialRawDataFrequency = Integer.parseInt(String.valueOf(rawDataFrequencyEditTextNumber.getText()));
 
         rawDataCheckBox.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -233,6 +235,10 @@ public class ModelActivity extends AppCompatActivity {
                     );
 
                     Integer curModelsSelection = modelsSpinner.getSelectedItemPosition();
+
+                    boolean curRawDataEnabled = rawDataCheckBox.isChecked();
+                    Integer curRawDataFrequency = Integer.parseInt(String.valueOf(rawDataFrequencyEditTextNumber.getText()));
+
                     Integer curSegmentSelection = Integer.parseInt((String) swipeSegmentSpinner.getSelectedItem());
                     Integer curPinLength = Integer.parseInt((String) keystrokeLengthSpinner.getSelectedItem());
                     boolean curKeystrokeEnabled = keystrokeCheckBox.isChecked();
@@ -245,8 +251,13 @@ public class ModelActivity extends AppCompatActivity {
                     Map<String, Object> modelSelection = new HashMap<>();
                     modelSelection.put("initialActiveModels", initialActiveModels);
 
-                    modelSelection.put("initialModelsSelection", initialModelsSelection);
                     modelSelection.put("curModelsSelection", curModelsSelection);
+                    modelSelection.put("initialModelsSelection", initialModelsSelection);
+
+                    modelSelection.put("curRawDataEnabled", curRawDataEnabled);
+                    modelSelection.put("initialRawDataEnabled", initialRawDataEnabled);
+                    modelSelection.put("curRawDataFrequency", curRawDataFrequency);
+                    modelSelection.put("initialRawDataFrequency", initialRawDataFrequency);
 
                     modelSelection.put("curSegmentSelection", curSegmentSelection);
                     modelSelection.put("initialSegmentSelection", initialSegmentSelection);

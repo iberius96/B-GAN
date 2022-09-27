@@ -852,6 +852,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     Integer curModelsSelection = (Integer) modelSelection.get("curModelsSelection");
                     Integer initialModelsSelection = (Integer) modelSelection.get("initialModelsSelection");
 
+                    boolean curRawDataEnabled = (boolean) modelSelection.get("curRawDataEnabled");
+                    boolean initialRawDataEnabled = (boolean) modelSelection.get("initialRawDataEnabled");
+                    Integer curRawDataFrequency = (Integer) modelSelection.get("curRawDataFrequency");
+                    Integer initialRawDataFrequency = (Integer) modelSelection.get("initialRawDataFrequency");
+
                     Integer curSegmentSelection = (Integer) modelSelection.get("curSegmentSelection");
                     Integer initialSegmentSelection = (Integer) modelSelection.get("initialSegmentSelection");
 
@@ -873,6 +878,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     }
 
                     if(
+                            (curRawDataEnabled != initialRawDataEnabled) ||
+                            (curRawDataFrequency != initialRawDataFrequency) ||
                             (curSegmentSelection != initialSegmentSelection) ||
                             (curKeystrokeEnabled != initialKeystrokeEnabled) ||
                             (curPinLength != initialPinLength) ||
