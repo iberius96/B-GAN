@@ -139,6 +139,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private int keystrokeCount = 0;
     private long keystrokeStartTime = 0;
     private long keystrokeEndTime = 0;
+
+    private double lastKeystrokeX = 0.0;
+    private double lastKeystrokeY = 0.0;
+    private double lastKeystrokeSize = 0.0;
+
     private Swipe pendingSwipe = null;
 
     private static final Integer NUMPAD_SIZE = 10;
@@ -302,7 +307,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         if(
                 this.dbHelper.getFeatureData().get(DatabaseHelper.COL_RAW_DATA) == 1 &&
-                this.isTrackingSensors() &&
+                this.xOrientations.size() != 0 &&
                 !rawDataCollector.isRunning()
         ) {
             rawDataCollector.start(this, dbHelper);
@@ -458,11 +463,26 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     public Map<String, Double> getRawData() {
         Map<String, Double> rawData = new HashMap<String, Double>();
 
-        rawData.put(DatabaseHelper.COL_SIZE, this.sizes.size() != 0 ? this.sizes.get(this.sizes.size() - 1) : 0.0);
-        rawData.put(DatabaseHelper.COL_X, this.xLocations.size() != 0 ? this.xLocations.get(this.xLocations.size() - 1) : 0.0);
-        rawData.put(DatabaseHelper.COL_Y, this.yLocations.size() != 0 ? this.yLocations.get(this.yLocations.size() - 1) : 0.0);
-        rawData.put(DatabaseHelper.COL_VELOCITY_X, this.xVelocityTranslation.size() != 0 ? this.xVelocityTranslation.get(this.xVelocityTranslation.size() - 1) : 0.0);
-        rawData.put(DatabaseHelper.COL_VELOCITY_Y, this.yVelocityTranslation.size() != 0 ? this.yVelocityTranslation.get(this.yVelocityTranslation.size() - 1) : 0.0);
+        if(this.currentGesture.ordinal() == DatabaseHelper.ModelType.SIGNATURE.ordinal()) {
+            rawData.put(DatabaseHelper.COL_SIZE, this.signatureView.getSizes().size() != 0 ? this.signatureView.getSizes().get(this.signatureView.getSizes().size() - 1) : 0.0);
+            rawData.put(DatabaseHelper.COL_X, this.signatureView.getXLocations().size() != 0 ? this.signatureView.getXLocations().get(this.signatureView.getXLocations().size() - 1) : 0.0);
+            rawData.put(DatabaseHelper.COL_Y, this.signatureView.getYLocations().size() != 0 ? this.signatureView.getYLocations().get(this.signatureView.getYLocations().size() - 1) : 0.0);
+            rawData.put(DatabaseHelper.COL_VELOCITY_X, this.signatureView.getXVelocityTranslations().size() != 0 ? this.signatureView.getXVelocityTranslations().get(this.signatureView.getXVelocityTranslations().size() - 1) : 0.0);
+            rawData.put(DatabaseHelper.COL_VELOCITY_Y, this.signatureView.getYVelocityTranslations().size() != 0 ? this.signatureView.getYVelocityTranslations().get(this.signatureView.getYVelocityTranslations().size() - 1) : 0.0);
+        } else if(this.currentGesture.ordinal() == DatabaseHelper.ModelType.KEYSTROKE.ordinal()) {
+            rawData.put(DatabaseHelper.COL_SIZE, this.lastKeystrokeSize);
+            rawData.put(DatabaseHelper.COL_X, this.lastKeystrokeX);
+            rawData.put(DatabaseHelper.COL_Y, this.lastKeystrokeY);
+            rawData.put(DatabaseHelper.COL_VELOCITY_X, 0.0);
+            rawData.put(DatabaseHelper.COL_VELOCITY_Y, 0.0);
+        } else {
+            rawData.put(DatabaseHelper.COL_SIZE, this.sizes.size() != 0 ? this.sizes.get(this.sizes.size() - 1) : 0.0);
+            rawData.put(DatabaseHelper.COL_X, this.xLocations.size() != 0 ? this.xLocations.get(this.xLocations.size() - 1) : 0.0);
+            rawData.put(DatabaseHelper.COL_Y, this.yLocations.size() != 0 ? this.yLocations.get(this.yLocations.size() - 1) : 0.0);
+            rawData.put(DatabaseHelper.COL_VELOCITY_X, this.xVelocityTranslation.size() != 0 ? this.xVelocityTranslation.get(this.xVelocityTranslation.size() - 1) : 0.0);
+            rawData.put(DatabaseHelper.COL_VELOCITY_Y, this.yVelocityTranslation.size() != 0 ? this.yVelocityTranslation.get(this.yVelocityTranslation.size() - 1) : 0.0);
+        }
+
         rawData.put(DatabaseHelper.COL_ACCELEROMETER_X, this.xAccelerometers.size() != 0 ? this.xAccelerometers.get(this.xAccelerometers.size() - 1) : 0.0);
         rawData.put(DatabaseHelper.COL_ACCELEROMETER_Y, this.yAccelerometers.size() != 0 ? this.yAccelerometers.get(this.yAccelerometers.size() - 1) : 0.0);
         rawData.put(DatabaseHelper.COL_ACCELEROMETER_Z, this.zAccelerometers.size() != 0 ? this.zAccelerometers.get(this.zAccelerometers.size() - 1) : 0.0);
@@ -924,6 +944,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 e.printStackTrace();
             }
         }
+
+        //Reset keystroke values
+        if(visibility == View.INVISIBLE) {
+            this.lastKeystrokeX = 0.0;
+            this.lastKeystrokeY = 0.0;
+            this.lastKeystrokeSize = 0.0;
+        }
     }
 
     private void setKeystrokeButtonsEventListener() {
@@ -949,6 +976,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         @Override
         public boolean onTouch(View v, MotionEvent event) {
+            int index = event.getActionIndex();
+            int pointerId = event.getPointerId(index);
+
             switch(event.getAction()) {
                 case MotionEvent.ACTION_DOWN:
                     if(this.mainActivity.keystrokeCount == 0) { this.mainActivity.setSensorsTracking(true); }
@@ -965,6 +995,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                         double keystrokeInterval = (double) (this.mainActivity.keystrokeStartTime - this.mainActivity.keystrokeEndTime) / 1_000_000_000;
                         this.mainActivity.pendingSwipe.addKeystrokeInterval(keystrokeInterval, this.mainActivity.keystrokeCount - 1, this.mainActivity.dbHelper.getFeatureData().get(DatabaseHelper.COL_PIN_LENGTH));
                     }
+
+                    this.mainActivity.lastKeystrokeX = event.getX(pointerId);
+                    this.mainActivity.lastKeystrokeY = event.getY(pointerId);
+                    this.mainActivity.lastKeystrokeSize = event.getSize(pointerId);
+
                     break;
 
                 case MotionEvent.ACTION_UP:
@@ -1334,6 +1369,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             eTest.crossValidateModel(oneClassClassifier, dataSet, 5, new Random(1));
 
             this.oneClassClassifiers[this.trainingModels.indexOf(trainingModel)] = oneClassClassifier;
+
+            double errorRate = eTest.unclassified() / eTest.numInstances();
 
             double instances = eTest.numInstances();
             double TAR = eTest.pctCorrect();

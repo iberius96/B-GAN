@@ -24,8 +24,6 @@ public class RawDataCollector implements Runnable {
         if (resourceMonitorThread != null) {
             resourceMonitorThread.interrupt();
         }
-
-        //dbHelpber.saveResourceData
     }
 
     public boolean isRunning() {
