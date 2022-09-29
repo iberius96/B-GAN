@@ -159,6 +159,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     String m_Seed = "1"; //-S
 
     RawDataCollector rawDataCollector;
+    Map<DatabaseHelper.ModelType, Double> weightData = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -1308,6 +1309,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     }
                 }
 
+                weightData = dbHelper.getModelWeights(isGanMode);
+
                 uiHandler.post(uiRunnable);
 
             } catch (Exception e) {
@@ -1370,11 +1373,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
             this.oneClassClassifiers[this.trainingModels.indexOf(trainingModel)] = oneClassClassifier;
 
-            double errorRate = eTest.unclassified() / eTest.numInstances();
-
             double instances = eTest.numInstances();
             double TAR = eTest.pctCorrect();
             double FRR = eTest.pctUnclassified();
+            double ER = eTest.unclassified() / eTest.numInstances();
 
             double averageSwipeDuration = trainSwipes.subList(0, dataSet.size()).stream().mapToDouble(Swipe::getDuration).average().getAsDouble() / 1_000;
 
@@ -1386,9 +1388,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             finalSummary += "\n";
 
            if(hasGan) {
-               this.dbHelper.saveGANResults(instances, TAR, FRR, averageSwipeDuration, rfTrainingTime, ganTime, trainSwipes.size(), trainingModel);
+               this.dbHelper.saveGANResults(instances, TAR, FRR, ER, averageSwipeDuration, rfTrainingTime, ganTime, trainSwipes.size(), trainingModel);
            } else {
-               this.dbHelper.saveRealResults(instances, TAR, FRR, averageSwipeDuration, rfTrainingTime, trainSwipes.size(), trainingModel);
+               this.dbHelper.saveRealResults(instances, TAR, FRR, ER, averageSwipeDuration, rfTrainingTime, trainSwipes.size(), trainingModel);
            }
 
         } catch (Exception e) {

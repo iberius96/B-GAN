@@ -79,6 +79,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String COL_FRR = "FRR";
     private static final String COL_TRR = "TRR";
     private static final String COL_FAR = "FAR";
+    private static final String COL_ER = "ER";
     private static final String COL_AVG_SAMPLE_TIME = "AVG_SAMPLE_TIME";
     private static final String COL_TRAINING_TIME = "TRAINING_TIME";
     private static final String COL_GAN_TIME = "GAN_TIME";
@@ -250,6 +251,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 + COL_INSTANCES + " float(53), "
                 + COL_TAR + " float(53), "
                 + COL_FRR + " float(53), "
+                + COL_ER + " float(53), "
                 + COL_AVG_SAMPLE_TIME + " float(53), "
                 + COL_TRAINING_TIME + " float(53), "
                 + COL_CLASSIFIER_SAMPLES + " float(53),"
@@ -260,6 +262,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 + COL_INSTANCES + " float(53), "
                 + COL_TAR + " float(53), "
                 + COL_FRR + " float(53), "
+                + COL_ER + " float(53), "
                 + COL_AVG_SAMPLE_TIME + " float(53), "
                 + COL_GAN_TIME + " float(53), "
                 + COL_TRAINING_TIME + " float(53), "
@@ -409,7 +412,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         if(regenerate) {
             for (String swipe_table : swipes_tables) { db.execSQL("DROP TABLE " + swipe_table); }
-            db.execSQL("DROP TABLE " + TRAIN_RAW_DATA);
         }
 
         String swipes_base = "CREATE TABLE " + "BASE_TABLE"
@@ -912,13 +914,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL("DELETE FROM " + REAL_RESULTS);
     }
 
-    public boolean saveRealResults(double instances, double TAR, double FRR, double avgSampleTime, double trainingTime, int classifierSamples, List<ModelType> trainingModel) {
+    public boolean saveRealResults(double instances, double TAR, double FRR, double ER, double avgSampleTime, double trainingTime, int classifierSamples, List<ModelType> trainingModel) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
 
         contentValues.put(COL_INSTANCES, instances);
         contentValues.put(COL_TAR, TAR);
         contentValues.put(COL_FRR, FRR);
+        contentValues.put(COL_ER, ER);
         contentValues.put(COL_AVG_SAMPLE_TIME, avgSampleTime);
         contentValues.put(COL_TRAINING_TIME, trainingTime);
         contentValues.put(COL_CLASSIFIER_SAMPLES, classifierSamples);
@@ -929,13 +932,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return result != -1;
     }
 
-    public boolean saveGANResults(double instances, double TAR, double FRR, double avgSampleTime, double trainingTime, double ganTime, int classifierSamples, List<ModelType> trainingModel) {
+    public boolean saveGANResults(double instances, double TAR, double FRR, double ER, double avgSampleTime, double trainingTime, double ganTime, int classifierSamples, List<ModelType> trainingModel) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
 
         contentValues.put(COL_INSTANCES, instances);
         contentValues.put(COL_TAR, TAR);
         contentValues.put(COL_FRR, FRR);
+        contentValues.put(COL_ER, ER);
         contentValues.put(COL_AVG_SAMPLE_TIME, avgSampleTime);
         contentValues.put(COL_TRAINING_TIME, trainingTime);
         contentValues.put(COL_GAN_TIME, ganTime);
@@ -945,6 +949,50 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         long result = db.insert(GAN_RESULTS, null, contentValues);
         //if inserted incorrectly it will return -1
         return result != -1;
+    }
+
+    public Map<ModelType, Double> getModelWeights(boolean isGanMode) {
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        String query;
+        if(isGanMode) {
+            query = "SELECT * FROM " + GAN_RESULTS;
+        } else {
+            query = "SELECT * FROM " + REAL_RESULTS;
+        }
+
+        Map<ModelType, Double> ERData = new HashMap<>(); // Error rate
+        Map<ModelType, Double> SIData = new HashMap<>();  // Success index
+        Map<ModelType, Double> weightData = new HashMap<>();
+
+        Cursor cursor = db.rawQuery(query, null);
+        cursor.moveToFirst();
+
+        while(!cursor.isAfterLast()) {
+            String model_str = cursor.getString(cursor.getColumnIndex(COL_MODEL_TYPE));
+            String[] model_array = model_str.replace("[", "").replace("]", "").split(",");
+
+            if(model_array.length == 1 && !model_array[0].equals(ModelType.FULL.toString())) {
+                Double ER = cursor.getDouble(cursor.getColumnIndex(COL_ER));
+                ERData.put(ModelType.valueOf(model_array[0]), ER);
+            }
+
+            cursor.move(1);
+        }
+        cursor.close();
+
+        for(ModelType modelType : ModelType.values()) {
+            if(isModelFullyEnabled(Arrays.asList(modelType)) && modelType != ModelType.FULL) {
+                SIData.put(modelType, 1 - (ERData.get(modelType) / ERData.values().stream().mapToDouble(d-> d).sum()));
+            }
+        }
+        for(ModelType modelType : ModelType.values()) {
+            if(isModelFullyEnabled(Arrays.asList(modelType)) && modelType != ModelType.FULL){
+                weightData.put(modelType, (SIData.get(modelType) / SIData.values().stream().mapToDouble(d-> d).sum()));
+            }
+        }
+
+        return weightData;
     }
 
     public boolean saveTestResults(double instances, double TAR, double FRR, double TRR, double FAR, double avgSampleTime, double avgTestTime, int classifierSamples, List<ModelType> trainingModel) {
