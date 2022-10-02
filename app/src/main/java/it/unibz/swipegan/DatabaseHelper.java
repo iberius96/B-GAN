@@ -59,6 +59,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public static final String COL_AUTHENTICATION = "AUTHENTICATION";
     public static final String COL_AUTHENTICATION_TIME = "AUTHENTICATION_TIME";
 
+    public static final String COL_WEIGHTED_ENSEMBLE = "WEIGHTED_ENSEMBLE";
+
     private static final String COL_DURATION = "duration";
     private static final String COL_LENGTH = "length";
     public static final String COL_SEGMENTS_X = "segments_x";
@@ -231,6 +233,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public static final Integer BASE_FEATURES = 66; // TODO: Change this hardcoded value
     public static final Integer DEFAULT_SEGMENTS = 10;
     public static final Integer DEFAULT_PIN_LENGTH = 8;
+    public static final Integer DEFAULT_RAW_DATA = 0;
     public static final Integer DEFAULT_FREQUENCY = 50;
 
     public DatabaseHelper(Context context) {
@@ -391,11 +394,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
             for(String feature_col : feature_cols) {
                 if(feature_col == COL_MODELS_COMBINATIONS) {
-                    contentValues.put(feature_col, ModelsCombinations.INDIVIDUAL_FULL.ordinal());
+                    contentValues.put(feature_col, ModelsCombinations.ALL.ordinal());
                 } else if (feature_col == COL_SWIPE_SHAPE_SEGMENTS || feature_col == COL_SIGNATURE_SHAPE_SEGMENTS) {
                     contentValues.put(feature_col, DEFAULT_SEGMENTS);
                 } else if(feature_col == COL_PIN_LENGTH) {
                     contentValues.put(feature_col, DEFAULT_PIN_LENGTH);
+                } else if(feature_col == COL_RAW_DATA) {
+                    contentValues.put(feature_col, DEFAULT_RAW_DATA);
                 } else if (feature_col == COL_RAW_DATA_FREQUENCY){
                     contentValues.put(feature_col, DEFAULT_FREQUENCY);
                 } else {
@@ -480,6 +485,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             String modelStr = trainingModel.toString().replace(", ", "_").replace("[", "").replace("]", "");
             create_statement += modelStr + "_" + COL_AUTHENTICATION + " float(53), ";
             create_statement += modelStr + "_" + COL_AUTHENTICATION_TIME + " float(53), ";
+        }
+
+        if(activeModels.size() != 1) {
+            create_statement += COL_WEIGHTED_ENSEMBLE + "_" + COL_AUTHENTICATION + " float(53), ";
+            create_statement += COL_WEIGHTED_ENSEMBLE + "_" + COL_AUTHENTICATION_TIME + " float(53), ";
         }
 
         create_statement += COL_USER_ID + " varchar(20))";
@@ -619,12 +629,17 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         double[] swipeAuthentication = swipe.getAuthentication();
         double[] swipeAuthenticationTime = swipe.getAuthenticationTime();
-        List<List<DatabaseHelper.ModelType>> activeModels = getActiveModels().stream().filter(s -> isModelFullyEnabled(s)).collect(Collectors.toList());
+        List<List<DatabaseHelper.ModelType>> activeModels = getActiveModels().stream().filter(s -> isModelEnabled(s)).collect(Collectors.toList());
 
         for(List<ModelType> activeModel : activeModels) {
             String modelStr = activeModel.toString().replace(", ", "_").replace("[", "").replace("]", "");
             contentValues.put(modelStr + "_" + COL_AUTHENTICATION, swipeAuthentication[activeModels.indexOf(activeModel)]);
             contentValues.put(modelStr + "_" + COL_AUTHENTICATION_TIME, swipeAuthenticationTime[activeModels.indexOf(activeModel)]);
+        }
+
+        if(this.getFeatureData().get(COL_MODELS_COMBINATIONS) != ModelsCombinations.FULL.ordinal()) {
+            contentValues.put(COL_WEIGHTED_ENSEMBLE + "_" + COL_AUTHENTICATION, swipeAuthentication[swipeAuthentication.length - 1]);
+            contentValues.put(COL_WEIGHTED_ENSEMBLE + "_" + COL_AUTHENTICATION_TIME, swipeAuthenticationTime[swipeAuthenticationTime.length - 1]);
         }
 
         contentValues.put(COL_USER_ID, swipe.getUserId());
@@ -982,12 +997,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         cursor.close();
 
         for(ModelType modelType : ModelType.values()) {
-            if(isModelFullyEnabled(Arrays.asList(modelType)) && modelType != ModelType.FULL) {
+            if(isModelEnabled(Arrays.asList(modelType)) && modelType != ModelType.FULL) {
                 SIData.put(modelType, 1 - (ERData.get(modelType) / ERData.values().stream().mapToDouble(d-> d).sum()));
             }
         }
         for(ModelType modelType : ModelType.values()) {
-            if(isModelFullyEnabled(Arrays.asList(modelType)) && modelType != ModelType.FULL){
+            if(isModelEnabled(Arrays.asList(modelType)) && modelType != ModelType.FULL){
                 weightData.put(modelType, (SIData.get(modelType) / SIData.values().stream().mapToDouble(d-> d).sum()));
             }
         }
@@ -995,7 +1010,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return weightData;
     }
 
-    public boolean saveTestResults(double instances, double TAR, double FRR, double TRR, double FAR, double avgSampleTime, double avgTestTime, int classifierSamples, List<ModelType> trainingModel) {
+    public boolean saveTestResults(double instances, double TAR, double FRR, double TRR, double FAR, double avgSampleTime, double avgTestTime, int classifierSamples, String trainingModel) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
 
@@ -1007,7 +1022,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         contentValues.put(COL_AVG_SAMPLE_TIME, avgSampleTime);
         contentValues.put(COL_AVG_TEST_TIME, avgTestTime);
         contentValues.put(COL_CLASSIFIER_SAMPLES, classifierSamples);
-        contentValues.put(COL_MODEL_TYPE, trainingModel.toString());
+        contentValues.put(COL_MODEL_TYPE, trainingModel);
 
         long result = db.insert(TEST_RESULTS, null, contentValues);
         //if inserted incorrectly it will return -1
@@ -1124,7 +1139,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return featureData;
     }
 
-    public boolean isModelFullyEnabled(List<ModelType> models) {
+    public boolean isModelEnabled(List<ModelType> models) {
         for(ModelType model : models) {
             Integer feature_count = 0;
 

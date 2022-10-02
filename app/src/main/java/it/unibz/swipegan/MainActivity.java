@@ -42,6 +42,7 @@ import androidx.core.app.ActivityCompat;
 import com.google.android.material.snackbar.Snackbar;
 
 import java.io.File;
+import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -503,11 +504,18 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         outputMessage += String.format("%1$-15s %2$-16s %3$-18s", "Inputs", "Prediction", "Test time");
         outputMessage += "\n";
 
-        double[] authenticationValues = new double[this.trainingModels.size()];
-        double[] authenticationTimes = new double[this.trainingModels.size()];
+        double[] authenticationValues;
+        double[] authenticationTimes;
+        if(dbHelper.getFeatureData().get(DatabaseHelper.COL_MODELS_COMBINATIONS) == DatabaseHelper.ModelsCombinations.FULL.ordinal()) {
+            authenticationValues = new double[this.trainingModels.size()];
+            authenticationTimes = new double[this.trainingModels.size()];
+        } else {
+            authenticationValues = new double[this.trainingModels.size() + 1];
+            authenticationTimes = new double[this.trainingModels.size() + 1];
+        }
 
         for(List<DatabaseHelper.ModelType> model : this.trainingModels) {
-            if(!dbHelper.isModelFullyEnabled(model)) {
+            if(!dbHelper.isModelEnabled(model)) {
                 continue;
             }
 
@@ -530,14 +538,41 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             outputMessage += String.format("%1$-18s", prediction == 0.0 ? "Accepted" : "Rejected");
             outputMessage += String.format("%1$-18s", String.format("%.4f", testingTime));
             outputMessage += "\n";
+        }
 
-            if(model.contains(DatabaseHelper.ModelType.FULL)) {
-                if (prediction == 0.0) {
-                    this.showSnackBar("Authentication: ACCEPTED", "#238823");
-                } else {
-                    this.showSnackBar("Authentication: REJECTED", "#D2222D");
-                }
+        double prediction;
+        if(dbHelper.getFeatureData().get(DatabaseHelper.COL_MODELS_COMBINATIONS) == DatabaseHelper.ModelsCombinations.FULL.ordinal()) { // Use full model
+            prediction = this.getPredictionFrom(swipe, Arrays.asList(DatabaseHelper.ModelType.FULL));
+        } else { // Use weighted ensemble
+            Map<DatabaseHelper.ModelType, Double> weighted_predictions = new HashMap<>();
+
+            long startTime = System.nanoTime();
+            for(DatabaseHelper.ModelType modelType : DatabaseHelper.ModelType.values()) {
+                if(modelType == DatabaseHelper.ModelType.FULL || !dbHelper.isModelEnabled(Arrays.asList(modelType))) { continue; }
+
+                double cur_prediction = this.getPredictionFrom(swipe, Arrays.asList(modelType)) == 0.0 ? 1.0 : 0.0;
+                weighted_predictions.put(modelType, cur_prediction * this.weightData.get(modelType));
             }
+
+            prediction = weighted_predictions.values().stream().mapToDouble(d-> d).sum() >= 0.5 ? 0.0 : 1.0;
+            long endTime = System.nanoTime();
+            double testingTime = (double) (endTime - startTime) / 1_000_000_000;
+
+            double authenticationValue;
+            if (this.attackSwitch.isChecked()) {
+                authenticationValue = prediction != 0.0 ? 1.0 : 0.0;
+            } else {
+                authenticationValue = prediction == 0.0 ? 1.0 : 0.0;
+            }
+
+            authenticationValues[authenticationValues.length - 1] = authenticationValue;
+            authenticationTimes[authenticationTimes.length - 1] = testingTime;
+        }
+
+        if (prediction == 0.0) {
+            this.showSnackBar("Authentication: ACCEPTED", "#238823");
+        } else {
+            this.showSnackBar("Authentication: REJECTED", "#D2222D");
         }
 
         swipe.setAuthentication(authenticationValues);
@@ -867,7 +902,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 if (resultCode == Activity.RESULT_OK) {
                     Map<String, Object> modelSelection = (HashMap<String, Object>) data.getSerializableExtra("modelSelection");
 
-                    List<List<DatabaseHelper.ModelType>> curActiveModels = dbHelper.getActiveModels().stream().filter(s -> dbHelper.isModelFullyEnabled(s)).collect(Collectors.toList());
+                    List<List<DatabaseHelper.ModelType>> curActiveModels = dbHelper.getActiveModels().stream().filter(s -> dbHelper.isModelEnabled(s)).collect(Collectors.toList());
                     List<List<DatabaseHelper.ModelType>> initialActiveModels = (List<List<DatabaseHelper.ModelType>>) modelSelection.get("initialActiveModels");
 
                     Integer curModelsSelection = (Integer) modelSelection.get("curModelsSelection");
@@ -1139,6 +1174,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             this.dbHelper.resetDB(false);
             this.inputTextView.setText("Inputs " + this.dbHelper.getRecordsCount("REAL_SWIPES"));
         } else {
+            String fullSummary = "";
+            String ensembleSummary = "";
+
             String strSummary = "";
             strSummary += String.format("%1$-9s %2$-9s %3$-9s %4$-9s %5$-9s %6$-9s %7$-9s %8$-9s", "Inputs", "TAR", "FRR", "TRR", "FAR", "Swipe", "Train", "Classifier");
             strSummary += "\n";
@@ -1157,42 +1195,43 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             ArrayList<double[]> attackerAuthenticationTime = this.dbHelper.getTestingData("Attacker", DatabaseHelper.COL_AUTHENTICATION_TIME);
 
             for(List<DatabaseHelper.ModelType> model : this.trainingModels) {
-                if(!dbHelper.isModelFullyEnabled(model)) {
+                if(!dbHelper.isModelEnabled(model)) {
                     continue;
                 }
 
                 double[] curUserAuthentication = userAuthentication.stream().mapToDouble(x -> x[this.trainingModels.indexOf(model)]).toArray();
                 double[] curAttackerAuthentication = attackerAuthentication.stream().mapToDouble(x -> x[this.trainingModels.indexOf(model)]).toArray();
 
-                double instances = curUserAuthentication.length + curAttackerAuthentication.length;
-                double TAR = curUserAuthentication.length == 0 ? 0.0 : Arrays.stream(curUserAuthentication).sum() / curUserAuthentication.length * 100;
-                double FRR = curUserAuthentication.length == 0 ? 0.0 : (curUserAuthentication.length - (Arrays.stream(curUserAuthentication).sum())) / curUserAuthentication.length * 100;
-                double TRR = curAttackerAuthentication.length == 0 ? 0.0 : (Arrays.stream(curAttackerAuthentication).sum()) / curAttackerAuthentication.length * 100;
-                double FAR = curAttackerAuthentication.length == 0 ? 0.0 : (curAttackerAuthentication.length - (Arrays.stream(curAttackerAuthentication).sum())) / curAttackerAuthentication.length * 100;
-                double averageSwipeDuration = testSwipes.stream().mapToDouble(Swipe::getDuration).average().getAsDouble() / 1_000.0;
-
                 DoubleStream curUserAuthenticationTime = userAuthenticationTime.stream().mapToDouble(x -> x[this.trainingModels.indexOf(model)]);
                 DoubleStream curAttackerAuthenticationTime = attackerAuthenticationTime.stream().mapToDouble(x -> x[this.trainingModels.indexOf(model)]);
 
-                double avgTestTime = DoubleStream.concat(curUserAuthenticationTime, curAttackerAuthenticationTime).average().getAsDouble();
-
-                int classifierSamples = this.dbHelper.getRecordsCount("REAL_SWIPES");
-                this.dbHelper.saveTestResults(instances, TAR, FRR, TRR, FAR, averageSwipeDuration, avgTestTime, classifierSamples, model);
-
-                if(model.contains(DatabaseHelper.ModelType.FULL)) {
-                    strSummary += String.format("%1$-12s", String.format("%02.0f", instances));
-                    strSummary += String.format("%1$-10s", String.format("%.1f", TAR));
-                    strSummary += String.format("%1$-11s", String.format("%.1f", FRR));
-                    strSummary += String.format("%1$-10s", String.format("%.1f", TRR));
-                    strSummary += String.format("%1$-11s", String.format("%.1f", FAR));
-                    strSummary += String.format("%1$-11s", String.format("%.3f", averageSwipeDuration));
-                    strSummary += String.format("%1$-10s", String.format("%.3f", avgTestTime));
-                    strSummary += String.format("%1$-10s", String.format("%02d", classifierSamples));
-                    strSummary += "\n";
-                }
+                fullSummary += computeTestMetrics(
+                        testSwipes,
+                        curUserAuthentication, curUserAuthenticationTime,
+                        curAttackerAuthentication, curAttackerAuthenticationTime,
+                        model.toString());
             }
 
-            this.showAlertDialog("TESTING RESULTS", strSummary);
+            if(dbHelper.getFeatureData().get(DatabaseHelper.COL_MODELS_COMBINATIONS) != DatabaseHelper.ModelsCombinations.FULL.ordinal()) {
+                double[] curUserAuthentication = userAuthentication.stream().mapToDouble(x -> x[x.length - 1]).toArray();
+                double[] curAttackerAuthentication = attackerAuthentication.stream().mapToDouble(x -> x[x.length - 1]).toArray();
+
+                DoubleStream curUserAuthenticationTime = userAuthenticationTime.stream().mapToDouble(x -> x[x.length - 1]);
+                DoubleStream curAttackerAuthenticationTime = attackerAuthenticationTime.stream().mapToDouble(x -> x[x.length - 1]);
+
+                ensembleSummary += computeTestMetrics(
+                        testSwipes,
+                        curUserAuthentication, curUserAuthenticationTime,
+                        curAttackerAuthentication, curAttackerAuthenticationTime,
+                        DatabaseHelper.COL_WEIGHTED_ENSEMBLE
+                );
+            }
+
+            if(ensembleSummary != "") {
+                this.showAlertDialog("TESTING RESULTS", strSummary + ensembleSummary);
+            } else {
+                this.showAlertDialog("TESTING RESULTS", strSummary + fullSummary);
+            }
 
             this.attackSwitch.setChecked(false);
 
@@ -1206,6 +1245,41 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             this.isTrainingMode = true;
             this.resetButton.setText("Reset DB");
         }
+    }
+
+    private String computeTestMetrics(
+            ArrayList<Swipe> testSwipes,
+            double[] curUserAuthentication, DoubleStream curUserAuthenticationTime,
+            double[] curAttackerAuthentication, DoubleStream curAttackerAuthenticationTime,
+            String model
+    ) {
+        String strSummary = "";
+
+        double instances = curUserAuthentication.length + curAttackerAuthentication.length;
+        double TAR = curUserAuthentication.length == 0 ? 0.0 : Arrays.stream(curUserAuthentication).sum() / curUserAuthentication.length * 100;
+        double FRR = curUserAuthentication.length == 0 ? 0.0 : (curUserAuthentication.length - (Arrays.stream(curUserAuthentication).sum())) / curUserAuthentication.length * 100;
+        double TRR = curAttackerAuthentication.length == 0 ? 0.0 : (Arrays.stream(curAttackerAuthentication).sum()) / curAttackerAuthentication.length * 100;
+        double FAR = curAttackerAuthentication.length == 0 ? 0.0 : (curAttackerAuthentication.length - (Arrays.stream(curAttackerAuthentication).sum())) / curAttackerAuthentication.length * 100;
+        double averageSwipeDuration = testSwipes.stream().mapToDouble(Swipe::getDuration).average().getAsDouble() / 1_000.0;
+
+        double avgTestTime = DoubleStream.concat(curUserAuthenticationTime, curAttackerAuthenticationTime).average().getAsDouble();
+
+        int classifierSamples = this.dbHelper.getRecordsCount("REAL_SWIPES");
+        this.dbHelper.saveTestResults(instances, TAR, FRR, TRR, FAR, averageSwipeDuration, avgTestTime, classifierSamples, model);
+
+        if(model.contains(DatabaseHelper.ModelType.FULL.name()) || model.contains(DatabaseHelper.COL_WEIGHTED_ENSEMBLE)) {
+            strSummary += String.format("%1$-12s", String.format("%02.0f", instances));
+            strSummary += String.format("%1$-10s", String.format("%.1f", TAR));
+            strSummary += String.format("%1$-11s", String.format("%.1f", FRR));
+            strSummary += String.format("%1$-10s", String.format("%.1f", TRR));
+            strSummary += String.format("%1$-11s", String.format("%.1f", FAR));
+            strSummary += String.format("%1$-11s", String.format("%.3f", averageSwipeDuration));
+            strSummary += String.format("%1$-10s", String.format("%.3f", avgTestTime));
+            strSummary += String.format("%1$-10s", String.format("%02d", classifierSamples));
+            strSummary += "\n";
+        }
+
+        return strSummary;
     }
 
     public void train(View view) {
@@ -1291,7 +1365,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     resourceMonitor.stop(dbHelper, "GAN");
 
                     for(List<DatabaseHelper.ModelType> trainingModel : trainingModels) {
-                        if(!dbHelper.isModelFullyEnabled(trainingModel)) {
+                        if(!dbHelper.isModelEnabled(trainingModel)) {
                             continue;
                         }
 
@@ -1300,7 +1374,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     }
                 } else {
                     for(List<DatabaseHelper.ModelType> trainingModel : trainingModels) {
-                        if(!dbHelper.isModelFullyEnabled(trainingModel)) {
+                        if(!dbHelper.isModelEnabled(trainingModel)) {
                             continue;
                         }
 
@@ -1309,7 +1383,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     }
                 }
 
-                weightData = dbHelper.getModelWeights(isGanMode);
+                if(dbHelper.getFeatureData().get(DatabaseHelper.COL_MODELS_COMBINATIONS) != DatabaseHelper.ModelsCombinations.FULL.ordinal()) {
+                    weightData = dbHelper.getModelWeights(isGanMode);
+                }
 
                 uiHandler.post(uiRunnable);
 
