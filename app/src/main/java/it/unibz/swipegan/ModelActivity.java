@@ -8,6 +8,7 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.EditText;
 import android.widget.Spinner;
 
 import androidx.appcompat.app.AlertDialog;
@@ -15,7 +16,9 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class ModelActivity extends AppCompatActivity {
     @Override
@@ -26,12 +29,30 @@ public class ModelActivity extends AppCompatActivity {
         DatabaseHelper dbHelper = DatabaseHelper.getInstance(getApplicationContext());
         Map<String, Integer> featureData = dbHelper.getFeatureData();
 
+        List<List<DatabaseHelper.ModelType>> initialActiveModels = dbHelper.getActiveModels().stream().filter(s -> dbHelper.isModelEnabled(s)).collect(Collectors.toList());
+
         Spinner modelsSpinner = (Spinner) findViewById(R.id.modelsSpinner);
         ArrayAdapter<CharSequence> modelsSpinnerAdapter = ArrayAdapter.createFromResource(this, R.array.models_combinations, android.R.layout.simple_spinner_item);
         modelsSpinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         modelsSpinner.setAdapter(modelsSpinnerAdapter);
         modelsSpinner.setSelection(dbHelper.getFeatureData().get(DatabaseHelper.COL_MODELS_COMBINATIONS));
         Integer initialModelsSelection = modelsSpinner.getSelectedItemPosition();
+
+        CheckBox rawDataCheckBox = findViewById(R.id.rawDataCheckBox);
+        rawDataCheckBox.setChecked(featureData.get(DatabaseHelper.COL_RAW_DATA) == 1);
+        boolean initialRawDataEnabled = rawDataCheckBox.isChecked();
+
+        EditText rawDataFrequencyEditTextNumber = findViewById(R.id.rawDataFrequencyEditTextNumber);
+        rawDataFrequencyEditTextNumber.setText(String.valueOf(featureData.get(DatabaseHelper.COL_RAW_DATA_FREQUENCY)));
+        Integer initialRawDataFrequency = Integer.parseInt(String.valueOf(rawDataFrequencyEditTextNumber.getText()));
+
+        rawDataCheckBox.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v)
+            {
+                rawDataFrequencyEditTextNumber.setEnabled(rawDataCheckBox.isChecked());
+            }
+        });
 
         CheckBox accelerationCheckBox = findViewById(R.id.accelerationCheckBox);
         accelerationCheckBox.setChecked(featureData.get(DatabaseHelper.COL_ACCELERATION) == 1);
@@ -208,10 +229,16 @@ public class ModelActivity extends AppCompatActivity {
                             signatureStartEndPosCheckBox.isChecked() ? 1 : 0,
                             signatureVelocityCheckBox.isChecked() ? 1 : 0,
                             signatureShapeCheckBox.isChecked() ? 1 : 0,
-                            Integer.parseInt((String) signatureSegmentsSpinner.getSelectedItem())
+                            Integer.parseInt((String) signatureSegmentsSpinner.getSelectedItem()),
+                            rawDataCheckBox.isChecked() ? 1 : 0,
+                            Integer.parseInt(rawDataFrequencyEditTextNumber.getText().toString())
                     );
 
                     Integer curModelsSelection = modelsSpinner.getSelectedItemPosition();
+
+                    boolean curRawDataEnabled = rawDataCheckBox.isChecked();
+                    Integer curRawDataFrequency = Integer.parseInt(String.valueOf(rawDataFrequencyEditTextNumber.getText()));
+
                     Integer curSegmentSelection = Integer.parseInt((String) swipeSegmentSpinner.getSelectedItem());
                     Integer curPinLength = Integer.parseInt((String) keystrokeLengthSpinner.getSelectedItem());
                     boolean curKeystrokeEnabled = keystrokeCheckBox.isChecked();
@@ -222,8 +249,15 @@ public class ModelActivity extends AppCompatActivity {
                     Intent resultIntent = new Intent();
 
                     Map<String, Object> modelSelection = new HashMap<>();
-                    modelSelection.put("initialModelsSelection", initialModelsSelection);
+                    modelSelection.put("initialActiveModels", initialActiveModels);
+
                     modelSelection.put("curModelsSelection", curModelsSelection);
+                    modelSelection.put("initialModelsSelection", initialModelsSelection);
+
+                    modelSelection.put("curRawDataEnabled", curRawDataEnabled);
+                    modelSelection.put("initialRawDataEnabled", initialRawDataEnabled);
+                    modelSelection.put("curRawDataFrequency", curRawDataFrequency);
+                    modelSelection.put("initialRawDataFrequency", initialRawDataFrequency);
 
                     modelSelection.put("curSegmentSelection", curSegmentSelection);
                     modelSelection.put("initialSegmentSelection", initialSegmentSelection);

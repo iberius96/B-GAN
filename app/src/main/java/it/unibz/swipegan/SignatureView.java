@@ -25,6 +25,8 @@ public class SignatureView extends View {
     private ArrayList<Float> xVelocityTranslation = null;
     private ArrayList<Float> yVelocityTranslation = null;
 
+    private ArrayList<Float> sizes = null;
+
     private MainActivity mainActivity;
 
     public SignatureView(Context context, @Nullable AttributeSet attrs) {
@@ -45,6 +47,7 @@ public class SignatureView extends View {
             this.yLocations = new ArrayList<>();
             this.xVelocityTranslation = new ArrayList<>();
             this.yVelocityTranslation = new ArrayList<>();
+            this.sizes = new ArrayList<>();
         }
     }
 
@@ -75,6 +78,7 @@ public class SignatureView extends View {
 
                 this.xLocations.add(event.getX(pointerId));
                 this.yLocations.add(event.getY(pointerId));
+                this.sizes.add(event.getSize(pointerId));
 
                 return true;
             case MotionEvent.ACTION_MOVE:
@@ -103,6 +107,8 @@ public class SignatureView extends View {
                     this.yLocations.add(newY);
                 }
 
+                this.sizes.add(event.getSize(pointerId));
+
                 break;
             case MotionEvent.ACTION_UP:
                 this.mainActivity.setSensorsTracking(false);
@@ -129,6 +135,7 @@ public class SignatureView extends View {
         this.yLocations.clear();
         this.xVelocityTranslation.clear();
         this.yVelocityTranslation.clear();
+        this.sizes.clear();
 
         this.clearCalled = true;
         invalidate();
@@ -141,6 +148,12 @@ public class SignatureView extends View {
     public ArrayList<Float> getYLocations() {
         return this.yLocations;
     }
+
+    public ArrayList<Float> getXVelocityTranslations() { return this.xVelocityTranslation; }
+
+    public ArrayList<Float> getYVelocityTranslations() { return this.yVelocityTranslation; }
+
+    public ArrayList<Float> getSizes() { return this.sizes; }
 
     public DoubleSummaryStatistics getXVelocitySummaryStatistics() {
         return this.xVelocityTranslation.stream().mapToDouble(x -> (double) x).summaryStatistics();

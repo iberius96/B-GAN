@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import static com.google.common.base.CaseFormat.LOWER_CAMEL;
 import static com.google.common.base.CaseFormat.LOWER_UNDERSCORE;
@@ -36,11 +37,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "GAN.db";
 
-    private static final String REAL_SWIPES = "REAL_SWIPES";
+    public static final String REAL_SWIPES = "REAL_SWIPES";
     private static final String REAL_SWIPES_NORMALIZED = "REAL_SWIPES_NORMALIZED";
     private static final String GAN_SWIPES = "GAN_SWIPES";
     private static final String GAN_SWIPES_NORMALIZED = "GAN_SWIPES_NORMALIZED";
-    private static final String TEST_SWIPES = "TEST_SWIPES";
+    public static final String TEST_SWIPES = "TEST_SWIPES";
     private static final String TEST_SWIPES_NORMALIZED = "TEST_SWIPES_NORMALIZED";
 
     private static final String REAL_RESULTS = "REAL_RESULTS";
@@ -53,8 +54,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String FEATURE_DATA = "FEATURE_DATA";
     private static final String RESOURCE_DATA = "RESOURCE_DATA";
 
+    private static final String TRAIN_RAW_DATA = "TRAIN_RAW_DATA";
+
     public static final String COL_AUTHENTICATION = "AUTHENTICATION";
     public static final String COL_AUTHENTICATION_TIME = "AUTHENTICATION_TIME";
+
+    public static final String COL_WEIGHTED_ENSEMBLE = "WEIGHTED_ENSEMBLE";
 
     private static final String COL_DURATION = "duration";
     private static final String COL_LENGTH = "length";
@@ -76,6 +81,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String COL_FRR = "FRR";
     private static final String COL_TRR = "TRR";
     private static final String COL_FAR = "FAR";
+    private static final String COL_ER = "ER";
     private static final String COL_AVG_SAMPLE_TIME = "AVG_SAMPLE_TIME";
     private static final String COL_TRAINING_TIME = "TRAINING_TIME";
     private static final String COL_GAN_TIME = "GAN_TIME";
@@ -108,6 +114,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public static final String COL_SIGNATURE_VELOCITY = "signature_velocity";
     public static final String COL_SIGNATURE_SHAPE = "signature_shape";
     public static final String COL_SIGNATURE_SHAPE_SEGMENTS = "signature_shape_segments";
+    public static final String COL_RAW_DATA = "raw_data";
+    public static final String COL_RAW_DATA_FREQUENCY = "raw_data_frequency";
 
     // Resource columns
     private static final String COL_MIN_CPU_TEMP = "min_cpu_temp";
@@ -142,6 +150,23 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public static final String COL_SIGNATURE_SEGMENTS_X = "signature_segments_x";
     public static final String COL_SIGNATURE_SEGMENTS_Y = "signature_segments_y";
 
+    // Raw data columns
+    public static final String COL_SIZE = "size";
+    public static final String COL_X = "x";
+    public static final String COL_Y = "y";
+    public static final String COL_VELOCITY_X = "velocity_x";
+    public static final String COL_VELOCITY_Y = "velocity_Y";
+    public static final String COL_ACCELEROMETER_X = "accelerometer_x";
+    public static final String COL_ACCELEROMETER_Y = "accelerometer_y";
+    public static final String COL_ACCELEROMETER_Z = "accelerometer_z";
+    public static final String COL_GYROSCOPE_X = "gyroscope_x";
+    public static final String COL_GYROSCOPE_Y = "gyroscope_y";
+    public static final String COL_GYROSCOPE_Z = "gyroscope_z";
+    public static final String COL_ORIENTATION_X = "orientation_x";
+    public static final String COL_ORIENTATION_Y = "orientation_y";
+    public static final String COL_ORIENTATION_Z = "orientation_z";
+    public static final String COL_GESTURE_ID = "gesture_id";
+
     public static final String[] head_features = {
             COL_DURATION,
             COL_LENGTH,
@@ -175,6 +200,22 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         COL_SIGNATURE_SEGMENTS_X, COL_SIGNATURE_SEGMENTS_Y
     };
 
+    public static final String[] raw_features = {
+        COL_SIZE,
+        COL_X, COL_Y,
+        COL_VELOCITY_X, COL_VELOCITY_Y,
+        COL_ACCELEROMETER_X,
+        COL_ACCELEROMETER_Y,
+        COL_ACCELEROMETER_Z,
+        COL_GYROSCOPE_X,
+        COL_GYROSCOPE_Y,
+        COL_GYROSCOPE_Z,
+        COL_ORIENTATION_X,
+        COL_ORIENTATION_Y,
+        COL_ORIENTATION_Z,
+        COL_GESTURE_ID
+    };
+
     public enum ModelType {
         HOLD,
         SWIPE,
@@ -191,7 +232,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     public static final Integer BASE_FEATURES = 66; // TODO: Change this hardcoded value
     public static final Integer DEFAULT_SEGMENTS = 10;
-    public static final Integer DEFAULT_PIN_LENGTH = 4;
+    public static final Integer DEFAULT_PIN_LENGTH = 8;
+    public static final Integer DEFAULT_RAW_DATA = 0;
+    public static final Integer DEFAULT_FREQUENCY = 50;
 
     public DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, 1);
@@ -211,6 +254,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 + COL_INSTANCES + " float(53), "
                 + COL_TAR + " float(53), "
                 + COL_FRR + " float(53), "
+                + COL_ER + " float(53), "
                 + COL_AVG_SAMPLE_TIME + " float(53), "
                 + COL_TRAINING_TIME + " float(53), "
                 + COL_CLASSIFIER_SAMPLES + " float(53),"
@@ -221,6 +265,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 + COL_INSTANCES + " float(53), "
                 + COL_TAR + " float(53), "
                 + COL_FRR + " float(53), "
+                + COL_ER + " float(53), "
                 + COL_AVG_SAMPLE_TIME + " float(53), "
                 + COL_GAN_TIME + " float(53), "
                 + COL_TRAINING_TIME + " float(53), "
@@ -267,7 +312,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 + COL_SIGNATURE_START_END_POS + " integer(1), "
                 + COL_SIGNATURE_VELOCITY + " integer(1), "
                 + COL_SIGNATURE_SHAPE + " integer(1), "
-                + COL_SIGNATURE_SHAPE_SEGMENTS + " integer(2))";
+                + COL_SIGNATURE_SHAPE_SEGMENTS + " integer(2), "
+                + COL_RAW_DATA + " integer(1), "
+                + COL_RAW_DATA_FREQUENCY + " integer(3))";
 
         String createResourceDataTable = "CREATE TABLE " + RESOURCE_DATA
                 + " (id INTEGER PRIMARY KEY AUTOINCREMENT, "
@@ -281,6 +328,24 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 + COL_TRAINING_TIME + " float(53), "
                 + COL_MODEL_TYPE + " varchar(20))";
 
+        String createRawDataTable = "CREATE TABLE " + TRAIN_RAW_DATA
+                + " (id INTEGER PRIMARY KEY AUTOINCREMENT, "
+                + COL_SIZE + " float(53), "
+                + COL_X + " float(53), "
+                + COL_Y + " float(53), "
+                + COL_VELOCITY_X + " float(53), "
+                + COL_VELOCITY_Y + " float(53), "
+                + COL_ACCELEROMETER_X + " float(53), "
+                + COL_ACCELEROMETER_Y + " float(53), "
+                + COL_ACCELEROMETER_Z + " float(53), "
+                + COL_GYROSCOPE_X + " float(53), "
+                + COL_GYROSCOPE_Y + " float(53), "
+                + COL_GYROSCOPE_Z + " float(53), "
+                + COL_ORIENTATION_X + " float(53), "
+                + COL_ORIENTATION_Y + " float(53), "
+                + COL_ORIENTATION_Z + " float(53), "
+                + COL_GESTURE_ID + " float(53))";
+
         this.generateSwipesTables(db,false, true, true);
         this.generateTestAuthenticationTable(db, false, null);
 
@@ -291,6 +356,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL(createUserDataTable);
         db.execSQL(createFeatureDataTable);
         db.execSQL(createResourceDataTable);
+
+        db.execSQL(createRawDataTable);
 
         // Insert default user data
         Cursor user_cursor = db.rawQuery("SELECT * FROM " + USER_DATA, null);
@@ -322,15 +389,20 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                     COL_ACCELERATION, COL_ANGULAR_VELOCITY, COL_ORIENTATION,
                     COL_SWIPE_DURATION, COL_SWIPE_SHAPE, COL_SWIPE_SHAPE_SEGMENTS, COL_SWIPE_TOUCH_SIZE, COL_SWIPE_START_END_POS, COL_SWIPE_VELOCITY,
                     COL_KEYSTROKE, COL_PIN_LENGTH, COL_KEYSTROKE_DURATIONS, COL_KEYSTROKE_INTERVALS,
-                    COL_SIGNATURE, COL_SIGNATURE_START_END_POS, COL_SIGNATURE_VELOCITY, COL_SIGNATURE_SHAPE, COL_SIGNATURE_SHAPE_SEGMENTS};
+                    COL_SIGNATURE, COL_SIGNATURE_START_END_POS, COL_SIGNATURE_VELOCITY, COL_SIGNATURE_SHAPE, COL_SIGNATURE_SHAPE_SEGMENTS,
+                    COL_RAW_DATA, COL_RAW_DATA_FREQUENCY};
 
             for(String feature_col : feature_cols) {
                 if(feature_col == COL_MODELS_COMBINATIONS) {
-                    contentValues.put(feature_col, ModelsCombinations.INDIVIDUAL_FULL.ordinal());
+                    contentValues.put(feature_col, ModelsCombinations.ALL.ordinal());
                 } else if (feature_col == COL_SWIPE_SHAPE_SEGMENTS || feature_col == COL_SIGNATURE_SHAPE_SEGMENTS) {
                     contentValues.put(feature_col, DEFAULT_SEGMENTS);
                 } else if(feature_col == COL_PIN_LENGTH) {
                     contentValues.put(feature_col, DEFAULT_PIN_LENGTH);
+                } else if(feature_col == COL_RAW_DATA) {
+                    contentValues.put(feature_col, DEFAULT_RAW_DATA);
+                } else if (feature_col == COL_RAW_DATA_FREQUENCY){
+                    contentValues.put(feature_col, DEFAULT_FREQUENCY);
                 } else {
                     contentValues.put(feature_col, 1);
                 }
@@ -415,6 +487,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             create_statement += modelStr + "_" + COL_AUTHENTICATION_TIME + " float(53), ";
         }
 
+        if(activeModels.size() != 1) {
+            create_statement += COL_WEIGHTED_ENSEMBLE + "_" + COL_AUTHENTICATION + " float(53), ";
+            create_statement += COL_WEIGHTED_ENSEMBLE + "_" + COL_AUTHENTICATION_TIME + " float(53), ";
+        }
+
         create_statement += COL_USER_ID + " varchar(20))";
         System.out.println(create_statement);
         db.execSQL(create_statement);
@@ -435,7 +512,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             TEST_AUTHENTICATION,
             USER_DATA,
             FEATURE_DATA,
-            RESOURCE_DATA
+            RESOURCE_DATA,
+            TRAIN_RAW_DATA
         };
 
         for(int i = 0; i < upgrade_tables.length; i++) {
@@ -534,17 +612,34 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return result != -1;
     }
 
+    public boolean addRawDataEntry(Map<String, Double> rawDataEntry, String tableName) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues contentValues = new ContentValues();
+
+        for(String raw_feature : raw_features) {
+            contentValues.put(raw_feature, rawDataEntry.get(raw_feature));
+        }
+
+        long result = db.insert(tableName, null, contentValues);
+        return result != -1;
+    }
+
     private void addSwipeAuthentication(SQLiteDatabase db, Swipe swipe) {
         ContentValues contentValues = new ContentValues();
 
         double[] swipeAuthentication = swipe.getAuthentication();
         double[] swipeAuthenticationTime = swipe.getAuthenticationTime();
-        List<List<ModelType>> activeModels = this.getActiveModels();
+        List<List<DatabaseHelper.ModelType>> activeModels = getActiveModels().stream().filter(s -> isModelEnabled(s)).collect(Collectors.toList());
 
         for(List<ModelType> activeModel : activeModels) {
             String modelStr = activeModel.toString().replace(", ", "_").replace("[", "").replace("]", "");
             contentValues.put(modelStr + "_" + COL_AUTHENTICATION, swipeAuthentication[activeModels.indexOf(activeModel)]);
             contentValues.put(modelStr + "_" + COL_AUTHENTICATION_TIME, swipeAuthenticationTime[activeModels.indexOf(activeModel)]);
+        }
+
+        if(this.getFeatureData().get(COL_MODELS_COMBINATIONS) != ModelsCombinations.FULL.ordinal()) {
+            contentValues.put(COL_WEIGHTED_ENSEMBLE + "_" + COL_AUTHENTICATION, swipeAuthentication[swipeAuthentication.length - 1]);
+            contentValues.put(COL_WEIGHTED_ENSEMBLE + "_" + COL_AUTHENTICATION_TIME, swipeAuthenticationTime[swipeAuthenticationTime.length - 1]);
         }
 
         contentValues.put(COL_USER_ID, swipe.getUserId());
@@ -834,13 +929,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL("DELETE FROM " + REAL_RESULTS);
     }
 
-    public boolean saveRealResults(double instances, double TAR, double FRR, double avgSampleTime, double trainingTime, int classifierSamples, List<ModelType> trainingModel) {
+    public boolean saveRealResults(double instances, double TAR, double FRR, double ER, double avgSampleTime, double trainingTime, int classifierSamples, List<ModelType> trainingModel) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
 
         contentValues.put(COL_INSTANCES, instances);
         contentValues.put(COL_TAR, TAR);
         contentValues.put(COL_FRR, FRR);
+        contentValues.put(COL_ER, ER);
         contentValues.put(COL_AVG_SAMPLE_TIME, avgSampleTime);
         contentValues.put(COL_TRAINING_TIME, trainingTime);
         contentValues.put(COL_CLASSIFIER_SAMPLES, classifierSamples);
@@ -851,13 +947,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return result != -1;
     }
 
-    public boolean saveGANResults(double instances, double TAR, double FRR, double avgSampleTime, double trainingTime, double ganTime, int classifierSamples, List<ModelType> trainingModel) {
+    public boolean saveGANResults(double instances, double TAR, double FRR, double ER, double avgSampleTime, double trainingTime, double ganTime, int classifierSamples, List<ModelType> trainingModel) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
 
         contentValues.put(COL_INSTANCES, instances);
         contentValues.put(COL_TAR, TAR);
         contentValues.put(COL_FRR, FRR);
+        contentValues.put(COL_ER, ER);
         contentValues.put(COL_AVG_SAMPLE_TIME, avgSampleTime);
         contentValues.put(COL_TRAINING_TIME, trainingTime);
         contentValues.put(COL_GAN_TIME, ganTime);
@@ -869,7 +966,51 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return result != -1;
     }
 
-    public boolean saveTestResults(double instances, double TAR, double FRR, double TRR, double FAR, double avgSampleTime, double avgTestTime, int classifierSamples, List<ModelType> trainingModel) {
+    public Map<ModelType, Double> getModelWeights(boolean isGanMode) {
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        String query;
+        if(isGanMode) {
+            query = "SELECT * FROM " + GAN_RESULTS;
+        } else {
+            query = "SELECT * FROM " + REAL_RESULTS;
+        }
+
+        Map<ModelType, Double> ERData = new HashMap<>(); // Error rate
+        Map<ModelType, Double> SIData = new HashMap<>();  // Success index
+        Map<ModelType, Double> weightData = new HashMap<>();
+
+        Cursor cursor = db.rawQuery(query, null);
+        cursor.moveToFirst();
+
+        while(!cursor.isAfterLast()) {
+            String model_str = cursor.getString(cursor.getColumnIndex(COL_MODEL_TYPE));
+            String[] model_array = model_str.replace("[", "").replace("]", "").split(",");
+
+            if(model_array.length == 1 && !model_array[0].equals(ModelType.FULL.toString())) {
+                Double ER = cursor.getDouble(cursor.getColumnIndex(COL_ER));
+                ERData.put(ModelType.valueOf(model_array[0]), ER);
+            }
+
+            cursor.move(1);
+        }
+        cursor.close();
+
+        for(ModelType modelType : ModelType.values()) {
+            if(isModelEnabled(Arrays.asList(modelType)) && modelType != ModelType.FULL) {
+                SIData.put(modelType, 1 - (ERData.get(modelType) / ERData.values().stream().mapToDouble(d-> d).sum()));
+            }
+        }
+        for(ModelType modelType : ModelType.values()) {
+            if(isModelEnabled(Arrays.asList(modelType)) && modelType != ModelType.FULL){
+                weightData.put(modelType, (SIData.get(modelType) / SIData.values().stream().mapToDouble(d-> d).sum()));
+            }
+        }
+
+        return weightData;
+    }
+
+    public boolean saveTestResults(double instances, double TAR, double FRR, double TRR, double FAR, double avgSampleTime, double avgTestTime, int classifierSamples, String trainingModel) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
 
@@ -881,7 +1022,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         contentValues.put(COL_AVG_SAMPLE_TIME, avgSampleTime);
         contentValues.put(COL_AVG_TEST_TIME, avgTestTime);
         contentValues.put(COL_CLASSIFIER_SAMPLES, classifierSamples);
-        contentValues.put(COL_MODEL_TYPE, trainingModel.toString());
+        contentValues.put(COL_MODEL_TYPE, trainingModel);
 
         long result = db.insert(TEST_RESULTS, null, contentValues);
         //if inserted incorrectly it will return -1
@@ -929,7 +1070,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             int acceleration, int angular_velocity, int orientation,
             int swipe_duration, int swipe_shape, int swipe_shape_segments, int swipe_touch_size, int swipe_start_end_pos, int swipe_velocity,
             int keystroke, int pin_length, int keystroke_durations, int keystroke_intervals,
-            int signature, int signature_start_end_pos, int signature_velocity, int signature_shape, int signature_shape_segments) {
+            int signature, int signature_start_end_pos, int signature_velocity, int signature_shape, int signature_shape_segments,
+            int raw_data, int raw_data_frequency) {
         SQLiteDatabase db = this.getWritableDatabase();
         db.execSQL("DELETE FROM " + FEATURE_DATA);
 
@@ -954,6 +1096,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         contentValues.put(COL_SIGNATURE_VELOCITY, signature_velocity);
         contentValues.put(COL_SIGNATURE_SHAPE, signature_shape);
         contentValues.put(COL_SIGNATURE_SHAPE_SEGMENTS, signature_shape_segments);
+        contentValues.put(COL_RAW_DATA, raw_data);
+        contentValues.put(COL_RAW_DATA_FREQUENCY, raw_data_frequency);
 
         long result = db.insert(FEATURE_DATA, null, contentValues);
         return result != -1;
@@ -987,13 +1131,15 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         featureData.put(COL_SIGNATURE_VELOCITY, cursor.getInt(cursor.getColumnIndex(COL_SIGNATURE_VELOCITY)));
         featureData.put(COL_SIGNATURE_SHAPE, cursor.getInt(cursor.getColumnIndex(COL_SIGNATURE_SHAPE)));
         featureData.put(COL_SIGNATURE_SHAPE_SEGMENTS, cursor.getInt(cursor.getColumnIndex(COL_SIGNATURE_SHAPE_SEGMENTS)));
+        featureData.put(COL_RAW_DATA, cursor.getInt(cursor.getColumnIndex(COL_RAW_DATA)));
+        featureData.put(COL_RAW_DATA_FREQUENCY, cursor.getInt(cursor.getColumnIndex(COL_RAW_DATA_FREQUENCY)));
 
         cursor.close();
 
         return featureData;
     }
 
-    public boolean isModelFullyEnabled(List<ModelType> models) {
+    public boolean isModelEnabled(List<ModelType> models) {
         for(ModelType model : models) {
             Integer feature_count = 0;
 
@@ -1191,6 +1337,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         this.saveAsCSV(USER_DATA, currentDateTime + "_" + "userData.csv", resolver, downloadPath);
         this.saveAsCSV(FEATURE_DATA, currentDateTime + "_" + "featureData.csv", resolver, downloadPath);
         this.saveAsCSV(RESOURCE_DATA, currentDateTime + "_" + "resourceData.csv", resolver, downloadPath);
+        this.saveAsCSV(TRAIN_RAW_DATA, currentDateTime + "_" + "rawData.csv", resolver, downloadPath);
     }
 
     public void resetDB(boolean GANOnly) {
@@ -1209,6 +1356,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             db.execSQL("DELETE FROM " + REAL_RESULTS);
             db.execSQL("DELETE FROM " + TEST_RESULTS);
             db.execSQL("DELETE FROM " + TEST_AUTHENTICATION);
+            db.execSQL("DELETE FROM " + TRAIN_RAW_DATA);
         }
     }
 

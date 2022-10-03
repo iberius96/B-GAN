@@ -42,6 +42,7 @@ import androidx.core.app.ActivityCompat;
 import com.google.android.material.snackbar.Snackbar;
 
 import java.io.File;
+import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -52,10 +53,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.stream.Collectors;
 import java.util.stream.DoubleStream;
 
 import weka.classifiers.evaluation.Evaluation;
-import weka.classifiers.meta.OneClassClassifier;
 import weka.core.Attribute;
 import weka.core.Instance;
 import weka.core.Instances;
@@ -67,6 +68,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private boolean isTrainingClassifier = false;
     private boolean isTrackingSwipe = true;
     private int holdingPosition = 0;
+
+    private DatabaseHelper.ModelType currentGesture = DatabaseHelper.ModelType.SWIPE;
 
     private ArrayList<Float> xLocations = null;
     private ArrayList<Float> yLocations = null;
@@ -102,7 +105,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     private DatabaseHelper dbHelper;
 
-    private OneClassClassifier oneClassClassifiers[];
+    private CustomOneClassClassifier oneClassClassifiers[];
     private List<List<DatabaseHelper.ModelType>> trainingModels;
     private GAN gan;
 
@@ -137,9 +140,27 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private int keystrokeCount = 0;
     private long keystrokeStartTime = 0;
     private long keystrokeEndTime = 0;
+
+    private double lastKeystrokeX = 0.0;
+    private double lastKeystrokeY = 0.0;
+    private double lastKeystrokeSize = 0.0;
+
     private Swipe pendingSwipe = null;
 
     private static final Integer NUMPAD_SIZE = 10;
+
+    // Classifier options
+    String m_DefaultNumericGenerator = "weka.classifiers.meta.generators.GaussianGenerator -S 1 -M 0.0 -SD 1.0"; //-num
+    String m_DefaultNominalGenerator = "weka.classifiers.meta.generators.NominalGenerator -S 1"; //-nom
+    String m_TargetRejectionRate = "0.001"; //-trr
+    String m_TargetClassLabel = "1"; //-tcl
+    String m_NumRepeats = "10"; //-cvr
+    String m_PercentHeldout = "10.0"; //-cvf
+    String m_ProportionGenerated = "0.5"; //-P
+    String m_Seed = "1"; //-S
+
+    RawDataCollector rawDataCollector;
+    Map<DatabaseHelper.ModelType, Double> weightData = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -206,7 +227,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         new Thread(() -> {
             this.dbHelper = new DatabaseHelper(this);
-            int recordsCount = this.dbHelper.getRecordsCount("REAL_SWIPES");
+            int recordsCount = this.dbHelper.getRecordsCount(DatabaseHelper.REAL_SWIPES);
             runOnUiThread(()-> inputTextView.setText("Inputs " + recordsCount));
         }).start();
 
@@ -235,6 +256,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         this.sensorManager.registerListener(MainActivity.this, accelerometer, SensorManager.SENSOR_DELAY_NORMAL);
         this.sensorManager.registerListener(MainActivity.this, gyroscope, SensorManager.SENSOR_DELAY_NORMAL);
         this.sensorManager.registerListener(MainActivity.this, magnetometer, SensorManager.SENSOR_DELAY_NORMAL);
+
+        this.rawDataCollector = new RawDataCollector();
 
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
             ActivityCompat.requestPermissions(this, new String[]{READ_EXTERNAL_STORAGE, WRITE_EXTERNAL_STORAGE}, PackageManager.PERMISSION_GRANTED);
@@ -283,6 +306,14 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 this.zOrientations.add(orientation[0]);
             }
         }
+
+        if(
+                this.dbHelper.getFeatureData().get(DatabaseHelper.COL_RAW_DATA) == 1 &&
+                this.xOrientations.size() != 0 &&
+                !rawDataCollector.isRunning()
+        ) {
+            rawDataCollector.start(this, dbHelper);
+        }
     }
 
     private float[] applyLowPassFilter(float[] input, float[] output) {
@@ -298,6 +329,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         this.isTrackingAccelerometer = tracking;
         this.isTrackingGyroscope = tracking;
         this.isTrackingMagnetometer = tracking;
+    }
+
+    public boolean isTrackingSensors() {
+        return  this.isTrackingAccelerometer == true &&
+                this.isTrackingGyroscope == true &&
+                this.isTrackingMagnetometer == true;
     }
 
     @Override
@@ -377,7 +414,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 this.duration = (int) (System.currentTimeMillis() - this.startTime);
 
                 double distance = Math.sqrt(Math.pow(this.yLocations.get(this.yLocations.size() - 1) - this.yLocations.get(0), 2) + Math.pow(this.xLocations.get(this.xLocations.size() - 1) - this.xLocations.get(0), 2));
-                if(distance > 20) {
+                if(distance > 250) {
                     Swipe swipe = this.getSwipe();
                     if(this.isTrainingMode) {
                         this.saveButton.setVisibility(View.INVISIBLE);
@@ -385,15 +422,17 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                         if(this.dbHelper.getFeatureData().get(DatabaseHelper.COL_KEYSTROKE) == 0 && this.dbHelper.getFeatureData().get(DatabaseHelper.COL_SIGNATURE) == 0) {
                             this.dbHelper.addTrainRecord(swipe);
                         } else {
+                            this.attackSwitch.setEnabled(false);
                             this.pendingSwipe = swipe;
                         }
 
-                        int recordsCount = this.dbHelper.getRecordsCount("REAL_SWIPES");
+                        int recordsCount = this.dbHelper.getRecordsCount(DatabaseHelper.REAL_SWIPES);
                         this.inputTextView.setText("Inputs " + recordsCount);
                     } else {
                         if(this.dbHelper.getFeatureData().get(DatabaseHelper.COL_KEYSTROKE) == 0 && this.dbHelper.getFeatureData().get(DatabaseHelper.COL_SIGNATURE) == 0) {
                             this.processTestRecord(swipe);
                         } else {
+                            this.attackSwitch.setEnabled(false);
                             this.pendingSwipe = swipe;
                         }
                     }
@@ -401,8 +440,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     if(this.dbHelper.getFeatureData().get(DatabaseHelper.COL_KEYSTROKE) == 1) {
                         this.isTrackingSwipe = false;
                         this.resetKeystrokeValues();
+                        this.currentGesture = DatabaseHelper.ModelType.KEYSTROKE;
                         this.setNumpadVisibility(View.VISIBLE);
                     } else if (this.dbHelper.getFeatureData().get(DatabaseHelper.COL_SIGNATURE) == 1) {
+                        this.currentGesture = DatabaseHelper.ModelType.SIGNATURE;
                         this.setSignatureVisibility(View.VISIBLE);
                     }
                 }
@@ -421,16 +462,60 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         }
     }
 
+    public Map<String, Double> getRawData() {
+        Map<String, Double> rawData = new HashMap<String, Double>();
+
+        if(this.currentGesture.ordinal() == DatabaseHelper.ModelType.SIGNATURE.ordinal()) {
+            rawData.put(DatabaseHelper.COL_SIZE, this.signatureView.getSizes().size() != 0 ? this.signatureView.getSizes().get(this.signatureView.getSizes().size() - 1) : 0.0);
+            rawData.put(DatabaseHelper.COL_X, this.signatureView.getXLocations().size() != 0 ? this.signatureView.getXLocations().get(this.signatureView.getXLocations().size() - 1) : 0.0);
+            rawData.put(DatabaseHelper.COL_Y, this.signatureView.getYLocations().size() != 0 ? this.signatureView.getYLocations().get(this.signatureView.getYLocations().size() - 1) : 0.0);
+            rawData.put(DatabaseHelper.COL_VELOCITY_X, this.signatureView.getXVelocityTranslations().size() != 0 ? this.signatureView.getXVelocityTranslations().get(this.signatureView.getXVelocityTranslations().size() - 1) : 0.0);
+            rawData.put(DatabaseHelper.COL_VELOCITY_Y, this.signatureView.getYVelocityTranslations().size() != 0 ? this.signatureView.getYVelocityTranslations().get(this.signatureView.getYVelocityTranslations().size() - 1) : 0.0);
+        } else if(this.currentGesture.ordinal() == DatabaseHelper.ModelType.KEYSTROKE.ordinal()) {
+            rawData.put(DatabaseHelper.COL_SIZE, this.lastKeystrokeSize);
+            rawData.put(DatabaseHelper.COL_X, this.lastKeystrokeX);
+            rawData.put(DatabaseHelper.COL_Y, this.lastKeystrokeY);
+            rawData.put(DatabaseHelper.COL_VELOCITY_X, 0.0);
+            rawData.put(DatabaseHelper.COL_VELOCITY_Y, 0.0);
+        } else {
+            rawData.put(DatabaseHelper.COL_SIZE, this.sizes.size() != 0 ? this.sizes.get(this.sizes.size() - 1) : 0.0);
+            rawData.put(DatabaseHelper.COL_X, this.xLocations.size() != 0 ? this.xLocations.get(this.xLocations.size() - 1) : 0.0);
+            rawData.put(DatabaseHelper.COL_Y, this.yLocations.size() != 0 ? this.yLocations.get(this.yLocations.size() - 1) : 0.0);
+            rawData.put(DatabaseHelper.COL_VELOCITY_X, this.xVelocityTranslation.size() != 0 ? this.xVelocityTranslation.get(this.xVelocityTranslation.size() - 1) : 0.0);
+            rawData.put(DatabaseHelper.COL_VELOCITY_Y, this.yVelocityTranslation.size() != 0 ? this.yVelocityTranslation.get(this.yVelocityTranslation.size() - 1) : 0.0);
+        }
+
+        rawData.put(DatabaseHelper.COL_ACCELEROMETER_X, this.xAccelerometers.size() != 0 ? this.xAccelerometers.get(this.xAccelerometers.size() - 1) : 0.0);
+        rawData.put(DatabaseHelper.COL_ACCELEROMETER_Y, this.yAccelerometers.size() != 0 ? this.yAccelerometers.get(this.yAccelerometers.size() - 1) : 0.0);
+        rawData.put(DatabaseHelper.COL_ACCELEROMETER_Z, this.zAccelerometers.size() != 0 ? this.zAccelerometers.get(this.zAccelerometers.size() - 1) : 0.0);
+        rawData.put(DatabaseHelper.COL_GYROSCOPE_X, this.xGyroscopes.size() != 0 ? this.xGyroscopes.get(this.xGyroscopes.size() - 1) : 0.0);
+        rawData.put(DatabaseHelper.COL_GYROSCOPE_Y, this.yGyroscopes.size() != 0 ? this.yGyroscopes.get(this.yGyroscopes.size() - 1) : 0.0);
+        rawData.put(DatabaseHelper.COL_GYROSCOPE_Z, this.zGyroscopes.size() != 0 ? this.zGyroscopes.get(this.zGyroscopes.size() - 1) : 0.0);
+        rawData.put(DatabaseHelper.COL_ORIENTATION_X, this.xOrientations.size() != 0 ? this.xOrientations.get(this.xOrientations.size() - 1) : 0.0);
+        rawData.put(DatabaseHelper.COL_ORIENTATION_Y, this.yOrientations.size() != 0 ? this.yOrientations.get(this.yOrientations.size() - 1) : 0.0);
+        rawData.put(DatabaseHelper.COL_ORIENTATION_Z, this.zOrientations.size() != 0 ? this.zOrientations.get(this.zOrientations.size() - 1) : 0.0);
+        rawData.put(DatabaseHelper.COL_GESTURE_ID, (double) this.currentGesture.ordinal());
+
+        return rawData;
+    }
+
     private void processTestRecord(Swipe swipe) {
         String outputMessage = "";
         outputMessage += String.format("%1$-15s %2$-16s %3$-18s", "Inputs", "Prediction", "Test time");
         outputMessage += "\n";
 
-        double[] authenticationValues = new double[this.trainingModels.size()];
-        double[] authenticationTimes = new double[this.trainingModels.size()];
+        double[] authenticationValues;
+        double[] authenticationTimes;
+        if(dbHelper.getFeatureData().get(DatabaseHelper.COL_MODELS_COMBINATIONS) == DatabaseHelper.ModelsCombinations.FULL.ordinal()) {
+            authenticationValues = new double[this.trainingModels.size()];
+            authenticationTimes = new double[this.trainingModels.size()];
+        } else {
+            authenticationValues = new double[this.trainingModels.size() + 1];
+            authenticationTimes = new double[this.trainingModels.size() + 1];
+        }
 
         for(List<DatabaseHelper.ModelType> model : this.trainingModels) {
-            if(!dbHelper.isModelFullyEnabled(model)) {
+            if(!dbHelper.isModelEnabled(model)) {
                 continue;
             }
 
@@ -449,24 +534,56 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             authenticationValues[this.trainingModels.indexOf(model)] = authenticationValue;
             authenticationTimes[this.trainingModels.indexOf(model)] = testingTime;
 
-            outputMessage += String.format("%1$-18s", String.format("%02d", this.dbHelper.getRecordsCount("REAL_SWIPES")));
+            outputMessage += String.format("%1$-18s", String.format("%02d", this.dbHelper.getRecordsCount(DatabaseHelper.REAL_SWIPES)));
             outputMessage += String.format("%1$-18s", prediction == 0.0 ? "Accepted" : "Rejected");
             outputMessage += String.format("%1$-18s", String.format("%.4f", testingTime));
             outputMessage += "\n";
+        }
 
-            if(model.contains(DatabaseHelper.ModelType.FULL)) {
-                if (prediction == 0.0) {
-                    this.showSnackBar("Authentication: ACCEPTED", "#238823");
-                } else {
-                    this.showSnackBar("Authentication: REJECTED", "#D2222D");
-                }
+        double prediction;
+        if(dbHelper.getFeatureData().get(DatabaseHelper.COL_MODELS_COMBINATIONS) == DatabaseHelper.ModelsCombinations.FULL.ordinal()) { // Use full model
+            prediction = this.getPredictionFrom(swipe, Arrays.asList(DatabaseHelper.ModelType.FULL));
+        } else { // Use weighted ensemble
+            Map<DatabaseHelper.ModelType, Double> weighted_predictions = new HashMap<>();
+
+            long startTime = System.nanoTime();
+            for(DatabaseHelper.ModelType modelType : DatabaseHelper.ModelType.values()) {
+                if(modelType == DatabaseHelper.ModelType.FULL || !dbHelper.isModelEnabled(Arrays.asList(modelType))) { continue; }
+
+                double cur_prediction = this.getPredictionFrom(swipe, Arrays.asList(modelType)) == 0.0 ? 1.0 : 0.0;
+                weighted_predictions.put(modelType, cur_prediction * this.weightData.get(modelType));
             }
+
+            prediction = weighted_predictions.values().stream().mapToDouble(d-> d).sum() >= 0.5 ? 0.0 : 1.0;
+            long endTime = System.nanoTime();
+            double testingTime = (double) (endTime - startTime) / 1_000_000_000;
+
+            double authenticationValue;
+            if (this.attackSwitch.isChecked()) {
+                authenticationValue = prediction != 0.0 ? 1.0 : 0.0;
+            } else {
+                authenticationValue = prediction == 0.0 ? 1.0 : 0.0;
+            }
+
+            authenticationValues[authenticationValues.length - 1] = authenticationValue;
+            authenticationTimes[authenticationTimes.length - 1] = testingTime;
+        }
+
+        if (prediction == 0.0) {
+            this.showSnackBar("Authentication: ACCEPTED", "#238823");
+        } else {
+            this.showSnackBar("Authentication: REJECTED", "#D2222D");
         }
 
         swipe.setAuthentication(authenticationValues);
         swipe.setAuthenticationTime(authenticationTimes);
-        swipe.setClassifierSamples(this.dbHelper.getRecordsCount("REAL_SWIPES"));
+        swipe.setClassifierSamples(this.dbHelper.getRecordsCount(DatabaseHelper.REAL_SWIPES));
         this.dbHelper.addTestRecord(swipe);
+
+        int recordsCount = this.dbHelper.getRecordsCount(DatabaseHelper.TEST_SWIPES);
+        this.inputTextView.setText("Test inputs " + recordsCount);
+
+        this.attackSwitch.setEnabled(true); // Re-enable attack toggle
     }
 
     private double getPredictionFrom(Swipe swipe, List<DatabaseHelper.ModelType> modelType) {
@@ -479,7 +596,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             // classifyInstances returns the index of the most likely class identified (NaN if neither class was identified)
             prediction = this.oneClassClassifiers[this.trainingModels.indexOf(modelType)].classifyInstance(instance);
             System.out.println("Prediction: " + prediction);
-            System.out.println("Distribution: " + Arrays.toString(this.oneClassClassifiers[this.trainingModels.indexOf(modelType)].distributionForInstance(instance)));
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -487,6 +603,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     private void resetSwipeValues() {
+        if(rawDataCollector.isRunning()) {
+            rawDataCollector.stop();
+        }
+
         this.xLocations.clear();
         this.yLocations.clear();
         this.xVelocityTranslation.clear();
@@ -785,8 +905,16 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 if (resultCode == Activity.RESULT_OK) {
                     Map<String, Object> modelSelection = (HashMap<String, Object>) data.getSerializableExtra("modelSelection");
 
+                    List<List<DatabaseHelper.ModelType>> curActiveModels = dbHelper.getActiveModels().stream().filter(s -> dbHelper.isModelEnabled(s)).collect(Collectors.toList());
+                    List<List<DatabaseHelper.ModelType>> initialActiveModels = (List<List<DatabaseHelper.ModelType>>) modelSelection.get("initialActiveModels");
+
                     Integer curModelsSelection = (Integer) modelSelection.get("curModelsSelection");
                     Integer initialModelsSelection = (Integer) modelSelection.get("initialModelsSelection");
+
+                    boolean curRawDataEnabled = (boolean) modelSelection.get("curRawDataEnabled");
+                    boolean initialRawDataEnabled = (boolean) modelSelection.get("initialRawDataEnabled");
+                    Integer curRawDataFrequency = (Integer) modelSelection.get("curRawDataFrequency");
+                    Integer initialRawDataFrequency = (Integer) modelSelection.get("initialRawDataFrequency");
 
                     Integer curSegmentSelection = (Integer) modelSelection.get("curSegmentSelection");
                     Integer initialSegmentSelection = (Integer) modelSelection.get("initialSegmentSelection");
@@ -801,11 +929,16 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     Integer curSignatureSegmentSelection = (Integer) modelSelection.get("curSignatureSegmentSelection");
                     Integer initialSignatureSegmentSelection = (Integer) modelSelection.get("initialSignatureSegmentSelection");
 
-                    if(curModelsSelection != initialModelsSelection) {
-                        dbHelper.generateTestAuthenticationTable(null, true, dbHelper.getActiveModels());
+                    if(
+                            (curModelsSelection != initialModelsSelection) ||
+                            (!curActiveModels.equals(initialActiveModels))
+                    ) {
+                        dbHelper.generateTestAuthenticationTable(null, true, curActiveModels);
                     }
 
                     if(
+                            (curRawDataEnabled != initialRawDataEnabled) ||
+                            (curRawDataFrequency != initialRawDataFrequency) ||
                             (curSegmentSelection != initialSegmentSelection) ||
                             (curKeystrokeEnabled != initialKeystrokeEnabled) ||
                             (curPinLength != initialPinLength) ||
@@ -850,6 +983,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 e.printStackTrace();
             }
         }
+
+        //Reset keystroke values
+        if(visibility == View.INVISIBLE) {
+            this.lastKeystrokeX = 0.0;
+            this.lastKeystrokeY = 0.0;
+            this.lastKeystrokeSize = 0.0;
+        }
     }
 
     private void setKeystrokeButtonsEventListener() {
@@ -875,6 +1015,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         @Override
         public boolean onTouch(View v, MotionEvent event) {
+            int index = event.getActionIndex();
+            int pointerId = event.getPointerId(index);
+
             switch(event.getAction()) {
                 case MotionEvent.ACTION_DOWN:
                     if(this.mainActivity.keystrokeCount == 0) { this.mainActivity.setSensorsTracking(true); }
@@ -891,6 +1034,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                         double keystrokeInterval = (double) (this.mainActivity.keystrokeStartTime - this.mainActivity.keystrokeEndTime) / 1_000_000_000;
                         this.mainActivity.pendingSwipe.addKeystrokeInterval(keystrokeInterval, this.mainActivity.keystrokeCount - 1, this.mainActivity.dbHelper.getFeatureData().get(DatabaseHelper.COL_PIN_LENGTH));
                     }
+
+                    this.mainActivity.lastKeystrokeX = event.getX(pointerId);
+                    this.mainActivity.lastKeystrokeY = event.getY(pointerId);
+                    this.mainActivity.lastKeystrokeSize = event.getSize(pointerId);
+
                     break;
 
                 case MotionEvent.ACTION_UP:
@@ -913,6 +1061,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
                         if(this.mainActivity.dbHelper.getFeatureData().get(DatabaseHelper.COL_SIGNATURE) == 1) {
                             this.mainActivity.setSensorsTracking(false);
+                            this.mainActivity.currentGesture = DatabaseHelper.ModelType.SIGNATURE;
                             this.mainActivity.setSignatureVisibility(View.VISIBLE);
                         } else {
                             this.mainActivity.setHoldFeatures(this.mainActivity.pendingSwipe); // Finalize hold features
@@ -922,7 +1071,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
                             if(this.mainActivity.isTrainingMode) {
                                 this.mainActivity.dbHelper.addTrainRecord(this.mainActivity.pendingSwipe);
-                                this.mainActivity.inputTextView.setText("Inputs " + this.mainActivity.dbHelper.getRecordsCount("REAL_SWIPES"));
+                                this.mainActivity.inputTextView.setText("Inputs " + this.mainActivity.dbHelper.getRecordsCount(DatabaseHelper.REAL_SWIPES));
                             } else {
                                 this.mainActivity.processTestRecord(this.mainActivity.pendingSwipe);
                             }
@@ -994,11 +1143,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             this.signatureView.clearPath();
             this.resetSwipeValues();
             this.isTrackingSwipe = true;
+            this.currentGesture = DatabaseHelper.ModelType.SWIPE;
             this.setSignatureVisibility(INVISIBLE);
 
             if(this.isTrainingMode) {
                 this.dbHelper.addTrainRecord(this.pendingSwipe);
-                this.inputTextView.setText("Inputs " + this.dbHelper.getRecordsCount("REAL_SWIPES"));
+                this.inputTextView.setText("Inputs " + this.dbHelper.getRecordsCount(DatabaseHelper.REAL_SWIPES));
             } else {
                 this.processTestRecord(this.pendingSwipe);
             }
@@ -1025,13 +1175,16 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     public void resetData(View view) {
         if(this.isTrainingMode) {
             this.dbHelper.resetDB(false);
-            this.inputTextView.setText("Inputs " + this.dbHelper.getRecordsCount("REAL_SWIPES"));
+            this.inputTextView.setText("Inputs " + this.dbHelper.getRecordsCount(DatabaseHelper.REAL_SWIPES));
         } else {
+            String fullSummary = "";
+            String ensembleSummary = "";
+
             String strSummary = "";
             strSummary += String.format("%1$-9s %2$-9s %3$-9s %4$-9s %5$-9s %6$-9s %7$-9s %8$-9s", "Inputs", "TAR", "FRR", "TRR", "FAR", "Swipe", "Train", "Classifier");
             strSummary += "\n";
 
-            ArrayList<Swipe> testSwipes = dbHelper.getAllSwipes("TEST_SWIPES");
+            ArrayList<Swipe> testSwipes = dbHelper.getAllSwipes(DatabaseHelper.TEST_SWIPES);
 
             if (testSwipes.size() == 0) {
                 this.showAlertDialog("ATTENTION", "You need to enter at least a swipe to test the authentication system");
@@ -1045,46 +1198,47 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             ArrayList<double[]> attackerAuthenticationTime = this.dbHelper.getTestingData("Attacker", DatabaseHelper.COL_AUTHENTICATION_TIME);
 
             for(List<DatabaseHelper.ModelType> model : this.trainingModels) {
-                if(!dbHelper.isModelFullyEnabled(model)) {
+                if(!dbHelper.isModelEnabled(model)) {
                     continue;
                 }
 
                 double[] curUserAuthentication = userAuthentication.stream().mapToDouble(x -> x[this.trainingModels.indexOf(model)]).toArray();
                 double[] curAttackerAuthentication = attackerAuthentication.stream().mapToDouble(x -> x[this.trainingModels.indexOf(model)]).toArray();
 
-                double instances = curUserAuthentication.length + curAttackerAuthentication.length;
-                double TAR = curUserAuthentication.length == 0 ? 0.0 : Arrays.stream(curUserAuthentication).sum() / curUserAuthentication.length * 100;
-                double FRR = curUserAuthentication.length == 0 ? 0.0 : (curUserAuthentication.length - (Arrays.stream(curUserAuthentication).sum())) / curUserAuthentication.length * 100;
-                double TRR = curAttackerAuthentication.length == 0 ? 0.0 : (Arrays.stream(curAttackerAuthentication).sum()) / curAttackerAuthentication.length * 100;
-                double FAR = curAttackerAuthentication.length == 0 ? 0.0 : (curAttackerAuthentication.length - (Arrays.stream(curAttackerAuthentication).sum())) / curAttackerAuthentication.length * 100;
-                double averageSwipeDuration = testSwipes.stream().mapToDouble(Swipe::getDuration).average().getAsDouble() / 1_000.0;
-
                 DoubleStream curUserAuthenticationTime = userAuthenticationTime.stream().mapToDouble(x -> x[this.trainingModels.indexOf(model)]);
                 DoubleStream curAttackerAuthenticationTime = attackerAuthenticationTime.stream().mapToDouble(x -> x[this.trainingModels.indexOf(model)]);
 
-                double avgTestTime = DoubleStream.concat(curUserAuthenticationTime, curAttackerAuthenticationTime).average().getAsDouble();
-
-                int classifierSamples = this.dbHelper.getRecordsCount("REAL_SWIPES");
-                this.dbHelper.saveTestResults(instances, TAR, FRR, TRR, FAR, averageSwipeDuration, avgTestTime, classifierSamples, model);
-
-                if(model.contains(DatabaseHelper.ModelType.FULL)) {
-                    strSummary += String.format("%1$-12s", String.format("%02.0f", instances));
-                    strSummary += String.format("%1$-10s", String.format("%.1f", TAR));
-                    strSummary += String.format("%1$-11s", String.format("%.1f", FRR));
-                    strSummary += String.format("%1$-10s", String.format("%.1f", TRR));
-                    strSummary += String.format("%1$-11s", String.format("%.1f", FAR));
-                    strSummary += String.format("%1$-11s", String.format("%.3f", averageSwipeDuration));
-                    strSummary += String.format("%1$-10s", String.format("%.3f", avgTestTime));
-                    strSummary += String.format("%1$-10s", String.format("%02d", classifierSamples));
-                    strSummary += "\n";
-                }
+                fullSummary += computeTestMetrics(
+                        testSwipes,
+                        curUserAuthentication, curUserAuthenticationTime,
+                        curAttackerAuthentication, curAttackerAuthenticationTime,
+                        model.toString());
             }
 
-            this.showAlertDialog("TESTING RESULTS", strSummary);
+            if(dbHelper.getFeatureData().get(DatabaseHelper.COL_MODELS_COMBINATIONS) != DatabaseHelper.ModelsCombinations.FULL.ordinal()) {
+                double[] curUserAuthentication = userAuthentication.stream().mapToDouble(x -> x[x.length - 1]).toArray();
+                double[] curAttackerAuthentication = attackerAuthentication.stream().mapToDouble(x -> x[x.length - 1]).toArray();
+
+                DoubleStream curUserAuthenticationTime = userAuthenticationTime.stream().mapToDouble(x -> x[x.length - 1]);
+                DoubleStream curAttackerAuthenticationTime = attackerAuthenticationTime.stream().mapToDouble(x -> x[x.length - 1]);
+
+                ensembleSummary += computeTestMetrics(
+                        testSwipes,
+                        curUserAuthentication, curUserAuthenticationTime,
+                        curAttackerAuthentication, curAttackerAuthenticationTime,
+                        DatabaseHelper.COL_WEIGHTED_ENSEMBLE
+                );
+            }
+
+            if(ensembleSummary != "") {
+                this.showAlertDialog("TESTING RESULTS", strSummary + ensembleSummary);
+            } else {
+                this.showAlertDialog("TESTING RESULTS", strSummary + fullSummary);
+            }
 
             this.attackSwitch.setChecked(false);
 
-            this.inputTextView.setText("Inputs " + this.dbHelper.getRecordsCount("REAL_SWIPES"));
+            this.inputTextView.setText("Inputs " + this.dbHelper.getRecordsCount(DatabaseHelper.REAL_SWIPES));
             this.ganButton.setVisibility(View.VISIBLE);
             this.trainButton.setVisibility(View.VISIBLE);
             this.saveButton.setVisibility(View.VISIBLE);
@@ -1094,6 +1248,41 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             this.isTrainingMode = true;
             this.resetButton.setText("Reset DB");
         }
+    }
+
+    private String computeTestMetrics(
+            ArrayList<Swipe> testSwipes,
+            double[] curUserAuthentication, DoubleStream curUserAuthenticationTime,
+            double[] curAttackerAuthentication, DoubleStream curAttackerAuthenticationTime,
+            String model
+    ) {
+        String strSummary = "";
+
+        double instances = curUserAuthentication.length + curAttackerAuthentication.length;
+        double TAR = curUserAuthentication.length == 0 ? 0.0 : Arrays.stream(curUserAuthentication).sum() / curUserAuthentication.length * 100;
+        double FRR = curUserAuthentication.length == 0 ? 0.0 : (curUserAuthentication.length - (Arrays.stream(curUserAuthentication).sum())) / curUserAuthentication.length * 100;
+        double TRR = curAttackerAuthentication.length == 0 ? 0.0 : (Arrays.stream(curAttackerAuthentication).sum()) / curAttackerAuthentication.length * 100;
+        double FAR = curAttackerAuthentication.length == 0 ? 0.0 : (curAttackerAuthentication.length - (Arrays.stream(curAttackerAuthentication).sum())) / curAttackerAuthentication.length * 100;
+        double averageSwipeDuration = testSwipes.stream().mapToDouble(Swipe::getDuration).average().getAsDouble() / 1_000.0;
+
+        double avgTestTime = DoubleStream.concat(curUserAuthenticationTime, curAttackerAuthenticationTime).average().getAsDouble();
+
+        int classifierSamples = this.dbHelper.getRecordsCount(DatabaseHelper.REAL_SWIPES);
+        this.dbHelper.saveTestResults(instances, TAR, FRR, TRR, FAR, averageSwipeDuration, avgTestTime, classifierSamples, model);
+
+        if(model.contains(DatabaseHelper.ModelType.FULL.name()) || model.contains(DatabaseHelper.COL_WEIGHTED_ENSEMBLE)) {
+            strSummary += String.format("%1$-12s", String.format("%02.0f", instances));
+            strSummary += String.format("%1$-10s", String.format("%.1f", TAR));
+            strSummary += String.format("%1$-11s", String.format("%.1f", FRR));
+            strSummary += String.format("%1$-10s", String.format("%.1f", TRR));
+            strSummary += String.format("%1$-11s", String.format("%.1f", FAR));
+            strSummary += String.format("%1$-11s", String.format("%.3f", averageSwipeDuration));
+            strSummary += String.format("%1$-10s", String.format("%.3f", avgTestTime));
+            strSummary += String.format("%1$-10s", String.format("%02d", classifierSamples));
+            strSummary += "\n";
+        }
+
+        return strSummary;
     }
 
     public void train(View view) {
@@ -1117,7 +1306,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     public void train(boolean isGanMode) {
 
-        if (this.dbHelper.getRecordsCount("REAL_SWIPES") < 5) {
+        if (this.dbHelper.getRecordsCount(DatabaseHelper.REAL_SWIPES) < 5) {
             this.showAlertDialog("ATTENTION", "You need to enter at least 5 swipes as input before training.");
             this.isTrainingClassifier = false;
             this.enableUserInteraction();
@@ -1133,7 +1322,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         Handler uiHandler = new Handler(Looper.getMainLooper());
         Runnable uiRunnable = () -> {
-            this.inputTextView.setText("Swipe to authenticate");
+            this.inputTextView.setText("Test inputs 0");
             this.ganButton.setVisibility(View.INVISIBLE);
             this.trainButton.setVisibility(View.INVISIBLE);
             this.saveButton.setVisibility(View.INVISIBLE);
@@ -1154,10 +1343,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             dbHelper.deleteTestingData();
             dbHelper.deleteResourceData();
 
-            ArrayList<Swipe> swipes = dbHelper.getAllSwipes("REAL_SWIPES");
+            ArrayList<Swipe> swipes = dbHelper.getAllSwipes(DatabaseHelper.REAL_SWIPES);
             try {
                 this.trainingModels = dbHelper.getActiveModels();
-                this.oneClassClassifiers = new OneClassClassifier[this.trainingModels.size()];
+                this.oneClassClassifiers = new CustomOneClassClassifier[this.trainingModels.size()];
 
                 if (isGanMode) {
                     ResourceMonitor resourceMonitor = new ResourceMonitor();
@@ -1179,7 +1368,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     resourceMonitor.stop(dbHelper, "GAN");
 
                     for(List<DatabaseHelper.ModelType> trainingModel : trainingModels) {
-                        if(!dbHelper.isModelFullyEnabled(trainingModel)) {
+                        if(!dbHelper.isModelEnabled(trainingModel)) {
                             continue;
                         }
 
@@ -1188,13 +1377,17 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     }
                 } else {
                     for(List<DatabaseHelper.ModelType> trainingModel : trainingModels) {
-                        if(!dbHelper.isModelFullyEnabled(trainingModel)) {
+                        if(!dbHelper.isModelEnabled(trainingModel)) {
                             continue;
                         }
 
                         uiHandler.post(() -> {progressTextView.setText("Training " + trainingModel.toString() + " classifier");});
                         trainClassifierWith(swipes, false, 0.0, trainingModel);
                     }
+                }
+
+                if(dbHelper.getFeatureData().get(DatabaseHelper.COL_MODELS_COMBINATIONS) != DatabaseHelper.ModelsCombinations.FULL.ordinal()) {
+                    weightData = dbHelper.getModelWeights(isGanMode);
                 }
 
                 uiHandler.post(uiRunnable);
@@ -1224,9 +1417,19 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         System.out.println("ARFF representation of Dataset");
         System.out.println(dataSet.toString());
 
-        OneClassClassifier oneClassClassifier = new OneClassClassifier();
+        CustomOneClassClassifier oneClassClassifier = new CustomOneClassClassifier();
         try {
-            String[] options = {"-num", "weka.classifiers.meta.generators.GaussianGenerator -S 1 -M 0.0 -SD 1.0", "-nom", "weka.classifiers.meta.generators.NominalGenerator -S 1", "-trr", "0.001", "-tcl", "1", "-cvr", "10", "-cvf", "10.0", "-P", "0.5", "-S", "1", "-W", "weka.classifiers.trees.RandomForest", "--", "-I", "100", "-num-slots", "1", "-K", "0", "-S", "1", "", "", "", "", "", "", "", ""};
+            String[] options = {
+                    "-num", m_DefaultNumericGenerator,
+                    "-nom", m_DefaultNominalGenerator,
+                    "-trr", m_TargetRejectionRate,
+                    "-tcl", m_TargetClassLabel,
+                    "-cvr", m_NumRepeats,
+                    "-cvf", m_PercentHeldout,
+                    "-P", m_ProportionGenerated,
+                    "-S", m_Seed,
+                    "-W", "weka.classifiers.trees.RandomForest", "--", "-I", "100", "-num-slots", "1", "-K", "0", "-S", "1", "", "", "", "", "", "", "", ""};
+
             oneClassClassifier.setOptions(options);
             oneClassClassifier.setTargetClassLabel("User");
 
@@ -1252,6 +1455,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             double instances = eTest.numInstances();
             double TAR = eTest.pctCorrect();
             double FRR = eTest.pctUnclassified();
+            double ER = eTest.unclassified() / eTest.numInstances();
 
             double averageSwipeDuration = trainSwipes.subList(0, dataSet.size()).stream().mapToDouble(Swipe::getDuration).average().getAsDouble() / 1_000;
 
@@ -1263,9 +1467,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             finalSummary += "\n";
 
            if(hasGan) {
-               this.dbHelper.saveGANResults(instances, TAR, FRR, averageSwipeDuration, rfTrainingTime, ganTime, trainSwipes.size(), trainingModel);
+               this.dbHelper.saveGANResults(instances, TAR, FRR, ER, averageSwipeDuration, rfTrainingTime, ganTime, trainSwipes.size(), trainingModel);
            } else {
-               this.dbHelper.saveRealResults(instances, TAR, FRR, averageSwipeDuration, rfTrainingTime, trainSwipes.size(), trainingModel);
+               this.dbHelper.saveRealResults(instances, TAR, FRR, ER, averageSwipeDuration, rfTrainingTime, trainSwipes.size(), trainingModel);
            }
 
         } catch (Exception e) {
