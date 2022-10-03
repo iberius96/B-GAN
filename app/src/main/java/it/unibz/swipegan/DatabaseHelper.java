@@ -37,11 +37,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "GAN.db";
 
-    private static final String REAL_SWIPES = "REAL_SWIPES";
+    public static final String REAL_SWIPES = "REAL_SWIPES";
     private static final String REAL_SWIPES_NORMALIZED = "REAL_SWIPES_NORMALIZED";
     private static final String GAN_SWIPES = "GAN_SWIPES";
     private static final String GAN_SWIPES_NORMALIZED = "GAN_SWIPES_NORMALIZED";
-    private static final String TEST_SWIPES = "TEST_SWIPES";
+    public static final String TEST_SWIPES = "TEST_SWIPES";
     private static final String TEST_SWIPES_NORMALIZED = "TEST_SWIPES_NORMALIZED";
 
     private static final String REAL_RESULTS = "REAL_RESULTS";

@@ -227,7 +227,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         new Thread(() -> {
             this.dbHelper = new DatabaseHelper(this);
-            int recordsCount = this.dbHelper.getRecordsCount("REAL_SWIPES");
+            int recordsCount = this.dbHelper.getRecordsCount(DatabaseHelper.REAL_SWIPES);
             runOnUiThread(()-> inputTextView.setText("Inputs " + recordsCount));
         }).start();
 
@@ -426,7 +426,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                             this.pendingSwipe = swipe;
                         }
 
-                        int recordsCount = this.dbHelper.getRecordsCount("REAL_SWIPES");
+                        int recordsCount = this.dbHelper.getRecordsCount(DatabaseHelper.REAL_SWIPES);
                         this.inputTextView.setText("Inputs " + recordsCount);
                     } else {
                         if(this.dbHelper.getFeatureData().get(DatabaseHelper.COL_KEYSTROKE) == 0 && this.dbHelper.getFeatureData().get(DatabaseHelper.COL_SIGNATURE) == 0) {
@@ -534,7 +534,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             authenticationValues[this.trainingModels.indexOf(model)] = authenticationValue;
             authenticationTimes[this.trainingModels.indexOf(model)] = testingTime;
 
-            outputMessage += String.format("%1$-18s", String.format("%02d", this.dbHelper.getRecordsCount("REAL_SWIPES")));
+            outputMessage += String.format("%1$-18s", String.format("%02d", this.dbHelper.getRecordsCount(DatabaseHelper.REAL_SWIPES)));
             outputMessage += String.format("%1$-18s", prediction == 0.0 ? "Accepted" : "Rejected");
             outputMessage += String.format("%1$-18s", String.format("%.4f", testingTime));
             outputMessage += "\n";
@@ -577,8 +577,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         swipe.setAuthentication(authenticationValues);
         swipe.setAuthenticationTime(authenticationTimes);
-        swipe.setClassifierSamples(this.dbHelper.getRecordsCount("REAL_SWIPES"));
+        swipe.setClassifierSamples(this.dbHelper.getRecordsCount(DatabaseHelper.REAL_SWIPES));
         this.dbHelper.addTestRecord(swipe);
+
+        int recordsCount = this.dbHelper.getRecordsCount(DatabaseHelper.TEST_SWIPES);
+        this.inputTextView.setText("Test inputs " + recordsCount);
 
         this.attackSwitch.setEnabled(true); // Re-enable attack toggle
     }
@@ -1068,7 +1071,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
                             if(this.mainActivity.isTrainingMode) {
                                 this.mainActivity.dbHelper.addTrainRecord(this.mainActivity.pendingSwipe);
-                                this.mainActivity.inputTextView.setText("Inputs " + this.mainActivity.dbHelper.getRecordsCount("REAL_SWIPES"));
+                                this.mainActivity.inputTextView.setText("Inputs " + this.mainActivity.dbHelper.getRecordsCount(DatabaseHelper.REAL_SWIPES));
                             } else {
                                 this.mainActivity.processTestRecord(this.mainActivity.pendingSwipe);
                             }
@@ -1145,7 +1148,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
             if(this.isTrainingMode) {
                 this.dbHelper.addTrainRecord(this.pendingSwipe);
-                this.inputTextView.setText("Inputs " + this.dbHelper.getRecordsCount("REAL_SWIPES"));
+                this.inputTextView.setText("Inputs " + this.dbHelper.getRecordsCount(DatabaseHelper.REAL_SWIPES));
             } else {
                 this.processTestRecord(this.pendingSwipe);
             }
@@ -1172,7 +1175,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     public void resetData(View view) {
         if(this.isTrainingMode) {
             this.dbHelper.resetDB(false);
-            this.inputTextView.setText("Inputs " + this.dbHelper.getRecordsCount("REAL_SWIPES"));
+            this.inputTextView.setText("Inputs " + this.dbHelper.getRecordsCount(DatabaseHelper.REAL_SWIPES));
         } else {
             String fullSummary = "";
             String ensembleSummary = "";
@@ -1181,7 +1184,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             strSummary += String.format("%1$-9s %2$-9s %3$-9s %4$-9s %5$-9s %6$-9s %7$-9s %8$-9s", "Inputs", "TAR", "FRR", "TRR", "FAR", "Swipe", "Train", "Classifier");
             strSummary += "\n";
 
-            ArrayList<Swipe> testSwipes = dbHelper.getAllSwipes("TEST_SWIPES");
+            ArrayList<Swipe> testSwipes = dbHelper.getAllSwipes(DatabaseHelper.TEST_SWIPES);
 
             if (testSwipes.size() == 0) {
                 this.showAlertDialog("ATTENTION", "You need to enter at least a swipe to test the authentication system");
@@ -1235,7 +1238,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
             this.attackSwitch.setChecked(false);
 
-            this.inputTextView.setText("Inputs " + this.dbHelper.getRecordsCount("REAL_SWIPES"));
+            this.inputTextView.setText("Inputs " + this.dbHelper.getRecordsCount(DatabaseHelper.REAL_SWIPES));
             this.ganButton.setVisibility(View.VISIBLE);
             this.trainButton.setVisibility(View.VISIBLE);
             this.saveButton.setVisibility(View.VISIBLE);
@@ -1264,7 +1267,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         double avgTestTime = DoubleStream.concat(curUserAuthenticationTime, curAttackerAuthenticationTime).average().getAsDouble();
 
-        int classifierSamples = this.dbHelper.getRecordsCount("REAL_SWIPES");
+        int classifierSamples = this.dbHelper.getRecordsCount(DatabaseHelper.REAL_SWIPES);
         this.dbHelper.saveTestResults(instances, TAR, FRR, TRR, FAR, averageSwipeDuration, avgTestTime, classifierSamples, model);
 
         if(model.contains(DatabaseHelper.ModelType.FULL.name()) || model.contains(DatabaseHelper.COL_WEIGHTED_ENSEMBLE)) {
@@ -1303,7 +1306,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     public void train(boolean isGanMode) {
 
-        if (this.dbHelper.getRecordsCount("REAL_SWIPES") < 5) {
+        if (this.dbHelper.getRecordsCount(DatabaseHelper.REAL_SWIPES) < 5) {
             this.showAlertDialog("ATTENTION", "You need to enter at least 5 swipes as input before training.");
             this.isTrainingClassifier = false;
             this.enableUserInteraction();
@@ -1319,7 +1322,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         Handler uiHandler = new Handler(Looper.getMainLooper());
         Runnable uiRunnable = () -> {
-            this.inputTextView.setText("Swipe to authenticate");
+            this.inputTextView.setText("Test inputs 0");
             this.ganButton.setVisibility(View.INVISIBLE);
             this.trainButton.setVisibility(View.INVISIBLE);
             this.saveButton.setVisibility(View.INVISIBLE);
@@ -1340,7 +1343,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             dbHelper.deleteTestingData();
             dbHelper.deleteResourceData();
 
-            ArrayList<Swipe> swipes = dbHelper.getAllSwipes("REAL_SWIPES");
+            ArrayList<Swipe> swipes = dbHelper.getAllSwipes(DatabaseHelper.REAL_SWIPES);
             try {
                 this.trainingModels = dbHelper.getActiveModels();
                 this.oneClassClassifiers = new CustomOneClassClassifier[this.trainingModels.size()];
