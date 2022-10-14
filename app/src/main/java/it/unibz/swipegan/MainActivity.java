@@ -51,6 +51,7 @@ import java.util.Arrays;
 import java.util.DoubleSummaryStatistics;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Random;
 import java.util.stream.Collectors;
@@ -228,7 +229,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         new Thread(() -> {
             this.dbHelper = new DatabaseHelper(this);
             int recordsCount = this.dbHelper.getRecordsCount(DatabaseHelper.REAL_SWIPES);
-            runOnUiThread(()-> inputTextView.setText("Inputs " + recordsCount));
+            runOnUiThread(()-> inputTextView.setText(getString(R.string.inputs) + " " + recordsCount));
         }).start();
 
         this.xLocations = new ArrayList<>();
@@ -427,7 +428,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                         }
 
                         int recordsCount = this.dbHelper.getRecordsCount(DatabaseHelper.REAL_SWIPES);
-                        this.inputTextView.setText("Inputs " + recordsCount);
+                        this.inputTextView.setText(getString(R.string.inputs) + " " + recordsCount);
                     } else {
                         if(this.dbHelper.getFeatureData().get(DatabaseHelper.COL_KEYSTROKE) == 0 && this.dbHelper.getFeatureData().get(DatabaseHelper.COL_SIGNATURE) == 0) {
                             this.processTestRecord(swipe);
@@ -501,7 +502,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     private void processTestRecord(Swipe swipe) {
         String outputMessage = "";
-        outputMessage += String.format("%1$-15s %2$-16s %3$-18s", "Inputs", "Prediction", "Test time");
+        outputMessage += String.format("%1$-15s %2$-16s %3$-18s", getString(R.string.inputs), getString(R.string.prediction), getString(R.string.test_time));
         outputMessage += "\n";
 
         double[] authenticationValues;
@@ -535,7 +536,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             authenticationTimes[this.trainingModels.indexOf(model)] = testingTime;
 
             outputMessage += String.format("%1$-18s", String.format("%02d", this.dbHelper.getRecordsCount(DatabaseHelper.REAL_SWIPES)));
-            outputMessage += String.format("%1$-18s", prediction == 0.0 ? "Accepted" : "Rejected");
+            outputMessage += String.format("%1$-18s", prediction == 0.0 ? getString(R.string.accepted) : getString(R.string.rejected));
             outputMessage += String.format("%1$-18s", String.format("%.4f", testingTime));
             outputMessage += "\n";
         }
@@ -570,9 +571,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         }
 
         if (prediction == 0.0) {
-            this.showSnackBar("Authentication: ACCEPTED", "#238823");
+            this.showSnackBar(getString(R.string.authentication) + ": " + getString(R.string.accepted), "#238823");
         } else {
-            this.showSnackBar("Authentication: REJECTED", "#D2222D");
+            this.showSnackBar(getString(R.string.authentication) + ": " + getString(R.string.rejected), "#D2222D");
         }
 
         swipe.setAuthentication(authenticationValues);
@@ -581,7 +582,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         this.dbHelper.addTestRecord(swipe);
 
         int recordsCount = this.dbHelper.getRecordsCount(DatabaseHelper.TEST_SWIPES);
-        this.inputTextView.setText("Test inputs " + recordsCount);
+        this.inputTextView.setText(getString(R.string.test_inputs) + " " + recordsCount);
 
         this.attackSwitch.setEnabled(true); // Re-enable attack toggle
     }
@@ -595,7 +596,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         try {
             // classifyInstances returns the index of the most likely class identified (NaN if neither class was identified)
             prediction = this.oneClassClassifiers[this.trainingModels.indexOf(modelType)].classifyInstance(instance);
-            System.out.println("Prediction: " + prediction);
+            System.out.println(getString(R.string.prediction) + ": " + prediction);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -871,18 +872,18 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     public void editProfile(View view) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setMessage("Choose the profile you want to edit").setTitle("Choose profile");
-        builder.setPositiveButton("User", new DialogInterface.OnClickListener() {
+        builder.setMessage(getString(R.string.choose_profile_edit)).setTitle(getString(R.string.choose_profile));
+        builder.setPositiveButton(getString(R.string.user), new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
                 switchActivities(ProfileActivity.class);
             }
         });
-        builder.setNegativeButton("Model", new DialogInterface.OnClickListener() {
+        builder.setNegativeButton(getString(R.string.model), new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
                 switchActivities(ModelActivity.class);
             }
         });
-        builder.setNeutralButton("Cancel", new DialogInterface.OnClickListener() {
+        builder.setNeutralButton(getString(R.string.cancel_lower), new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
                 // User cancelled the dialog
             }
@@ -961,7 +962,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             }
             case(1): {
                 if (resultCode == Activity.RESULT_OK) {
-                    inputTextView.setText("Inputs 0");
+                    dbHelper.resetDB(false);
+                    inputTextView.setText(getString(R.string.inputs) + " 0");
                 }
                 break;
             }
@@ -1148,7 +1150,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
             if(this.isTrainingMode) {
                 this.dbHelper.addTrainRecord(this.pendingSwipe);
-                this.inputTextView.setText("Inputs " + this.dbHelper.getRecordsCount(DatabaseHelper.REAL_SWIPES));
+                this.inputTextView.setText(getString(R.string.inputs) + " " + this.dbHelper.getRecordsCount(DatabaseHelper.REAL_SWIPES));
             } else {
                 this.processTestRecord(this.pendingSwipe);
             }
@@ -1175,7 +1177,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     public void resetData(View view) {
         if(this.isTrainingMode) {
             this.dbHelper.resetDB(false);
-            this.inputTextView.setText("Inputs " + this.dbHelper.getRecordsCount(DatabaseHelper.REAL_SWIPES));
+            this.inputTextView.setText(getString(R.string.inputs) + " " + this.dbHelper.getRecordsCount(DatabaseHelper.REAL_SWIPES));
         } else {
             String fullSummary = "";
             String ensembleSummary = "";
@@ -1187,7 +1189,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             ArrayList<Swipe> testSwipes = dbHelper.getAllSwipes(DatabaseHelper.TEST_SWIPES);
 
             if (testSwipes.size() == 0) {
-                this.showAlertDialog("ATTENTION", "You need to enter at least a swipe to test the authentication system");
+                this.showAlertDialog(getString(R.string.attention), getString(R.string.min_swipes_test));
                 return;
             }
 
@@ -1231,14 +1233,14 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             }
 
             if(ensembleSummary != "") {
-                this.showAlertDialog("TESTING RESULTS", strSummary + ensembleSummary);
+                this.showAlertDialog(getString(R.string.testing_results), strSummary + ensembleSummary);
             } else {
-                this.showAlertDialog("TESTING RESULTS", strSummary + fullSummary);
+                this.showAlertDialog(getString(R.string.testing_results), strSummary + fullSummary);
             }
 
             this.attackSwitch.setChecked(false);
 
-            this.inputTextView.setText("Inputs " + this.dbHelper.getRecordsCount(DatabaseHelper.REAL_SWIPES));
+            this.inputTextView.setText(getString(R.string.inputs) + " " + this.dbHelper.getRecordsCount(DatabaseHelper.REAL_SWIPES));
             this.ganButton.setVisibility(View.VISIBLE);
             this.trainButton.setVisibility(View.VISIBLE);
             this.saveButton.setVisibility(View.VISIBLE);
@@ -1246,7 +1248,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             this.profileButton.setVisibility(View.VISIBLE);
             this.holdingPositionRadioGroup.setVisibility(View.VISIBLE);
             this.isTrainingMode = true;
-            this.resetButton.setText("Reset DB");
+            this.resetButton.setText(getString(R.string.reset_db));
         }
     }
 
@@ -1291,7 +1293,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         this.isTrainingClassifier = true;
         this.disableUserInteraction();
 
-        this.progressTextView.setText("Training classifier");
+        this.progressTextView.setText(getString(R.string.training_classifier));
         this.train(false);
 
     }
@@ -1300,14 +1302,14 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         this.isTrainingClassifier = true;
         this.disableUserInteraction();
 
-        this.progressTextView.setText("GAN epoch: 0 (out of " + NUM_EPOCHS + ")");
+        this.progressTextView.setText(getString(R.string.gan_epoch) + ": 0 (" + getString(R.string.out_of) + " " + NUM_EPOCHS + ")");
         this.train(true);
     }
 
     public void train(boolean isGanMode) {
 
         if (this.dbHelper.getRecordsCount(DatabaseHelper.REAL_SWIPES) < 5) {
-            this.showAlertDialog("ATTENTION", "You need to enter at least 5 swipes as input before training.");
+            this.showAlertDialog(getString(R.string.attention), getString(R.string.min_swipes_train));
             this.isTrainingClassifier = false;
             this.enableUserInteraction();
             return;
@@ -1322,11 +1324,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         Handler uiHandler = new Handler(Looper.getMainLooper());
         Runnable uiRunnable = () -> {
-            this.inputTextView.setText("Test inputs 0");
+            this.inputTextView.setText(getString(R.string.test_inputs) + " 0");
             this.ganButton.setVisibility(View.INVISIBLE);
             this.trainButton.setVisibility(View.INVISIBLE);
             this.saveButton.setVisibility(View.INVISIBLE);
-            this.resetButton.setText("Done");
+            this.resetButton.setText(getString(R.string.done));
 
             this.progressTextView.setVisibility(View.INVISIBLE);
             this.progressBar.setVisibility(View.INVISIBLE);
@@ -1372,7 +1374,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                             continue;
                         }
 
-                        uiHandler.post(() -> {progressTextView.setText("Training " + trainingModel.toString() + " classifier");});
+                        uiHandler.post(() -> {progressTextView.setText(getString(R.string.training) + " " + trainingModel.toString() + " " + getString(R.string.classifier));});
                         trainClassifierWith(swipes, true, ganTime, trainingModel);
                     }
                 } else {
@@ -1381,7 +1383,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                             continue;
                         }
 
-                        uiHandler.post(() -> {progressTextView.setText("Training " + trainingModel.toString() + " classifier");});
+                        uiHandler.post(() -> {progressTextView.setText(getString(R.string.training) + " " + trainingModel.toString() + " " + getString(R.string.classifier));});
                         trainClassifierWith(swipes, false, 0.0, trainingModel);
                     }
                 }
@@ -1485,7 +1487,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             MainActivity context = this;
 
             runOnUiThread(() -> context.enableUserInteraction());
-            runOnUiThread(() -> context.showAlertDialog("TRAINING RESULTS", strSummary));
+            runOnUiThread(() -> context.showAlertDialog(getString(R.string.training_results), strSummary));
         }
     }
 
@@ -1495,7 +1497,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             Map<String, String> userData = dbHelper.getUserData();
             dbHelper.saveAllTablesAsCSV(getContentResolver(), getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS).getPath() + File.separator + userData.get(DatabaseHelper.COL_NICKNAME));
             //this.showAlertDialog("SUCCESS", "CSV files have been saved into the file manager");
-            this.showSnackBar("CSV files saved to /Downloads", "#238823");
+            this.showSnackBar(getString(R.string.csv_saved), "#238823");
 
         } catch (Exception e) {
             e.printStackTrace();

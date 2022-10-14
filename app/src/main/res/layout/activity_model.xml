@@ -16,7 +16,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="20dp"
             android:layout_marginTop="20dp"
-            android:text="Frequency (Hz):"
+            android:text="@string/frequency_hz"
             app:layout_constraintStart_toEndOf="@+id/rawDataCheckBox"
             app:layout_constraintTop_toBottomOf="@+id/modelDescTextView" />
 
@@ -26,7 +26,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="20dp"
             android:layout_marginTop="14dp"
-            android:text="Gather raw Data"
+            android:text="@string/gather_raw_data"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/modelDescTextView" />
 
@@ -35,7 +35,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="20dp"
-            android:text="Shape"
+            android:text="@string/shape"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/signatureVelocityCheckBox" />
 
@@ -44,7 +44,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="20dp"
-            android:text="Velocity"
+            android:text="@string/velocity"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/signatureStartEndPosCheckBox" />
 
@@ -54,7 +54,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="20dp"
             android:layout_marginTop="14dp"
-            android:text="Keystroke"
+            android:text="@string/keystroke"
             android:textAppearance="@style/TextAppearance.AppCompat.Body1"
             android:textSize="16sp"
             android:textStyle="bold"
@@ -67,7 +67,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="20dp"
             android:layout_marginTop="14dp"
-            android:text="Signature"
+            android:text="@string/signature"
             android:textAppearance="@style/TextAppearance.AppCompat.Body1"
             android:textSize="16sp"
             android:textStyle="bold"
@@ -80,7 +80,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="20dp"
             android:layout_marginTop="32dp"
-            android:text="Model Profile"
+            android:text="@string/model_profile"
             android:textAppearance="@style/TextAppearance.AppCompat.Body1"
             android:textSize="24sp"
             android:textStyle="bold"
@@ -93,7 +93,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="20dp"
             android:layout_marginTop="14dp"
-            android:text="Select the features used for training the models"
+            android:text="@string/select_features"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/rawDataCheckBox" />
 
@@ -103,7 +103,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="20dp"
             android:layout_marginTop="20dp"
-            android:text="Select the models to train"
+            android:text="@string/select_model"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/nicknameTextView" />
 
@@ -113,7 +113,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="20dp"
             android:layout_marginTop="14dp"
-            android:text="Hold"
+            android:text="@string/hold"
             android:textAppearance="@style/TextAppearance.AppCompat.Body1"
             android:textSize="16sp"
             android:textStyle="bold"
@@ -126,7 +126,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="20dp"
             android:layout_marginTop="14dp"
-            android:text="Swipe"
+            android:text="@string/swipe"
             android:textAppearance="@style/TextAppearance.AppCompat.Body1"
             android:textSize="16sp"
             android:textStyle="bold"
@@ -139,7 +139,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="20dp"
             android:layout_marginTop="14dp"
-            android:text="Features gathered from accelerometer and gyroscope"
+            android:text="@string/hold_features"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/holdTitleTextView" />
 
@@ -149,7 +149,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="20dp"
             android:layout_marginTop="6dp"
-            android:text="Nr. of segments:"
+            android:text="@string/nr_segments"
             app:layout_constraintStart_toEndOf="@+id/swipeShapeCheckBox"
             app:layout_constraintTop_toBottomOf="@+id/swipeDurationCheckBox" />
 
@@ -159,7 +159,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="20dp"
             android:layout_marginTop="6dp"
-            android:text="Nr. of segments:"
+            android:text="@string/nr_segments"
             app:layout_constraintStart_toEndOf="@+id/signatureShapeCheckBox"
             app:layout_constraintTop_toBottomOf="@+id/signatureVelocityCheckBox" />
 
@@ -169,7 +169,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="20dp"
             android:layout_marginTop="20dp"
-            android:text="PIN length:"
+            android:text="@string/pin_length"
             app:layout_constraintStart_toEndOf="@+id/keystrokeCheckBox"
             app:layout_constraintTop_toBottomOf="@+id/keystrokeTitleTextView" />
 
@@ -179,7 +179,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="20dp"
             android:layout_marginTop="14dp"
-            android:text="Features gathered from swiping gesture"
+            android:text="@string/swipe_features"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/swipeTitleTextView" />
 
@@ -189,7 +189,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="20dp"
             android:layout_marginTop="14dp"
-            android:text="Acceleration (m/s^2)"
+            android:text="@string/acceleration"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/holdDescTextView" />
 
@@ -199,7 +199,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="20dp"
             android:layout_marginTop="14dp"
-            android:text="Enable numpad"
+            android:text="@string/enable_numpad"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/keystrokeTitleTextView" />
 
@@ -209,7 +209,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="20dp"
             android:layout_marginTop="14dp"
-            android:text="Enable signature"
+            android:text="@string/enable_signature"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/signatureTitleTextView" />
 
@@ -219,7 +219,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="20dp"
             android:layout_marginTop="14dp"
-            android:text="Press durations"
+            android:text="@string/press_durations"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/keystrokeDescTextView" />
 
@@ -228,7 +228,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="20dp"
-            android:text="Keystroke intervals"
+            android:text="@string/keystroke_intervals"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/keystrokeDurationsCheckBox" />
 
@@ -238,7 +238,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="20dp"
             android:layout_marginTop="14dp"
-            android:text="Duration"
+            android:text="@string/duration"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/swipeDescTextView" />
 
@@ -247,7 +247,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="20dp"
-            android:text="Shape"
+            android:text="@string/shape"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/swipeDurationCheckBox" />
 
@@ -256,7 +256,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="20dp"
-            android:text="Start/End position"
+            android:text="@string/start_end_pos"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/swipeTouchSizeCheckBox" />
 
@@ -266,7 +266,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="20dp"
             android:layout_marginTop="14dp"
-            android:text="Start/End position"
+            android:text="@string/start_end_pos"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/signatureDescTextView" />
 
@@ -275,7 +275,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="20dp"
-            android:text="Velocity"
+            android:text="@string/velocity"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/swipeStartEndPosCheckBox" />
 
@@ -284,7 +284,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="20dp"
-            android:text="Touch size"
+            android:text="@string/touch_size"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/swipeShapeCheckBox" />
 
@@ -293,7 +293,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="20dp"
-            android:text="Angular velocity (°/s)"
+            android:text="@string/angular_velocity"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/accelerationCheckBox" />
 
@@ -302,7 +302,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="20dp"
-            android:text="Orientation (fixed value)"
+            android:text="@string/orientation"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/angularVelocityCheckBox" />
 
@@ -313,7 +313,7 @@
             android:layout_marginStart="24dp"
             android:layout_marginBottom="20dp"
             android:backgroundTint="#457B9D"
-            android:text="SAVE"
+            android:text="@string/save"
             android:textColor="#FFFFFF"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toEndOf="@+id/cancelButton" />
@@ -325,7 +325,7 @@
             android:layout_marginStart="20dp"
             android:layout_marginTop="20dp"
             android:layout_marginBottom="20dp"
-            android:text="Cancel"
+            android:text="@string/cancel"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/signatureShapeCheckBox" />
@@ -358,7 +358,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="20dp"
             android:layout_marginTop="14dp"
-            android:text="Features gathered from keystrokes"
+            android:text="@string/keystroke_features"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/keystrokeCheckBox" />
 
@@ -368,7 +368,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="20dp"
             android:layout_marginTop="14dp"
-            android:text="Features gathered from signature"
+            android:text="@string/signature_features"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/signatureCheckBox" />
 

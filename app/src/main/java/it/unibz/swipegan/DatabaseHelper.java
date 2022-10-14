@@ -233,7 +233,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public static final Integer BASE_FEATURES = 66; // TODO: Change this hardcoded value
     public static final Integer DEFAULT_SEGMENTS = 10;
     public static final Integer DEFAULT_PIN_LENGTH = 8;
-    public static final Integer DEFAULT_RAW_DATA = 0;
+    public static final Integer DEFAULT_RAW_DATA = 1;
     public static final Integer DEFAULT_FREQUENCY = 50;
 
     public DatabaseHelper(Context context) {

@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string-array name="models_combinations">
-        <item>Full</item>
-        <item>Individual + Full</item>
-        <item>All combinations</item>
+        <item>@string/full</item>
+        <item>@string/individual_full</item>
+        <item>@string/all_combinations</item>
     </string-array>`
 </resources>
