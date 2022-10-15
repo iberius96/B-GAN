@@ -42,7 +42,6 @@ import androidx.core.app.ActivityCompat;
 import com.google.android.material.snackbar.Snackbar;
 
 import java.io.File;
-import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -51,7 +50,6 @@ import java.util.Arrays;
 import java.util.DoubleSummaryStatistics;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Random;
 import java.util.stream.Collectors;
@@ -68,6 +66,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private boolean isTrainingMode = true;
     private boolean isTrainingClassifier = false;
     private boolean isTrackingSwipe = true;
+    private boolean isTakingSUSQuestions = false;
+    private int SUSQuestionNr = 1;
     private int holdingPosition = 0;
 
     private DatabaseHelper.ModelType currentGesture = DatabaseHelper.ModelType.SWIPE;
@@ -150,6 +150,16 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     private static final Integer NUMPAD_SIZE = 10;
 
+    private RadioGroup SUSQuestionRadioGroup;
+    private RadioButton SUSQuestionRadioButton1;
+    private RadioButton SUSQuestionRadioButton2;
+    private RadioButton SUSQuestionRadioButton3;
+    private RadioButton SUSQuestionRadioButton4;
+    private RadioButton SUSQuestionRadioButton5;
+    private TextView SUSQuestionTextView;
+    private TextView SUSQuestionDisagreeTextView;
+    private TextView SUSQuestionAgreeTextView;
+
     // Classifier options
     String m_DefaultNumericGenerator = "weka.classifiers.meta.generators.GaussianGenerator -S 1 -M 0.0 -SD 1.0"; //-num
     String m_DefaultNominalGenerator = "weka.classifiers.meta.generators.NominalGenerator -S 1"; //-nom
@@ -186,6 +196,15 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         this.sittingRadioButton = findViewById(R.id.sittingRadioButton);
         this.standingRadioButton = findViewById(R.id.standingRadioButton);
         this.walkingRadioButton = findViewById(R.id.walkingRadioButton);
+        this.SUSQuestionRadioGroup = findViewById(R.id.SUSQuestionRadioGroup);
+        this.SUSQuestionRadioButton1 = findViewById(R.id.SUSQuestionradioButton1);
+        this.SUSQuestionRadioButton2 = findViewById(R.id.SUSQuestionradioButton2);
+        this.SUSQuestionRadioButton3 = findViewById(R.id.SUSQuestionradioButton3);
+        this.SUSQuestionRadioButton4 = findViewById(R.id.SUSQuestionradioButton4);
+        this.SUSQuestionRadioButton5 = findViewById(R.id.SUSQuestionradioButton5);
+        this.SUSQuestionTextView = findViewById(R.id.SUSQuestionTextView);
+        this.SUSQuestionDisagreeTextView = findViewById(R.id.SUSQuestionDisagreeTextView);
+        this.SUSQuestionAgreeTextView = findViewById(R.id.SUSQuestionAgreeTextView);
 
         this.setNumpadVisibility(View.INVISIBLE);
         this.setKeystrokeButtonsEventListener();
@@ -1101,60 +1120,71 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     public synchronized void nextInput(View view) {
-        if(this.signatureView.getXLocations().size() != 0) {
-            this.setHoldFeatures(this.pendingSwipe); // Finalize hold features
+        if(this.isTakingSUSQuestions) {
+            this.SUSQuestionNr += 1;
+            this.SUSQuestionTextView.setText(getResources().getString(getResources().getIdentifier("SUS_" + this.SUSQuestionNr, "string", getPackageName())));
 
-            ArrayList<Float> signatureXLocations = this.signatureView.getXLocations();
-            ArrayList<Float> signatureYLocations = this.signatureView.getYLocations();
+            if(this.SUSQuestionNr == 10) {
+                this.nextButton.setVisibility(View.INVISIBLE);
+                this.resetButton.setVisibility(View.VISIBLE);
+            }
+        } else {
+            if(this.signatureView.getXLocations().size() != 0) {
+                this.setHoldFeatures(this.pendingSwipe); // Finalize hold features
 
-            this.pendingSwipe.setSignatureStartX(signatureXLocations.get(0));
-            this.pendingSwipe.setSignatureStartY(signatureYLocations.get(0));
-            this.pendingSwipe.setSignatureEndX(signatureXLocations.get(signatureXLocations.size() - 1));
-            this.pendingSwipe.setSignatureEndY(signatureYLocations.get(signatureYLocations.size() - 1));
+                ArrayList<Float> signatureXLocations = this.signatureView.getXLocations();
+                ArrayList<Float> signatureYLocations = this.signatureView.getYLocations();
 
-            this.pendingSwipe.setSignatureEuclideanDistance(Math.sqrt(
-                            Math.pow((this.pendingSwipe.getSignatureEndX() - this.pendingSwipe.getSignatureStartX()), 2) +
-                            Math.pow((this.pendingSwipe.getSignatureEndY() - this.pendingSwipe.getSignatureStartY()), 2))
-            );
+                this.pendingSwipe.setSignatureStartX(signatureXLocations.get(0));
+                this.pendingSwipe.setSignatureStartY(signatureYLocations.get(0));
+                this.pendingSwipe.setSignatureEndX(signatureXLocations.get(signatureXLocations.size() - 1));
+                this.pendingSwipe.setSignatureEndY(signatureYLocations.get(signatureYLocations.size() - 1));
 
-            double signatureAvgX = signatureXLocations.stream().mapToDouble(x -> (double) x).summaryStatistics().getAverage();
-            double signatureVarX = signatureXLocations.stream().map(i -> i - signatureAvgX).map(i -> i*i).mapToDouble(i -> i).average().getAsDouble();
-            this.pendingSwipe.setSignatureStdX(Math.sqrt(signatureVarX));
+                this.pendingSwipe.setSignatureEuclideanDistance(Math.sqrt(
+                        Math.pow((this.pendingSwipe.getSignatureEndX() - this.pendingSwipe.getSignatureStartX()), 2) +
+                                Math.pow((this.pendingSwipe.getSignatureEndY() - this.pendingSwipe.getSignatureStartY()), 2))
+                );
 
-            double signatureAvgY = signatureYLocations.stream().mapToDouble(x -> (double) x).summaryStatistics().getAverage();
-            double signatureVarY = signatureYLocations.stream().map(i -> i - signatureAvgY).map(i -> i*i).mapToDouble(i -> i).average().getAsDouble();
-            this.pendingSwipe.setSignatureStdY(Math.sqrt(signatureVarY));
+                double signatureAvgX = signatureXLocations.stream().mapToDouble(x -> (double) x).summaryStatistics().getAverage();
+                double signatureVarX = signatureXLocations.stream().map(i -> i - signatureAvgX).map(i -> i*i).mapToDouble(i -> i).average().getAsDouble();
+                this.pendingSwipe.setSignatureStdX(Math.sqrt(signatureVarX));
 
-            DoubleSummaryStatistics signatureXLocationsSummary = signatureXLocations.stream().mapToDouble(x -> (double) x).summaryStatistics();
-            this.pendingSwipe.setSignatureDiffX(signatureXLocationsSummary.getMax() - signatureXLocationsSummary.getMin());
+                double signatureAvgY = signatureYLocations.stream().mapToDouble(x -> (double) x).summaryStatistics().getAverage();
+                double signatureVarY = signatureYLocations.stream().map(i -> i - signatureAvgY).map(i -> i*i).mapToDouble(i -> i).average().getAsDouble();
+                this.pendingSwipe.setSignatureStdY(Math.sqrt(signatureVarY));
 
-            DoubleSummaryStatistics signatureYLocationsSummary = signatureYLocations.stream().mapToDouble(x -> (double) x).summaryStatistics();
-            this.pendingSwipe.setSignatureDiffY(signatureYLocationsSummary.getMax() - signatureYLocationsSummary.getMin());
+                DoubleSummaryStatistics signatureXLocationsSummary = signatureXLocations.stream().mapToDouble(x -> (double) x).summaryStatistics();
+                this.pendingSwipe.setSignatureDiffX(signatureXLocationsSummary.getMax() - signatureXLocationsSummary.getMin());
 
-            DoubleSummaryStatistics xVelocityStats = this.signatureView.getXVelocitySummaryStatistics();
-            this.pendingSwipe.setSignatureMaxXVelocity(xVelocityStats.getMax());
-            this.pendingSwipe.setSignatureAvgXVelocity(xVelocityStats.getAverage());
+                DoubleSummaryStatistics signatureYLocationsSummary = signatureYLocations.stream().mapToDouble(x -> (double) x).summaryStatistics();
+                this.pendingSwipe.setSignatureDiffY(signatureYLocationsSummary.getMax() - signatureYLocationsSummary.getMin());
 
-            DoubleSummaryStatistics yVelocityStats = this.signatureView.getYVelocitySummaryStatistics();
-            this.pendingSwipe.setSignatureMaxYVelocity(yVelocityStats.getMax());
-            this.pendingSwipe.setSignatureAvgYVelocity(yVelocityStats.getAverage());
+                DoubleSummaryStatistics xVelocityStats = this.signatureView.getXVelocitySummaryStatistics();
+                this.pendingSwipe.setSignatureMaxXVelocity(xVelocityStats.getMax());
+                this.pendingSwipe.setSignatureAvgXVelocity(xVelocityStats.getAverage());
 
-            this.pendingSwipe.setSignatureSegmentsX(this.getSegmentsOffset(signatureXLocations, this.dbHelper.getFeatureData().get(DatabaseHelper.COL_SIGNATURE_SHAPE_SEGMENTS)));
-            this.pendingSwipe.setSignatureSegmentsY(this.getSegmentsOffset(signatureYLocations, this.dbHelper.getFeatureData().get(DatabaseHelper.COL_SIGNATURE_SHAPE_SEGMENTS)));
+                DoubleSummaryStatistics yVelocityStats = this.signatureView.getYVelocitySummaryStatistics();
+                this.pendingSwipe.setSignatureMaxYVelocity(yVelocityStats.getMax());
+                this.pendingSwipe.setSignatureAvgYVelocity(yVelocityStats.getAverage());
 
-            this.signatureView.clearPath();
-            this.resetSwipeValues();
-            this.isTrackingSwipe = true;
-            this.currentGesture = DatabaseHelper.ModelType.SWIPE;
-            this.setSignatureVisibility(INVISIBLE);
+                this.pendingSwipe.setSignatureSegmentsX(this.getSegmentsOffset(signatureXLocations, this.dbHelper.getFeatureData().get(DatabaseHelper.COL_SIGNATURE_SHAPE_SEGMENTS)));
+                this.pendingSwipe.setSignatureSegmentsY(this.getSegmentsOffset(signatureYLocations, this.dbHelper.getFeatureData().get(DatabaseHelper.COL_SIGNATURE_SHAPE_SEGMENTS)));
 
-            if(this.isTrainingMode) {
-                this.dbHelper.addTrainRecord(this.pendingSwipe);
-                this.inputTextView.setText(getString(R.string.inputs) + " " + this.dbHelper.getRecordsCount(DatabaseHelper.REAL_SWIPES));
-            } else {
-                this.processTestRecord(this.pendingSwipe);
+                this.signatureView.clearPath();
+                this.resetSwipeValues();
+                this.isTrackingSwipe = true;
+                this.currentGesture = DatabaseHelper.ModelType.SWIPE;
+                this.setSignatureVisibility(INVISIBLE);
+
+                if(this.isTrainingMode) {
+                    this.dbHelper.addTrainRecord(this.pendingSwipe);
+                    this.inputTextView.setText(getString(R.string.inputs) + " " + this.dbHelper.getRecordsCount(DatabaseHelper.REAL_SWIPES));
+                } else {
+                    this.processTestRecord(this.pendingSwipe);
+                }
             }
         }
+
     }
 
     public synchronized void clearSignature(View view) {
@@ -1179,77 +1209,116 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             this.dbHelper.resetDB(false);
             this.inputTextView.setText(getString(R.string.inputs) + " " + this.dbHelper.getRecordsCount(DatabaseHelper.REAL_SWIPES));
         } else {
-            String fullSummary = "";
-            String ensembleSummary = "";
-
-            String strSummary = "";
-            strSummary += String.format("%1$-9s %2$-9s %3$-9s %4$-9s %5$-9s %6$-9s %7$-9s %8$-9s", "Inputs", "TAR", "FRR", "TRR", "FAR", "Swipe", "Train", "Classifier");
-            strSummary += "\n";
-
             ArrayList<Swipe> testSwipes = dbHelper.getAllSwipes(DatabaseHelper.TEST_SWIPES);
 
-            if (testSwipes.size() == 0) {
-                this.showAlertDialog(getString(R.string.attention), getString(R.string.min_swipes_test));
-                return;
-            }
-
-            ArrayList<double[]> userAuthentication = this.dbHelper.getTestingData("User", DatabaseHelper.COL_AUTHENTICATION);
-            ArrayList<double[]> userAuthenticationTime = this.dbHelper.getTestingData("User", DatabaseHelper.COL_AUTHENTICATION_TIME);
-
-            ArrayList<double[]> attackerAuthentication = this.dbHelper.getTestingData("Attacker", DatabaseHelper.COL_AUTHENTICATION);
-            ArrayList<double[]> attackerAuthenticationTime = this.dbHelper.getTestingData("Attacker", DatabaseHelper.COL_AUTHENTICATION_TIME);
-
-            for(List<DatabaseHelper.ModelType> model : this.trainingModels) {
-                if(!dbHelper.isModelEnabled(model)) {
-                    continue;
+            if(this.isTakingSUSQuestions) { // End questions
+                toggleSUSQuestionsView(View.INVISIBLE);
+                switchToTrainingView(testSwipes);
+            } else { // Prompt question message
+                if (testSwipes.size() == 0) {
+                    this.showAlertDialog(getString(R.string.attention), getString(R.string.min_swipes_test));
+                    return;
                 }
 
-                double[] curUserAuthentication = userAuthentication.stream().mapToDouble(x -> x[this.trainingModels.indexOf(model)]).toArray();
-                double[] curAttackerAuthentication = attackerAuthentication.stream().mapToDouble(x -> x[this.trainingModels.indexOf(model)]).toArray();
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setMessage(getString(R.string.sus_questions_desc)).setTitle(getString(R.string.sus_questions));
+                builder.setPositiveButton(getString(R.string.yes), new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        toggleSUSQuestionsView(View.VISIBLE);
+                    }
+                });
+                builder.setNegativeButton(getString(R.string.no), new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        switchToTrainingView(testSwipes);
+                    }
+                });
 
-                DoubleStream curUserAuthenticationTime = userAuthenticationTime.stream().mapToDouble(x -> x[this.trainingModels.indexOf(model)]);
-                DoubleStream curAttackerAuthenticationTime = attackerAuthenticationTime.stream().mapToDouble(x -> x[this.trainingModels.indexOf(model)]);
-
-                fullSummary += computeTestMetrics(
-                        testSwipes,
-                        curUserAuthentication, curUserAuthenticationTime,
-                        curAttackerAuthentication, curAttackerAuthenticationTime,
-                        model.toString());
+                AlertDialog dialog = builder.create();
+                dialog.show();
             }
-
-            if(dbHelper.getFeatureData().get(DatabaseHelper.COL_MODELS_COMBINATIONS) != DatabaseHelper.ModelsCombinations.FULL.ordinal()) {
-                double[] curUserAuthentication = userAuthentication.stream().mapToDouble(x -> x[x.length - 1]).toArray();
-                double[] curAttackerAuthentication = attackerAuthentication.stream().mapToDouble(x -> x[x.length - 1]).toArray();
-
-                DoubleStream curUserAuthenticationTime = userAuthenticationTime.stream().mapToDouble(x -> x[x.length - 1]);
-                DoubleStream curAttackerAuthenticationTime = attackerAuthenticationTime.stream().mapToDouble(x -> x[x.length - 1]);
-
-                ensembleSummary += computeTestMetrics(
-                        testSwipes,
-                        curUserAuthentication, curUserAuthenticationTime,
-                        curAttackerAuthentication, curAttackerAuthenticationTime,
-                        DatabaseHelper.COL_WEIGHTED_ENSEMBLE
-                );
-            }
-
-            if(ensembleSummary != "") {
-                this.showAlertDialog(getString(R.string.testing_results), strSummary + ensembleSummary);
-            } else {
-                this.showAlertDialog(getString(R.string.testing_results), strSummary + fullSummary);
-            }
-
-            this.attackSwitch.setChecked(false);
-
-            this.inputTextView.setText(getString(R.string.inputs) + " " + this.dbHelper.getRecordsCount(DatabaseHelper.REAL_SWIPES));
-            this.ganButton.setVisibility(View.VISIBLE);
-            this.trainButton.setVisibility(View.VISIBLE);
-            this.saveButton.setVisibility(View.VISIBLE);
-            this.attackSwitch.setVisibility(View.INVISIBLE);
-            this.profileButton.setVisibility(View.VISIBLE);
-            this.holdingPositionRadioGroup.setVisibility(View.VISIBLE);
-            this.isTrainingMode = true;
-            this.resetButton.setText(getString(R.string.reset_db));
         }
+    }
+
+    private void toggleSUSQuestionsView(int visibility) {
+        this.isTakingSUSQuestions = (visibility == View.VISIBLE);
+        this.SUSQuestionNr = 1;
+
+        this.inputTextView.setVisibility(visibility == View.VISIBLE ? View.INVISIBLE : View.VISIBLE);
+        this.swipeImageView.setVisibility(visibility == View.VISIBLE ? View.INVISIBLE : View.VISIBLE);
+        this.attackSwitch.setVisibility(visibility == View.VISIBLE ? View.INVISIBLE : View.VISIBLE);
+        this.resetButton.setVisibility(visibility == View.VISIBLE ? View.INVISIBLE : View.VISIBLE);
+
+        this.SUSQuestionTextView.setVisibility(visibility);
+        this.SUSQuestionRadioGroup.setVisibility(visibility);
+        this.SUSQuestionAgreeTextView.setVisibility(visibility);
+        this.SUSQuestionDisagreeTextView.setVisibility(visibility);
+        this.nextButton.setVisibility(visibility);
+    }
+
+    private void switchToTrainingView(ArrayList<Swipe> testSwipes) {
+        String fullSummary = "";
+        String ensembleSummary = "";
+
+        String strSummary = "";
+        strSummary += String.format("%1$-9s %2$-9s %3$-9s %4$-9s %5$-9s %6$-9s %7$-9s %8$-9s", "Inputs", "TAR", "FRR", "TRR", "FAR", "Swipe", "Train", "Classifier");
+        strSummary += "\n";
+
+        ArrayList<double[]> userAuthentication = this.dbHelper.getTestingData("User", DatabaseHelper.COL_AUTHENTICATION);
+        ArrayList<double[]> userAuthenticationTime = this.dbHelper.getTestingData("User", DatabaseHelper.COL_AUTHENTICATION_TIME);
+
+        ArrayList<double[]> attackerAuthentication = this.dbHelper.getTestingData("Attacker", DatabaseHelper.COL_AUTHENTICATION);
+        ArrayList<double[]> attackerAuthenticationTime = this.dbHelper.getTestingData("Attacker", DatabaseHelper.COL_AUTHENTICATION_TIME);
+
+        for(List<DatabaseHelper.ModelType> model : this.trainingModels) {
+            if(!dbHelper.isModelEnabled(model)) {
+                continue;
+            }
+
+            double[] curUserAuthentication = userAuthentication.stream().mapToDouble(x -> x[this.trainingModels.indexOf(model)]).toArray();
+            double[] curAttackerAuthentication = attackerAuthentication.stream().mapToDouble(x -> x[this.trainingModels.indexOf(model)]).toArray();
+
+            DoubleStream curUserAuthenticationTime = userAuthenticationTime.stream().mapToDouble(x -> x[this.trainingModels.indexOf(model)]);
+            DoubleStream curAttackerAuthenticationTime = attackerAuthenticationTime.stream().mapToDouble(x -> x[this.trainingModels.indexOf(model)]);
+
+            fullSummary += computeTestMetrics(
+                    testSwipes,
+                    curUserAuthentication, curUserAuthenticationTime,
+                    curAttackerAuthentication, curAttackerAuthenticationTime,
+                    model.toString());
+        }
+
+        if(dbHelper.getFeatureData().get(DatabaseHelper.COL_MODELS_COMBINATIONS) != DatabaseHelper.ModelsCombinations.FULL.ordinal()) {
+            double[] curUserAuthentication = userAuthentication.stream().mapToDouble(x -> x[x.length - 1]).toArray();
+            double[] curAttackerAuthentication = attackerAuthentication.stream().mapToDouble(x -> x[x.length - 1]).toArray();
+
+            DoubleStream curUserAuthenticationTime = userAuthenticationTime.stream().mapToDouble(x -> x[x.length - 1]);
+            DoubleStream curAttackerAuthenticationTime = attackerAuthenticationTime.stream().mapToDouble(x -> x[x.length - 1]);
+
+            ensembleSummary += computeTestMetrics(
+                    testSwipes,
+                    curUserAuthentication, curUserAuthenticationTime,
+                    curAttackerAuthentication, curAttackerAuthenticationTime,
+                    DatabaseHelper.COL_WEIGHTED_ENSEMBLE
+            );
+        }
+
+        if(ensembleSummary != "") {
+            this.showAlertDialog(getString(R.string.testing_results), strSummary + ensembleSummary);
+        } else {
+            this.showAlertDialog(getString(R.string.testing_results), strSummary + fullSummary);
+        }
+
+        this.attackSwitch.setChecked(false);
+
+        this.inputTextView.setText(getString(R.string.inputs) + " " + this.dbHelper.getRecordsCount(DatabaseHelper.REAL_SWIPES));
+        this.ganButton.setVisibility(View.VISIBLE);
+        this.trainButton.setVisibility(View.VISIBLE);
+        this.saveButton.setVisibility(View.VISIBLE);
+        this.attackSwitch.setVisibility(View.INVISIBLE);
+        this.profileButton.setVisibility(View.VISIBLE);
+        this.holdingPositionRadioGroup.setVisibility(View.VISIBLE);
+        this.isTrainingMode = true;
+        this.resetButton.setText(getString(R.string.reset_db));
     }
 
     private String computeTestMetrics(

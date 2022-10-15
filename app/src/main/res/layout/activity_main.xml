@@ -325,7 +325,96 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintDimensionRatio="H,"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/attackSwitch" />
+        app:layout_constraintTop_toBottomOf="@+id/attackSwitch"
+        app:layout_constraintVertical_bias="0.0" />
+
+    <TextView
+        android:id="@+id/SUSQuestionTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="204dp"
+        android:text="I think that I would like to use this system frequently. "
+        android:textAlignment="center"
+        android:textColor="#000000"
+        android:textSize="24sp"
+        android:visibility="invisible"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/view" />
+
+    <RadioGroup
+        android:id="@+id/SUSQuestionRadioGroup"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="40dp"
+        android:orientation="horizontal"
+        android:visibility="invisible"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/SUSQuestionTextView">
+
+        <RadioButton
+            android:id="@+id/SUSQuestionradioButton1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingLeft="12sp"
+            android:paddingRight="12sp" />
+
+        <RadioButton
+            android:id="@+id/SUSQuestionradioButton2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingLeft="12sp"
+            android:paddingRight="12sp" />
+
+        <RadioButton
+            android:id="@+id/SUSQuestionradioButton3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingLeft="12sp"
+            android:paddingRight="12sp" />
+
+        <RadioButton
+            android:id="@+id/SUSQuestionradioButton4"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:paddingLeft="12sp"
+            android:paddingRight="12sp" />
+
+        <RadioButton
+            android:id="@+id/SUSQuestionradioButton5"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:paddingLeft="12sp"
+            android:paddingRight="12sp" />
+    </RadioGroup>
+
+    <TextView
+        android:id="@+id/SUSQuestionDisagreeTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="60dp"
+        android:layout_marginTop="14dp"
+        android:text="@string/strongly_disagree"
+        android:textAlignment="textStart"
+        android:visibility="invisible"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/SUSQuestionRadioGroup" />
+
+    <TextView
+        android:id="@+id/SUSQuestionAgreeTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="14dp"
+        android:layout_marginEnd="70dp"
+        android:text="@string/strongly_agree"
+        android:textAlignment="textEnd"
+        android:visibility="invisible"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/SUSQuestionRadioGroup" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
