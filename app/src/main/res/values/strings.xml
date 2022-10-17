@@ -96,4 +96,6 @@
     <string name="SUS_10">I needed to learn a lot of things before I could get going with this system.</string>
     <string name="strongly_disagree">Strongly\ndisagree</string>
     <string name="strongly_agree">Strongly\nagree</string>
+    <string name="keep_testing_data">Keep testing data</string>
+    <string name="keep_testing_data_desc">Would you like to keep the previously collected testing data?</string>
 </resources>

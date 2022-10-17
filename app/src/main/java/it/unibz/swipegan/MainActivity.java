@@ -67,6 +67,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private boolean isTrainingClassifier = false;
     private boolean isTrackingSwipe = true;
     private boolean isTakingSUSQuestions = false;
+    private boolean keepTestSwipes;
     private int SUSQuestionNr = 1;
     private int holdingPosition = 0;
 
@@ -604,6 +605,14 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         this.inputTextView.setText(getString(R.string.test_inputs) + " " + recordsCount);
 
         this.attackSwitch.setEnabled(true); // Re-enable attack toggle
+    }
+
+    private void reProcessTestRecords(ArrayList<Swipe> testSwipes) {
+        this.dbHelper.deleteTestingData();
+
+        for(Swipe testSwipe : testSwipes) {
+            this.processTestRecord(testSwipe);
+        }
     }
 
     private double getPredictionFrom(Swipe swipe, List<DatabaseHelper.ModelType> modelType) {
@@ -1256,6 +1265,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     private void switchToTrainingView(ArrayList<Swipe> testSwipes) {
+        // If test results were kept from previous training iterations, recompute all test interactions against the model
+        if(this.keepTestSwipes) {
+            this.reProcessTestRecords(testSwipes);
+        }
+
         String fullSummary = "";
         String ensembleSummary = "";
 
@@ -1393,7 +1407,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         Handler uiHandler = new Handler(Looper.getMainLooper());
         Runnable uiRunnable = () -> {
-            this.inputTextView.setText(getString(R.string.test_inputs) + " 0");
+            this.inputTextView.setText(getString(R.string.test_inputs) + " " + this.dbHelper.getRecordsCount(DatabaseHelper.TEST_SWIPES));
             this.ganButton.setVisibility(View.INVISIBLE);
             this.trainButton.setVisibility(View.INVISIBLE);
             this.saveButton.setVisibility(View.INVISIBLE);
@@ -1411,7 +1425,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         Runnable runnable = () -> {
             dbHelper.deleteRealResults();
             dbHelper.deleteGANData();
-            dbHelper.deleteTestingData();
+            if(!keepTestSwipes) { dbHelper.deleteTestingData(); }
             dbHelper.deleteResourceData();
 
             ArrayList<Swipe> swipes = dbHelper.getAllSwipes(DatabaseHelper.REAL_SWIPES);
@@ -1468,8 +1482,29 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             }
         };
 
-        new Thread(runnable).start();
+        if(dbHelper.getAllSwipes(DatabaseHelper.TEST_SWIPES).size() != 0) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setCancelable(false);
+            builder.setMessage(getString(R.string.keep_testing_data_desc)).setTitle(getString(R.string.keep_testing_data));
+            builder.setPositiveButton(getString(R.string.yes), new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int id) {
+                    keepTestSwipes = true;
+                    new Thread(runnable).start();
+                }
+            });
+            builder.setNegativeButton(getString(R.string.no), new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int id) {
+                    keepTestSwipes = false;
+                    new Thread(runnable).start();
+                }
+            });
 
+            AlertDialog dialog = builder.create();
+            dialog.show();
+        } else {
+            keepTestSwipes = false;
+            new Thread(runnable).start();
+        }
     }
 
     public void trainClassifierWith(ArrayList<Swipe> trainSwipes, boolean hasGan, double ganTime, List<DatabaseHelper.ModelType> trainingModel) {

@@ -97,4 +97,6 @@
     <string name="SUS_10">Ho dovuto imparare molte cose prima di poter utilizzare questo sistema.</string>
     <string name="strongly_disagree">Fortemente\nin disaccordo</string>
     <string name="strongly_agree">Fortemente\nd\'accordo</string>
+    <string name="keep_testing_data">Mantieni dati di testing</string>
+    <string name="keep_testing_data_desc">Mantienere i dati di test precedentemente collezionati?</string>
 </resources>
