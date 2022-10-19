@@ -161,6 +161,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private TextView SUSQuestionDisagreeTextView;
     private TextView SUSQuestionAgreeTextView;
 
+    private Integer[] SUSAnswers = new Integer[DatabaseHelper.DEFAULT_SUS_QUESTIONS];
+
     // Classifier options
     String m_DefaultNumericGenerator = "weka.classifiers.meta.generators.GaussianGenerator -S 1 -M 0.0 -SD 1.0"; //-num
     String m_DefaultNominalGenerator = "weka.classifiers.meta.generators.NominalGenerator -S 1"; //-nom
@@ -546,7 +548,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             double testingTime = (double) (endTime - startTime) / 1_000_000_000;
 
             double authenticationValue;
-            if (this.attackSwitch.isChecked()) {
+            if (swipe.getUserId() == "Attacker") {
                 authenticationValue = prediction != 0.0 ? 1.0 : 0.0;
             } else {
                 authenticationValue = prediction == 0.0 ? 1.0 : 0.0;
@@ -580,7 +582,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             double testingTime = (double) (endTime - startTime) / 1_000_000_000;
 
             double authenticationValue;
-            if (this.attackSwitch.isChecked()) {
+            if (swipe.getUserId() == "Attacker") {
                 authenticationValue = prediction != 0.0 ? 1.0 : 0.0;
             } else {
                 authenticationValue = prediction == 0.0 ? 1.0 : 0.0;
@@ -1130,12 +1132,15 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     public synchronized void nextInput(View view) {
         if(this.isTakingSUSQuestions) {
-            this.SUSQuestionNr += 1;
-            this.SUSQuestionTextView.setText(getResources().getString(getResources().getIdentifier("SUS_" + this.SUSQuestionNr, "string", getPackageName())));
+            if(SUSQuestionRadioGroup.getCheckedRadioButtonId() != -1) {
+                this.getSUSAnswer();
+                this.SUSQuestionNr += 1;
+                this.SUSQuestionTextView.setText(getResources().getString(getResources().getIdentifier("SUS_" + this.SUSQuestionNr, "string", getPackageName())));
 
-            if(this.SUSQuestionNr == 10) {
-                this.nextButton.setVisibility(View.INVISIBLE);
-                this.resetButton.setVisibility(View.VISIBLE);
+                if(this.SUSQuestionNr == DatabaseHelper.DEFAULT_SUS_QUESTIONS) {
+                    this.nextButton.setVisibility(View.INVISIBLE);
+                    this.resetButton.setVisibility(View.VISIBLE);
+                }
             }
         } else {
             if(this.signatureView.getXLocations().size() != 0) {
@@ -1196,6 +1201,29 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     }
 
+    private void getSUSAnswer() {
+        int selected = 0;
+        switch (SUSQuestionRadioGroup.getCheckedRadioButtonId()) {
+            case R.id.SUSQuestionradioButton1:
+                selected = 1;
+                break;
+            case R.id.SUSQuestionradioButton2:
+                selected = 2;
+                break;
+            case R.id.SUSQuestionradioButton3:
+                selected = 3;
+                break;
+            case R.id.SUSQuestionradioButton4:
+                selected = 4;
+                break;
+            case R.id.SUSQuestionradioButton5:
+                selected = 5;
+                break;
+        }
+
+        this.SUSAnswers[this.SUSQuestionNr - 1] = selected;
+    }
+
     public synchronized void clearSignature(View view) {
         this.signatureView.clearPath();
     }
@@ -1221,6 +1249,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             ArrayList<Swipe> testSwipes = dbHelper.getAllSwipes(DatabaseHelper.TEST_SWIPES);
 
             if(this.isTakingSUSQuestions) { // End questions
+                this.getSUSAnswer();
+                dbHelper.saveSUSData(this.SUSAnswers);
                 toggleSUSQuestionsView(View.INVISIBLE);
                 switchToTrainingView(testSwipes);
             } else { // Prompt question message
@@ -1229,21 +1259,25 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     return;
                 }
 
-                AlertDialog.Builder builder = new AlertDialog.Builder(this);
-                builder.setMessage(getString(R.string.sus_questions_desc)).setTitle(getString(R.string.sus_questions));
-                builder.setPositiveButton(getString(R.string.yes), new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        toggleSUSQuestionsView(View.VISIBLE);
-                    }
-                });
-                builder.setNegativeButton(getString(R.string.no), new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        switchToTrainingView(testSwipes);
-                    }
-                });
+                if(!dbHelper.hasSUSData()) {
+                    AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                    builder.setMessage(getString(R.string.sus_questions_desc)).setTitle(getString(R.string.sus_questions));
+                    builder.setPositiveButton(getString(R.string.yes), new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            toggleSUSQuestionsView(View.VISIBLE);
+                        }
+                    });
+                    builder.setNegativeButton(getString(R.string.no), new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            switchToTrainingView(testSwipes);
+                        }
+                    });
 
-                AlertDialog dialog = builder.create();
-                dialog.show();
+                    AlertDialog dialog = builder.create();
+                    dialog.show();
+                } else {
+                    switchToTrainingView(testSwipes);
+                }
             }
         }
     }
@@ -1425,7 +1459,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         Runnable runnable = () -> {
             dbHelper.deleteRealResults();
             dbHelper.deleteGANData();
-            if(!keepTestSwipes) { dbHelper.deleteTestingData(); }
+            if(!keepTestSwipes) {
+                dbHelper.deleteTestingData();
+                dbHelper.deleteSUSData();
+            }
             dbHelper.deleteResourceData();
 
             ArrayList<Swipe> swipes = dbHelper.getAllSwipes(DatabaseHelper.REAL_SWIPES);

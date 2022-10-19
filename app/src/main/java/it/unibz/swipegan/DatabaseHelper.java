@@ -56,6 +56,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final String TRAIN_RAW_DATA = "TRAIN_RAW_DATA";
 
+    private static final String SUS_DATA = "SUS_DATA";
+
     public static final String COL_AUTHENTICATION = "AUTHENTICATION";
     public static final String COL_AUTHENTICATION_TIME = "AUTHENTICATION_TIME";
 
@@ -167,6 +169,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public static final String COL_ORIENTATION_Z = "orientation_z";
     public static final String COL_GESTURE_ID = "gesture_id";
 
+    // SUS columns
+    private static final String COL_QUESTION = "question_";
+
     public static final String[] head_features = {
             COL_DURATION,
             COL_LENGTH,
@@ -235,6 +240,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public static final Integer DEFAULT_PIN_LENGTH = 8;
     public static final Integer DEFAULT_RAW_DATA = 1;
     public static final Integer DEFAULT_FREQUENCY = 50;
+    public static final int DEFAULT_SUS_QUESTIONS = 10;
 
     public DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, 1);
@@ -346,6 +352,15 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 + COL_ORIENTATION_Z + " float(53), "
                 + COL_GESTURE_ID + " float(53))";
 
+        String createSUSTable = "CREATE TABLE " + SUS_DATA
+                + " (id INTEGER PRIMARY KEY AUTOINCREMENT, ";
+
+        for(int i = 0; i < DEFAULT_SUS_QUESTIONS; i++) {
+            createSUSTable += COL_QUESTION + i + " integer(1), ";
+        }
+        createSUSTable += COL_USER_ID + " varchar(20))";
+
+
         this.generateSwipesTables(db,false, true, true);
         this.generateTestAuthenticationTable(db, false, null);
 
@@ -358,6 +373,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL(createResourceDataTable);
 
         db.execSQL(createRawDataTable);
+
+        db.execSQL(createSUSTable);
 
         // Insert default user data
         Cursor user_cursor = db.rawQuery("SELECT * FROM " + USER_DATA, null);
@@ -478,7 +495,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         if(activeModels == null) {
             activeModels = new ArrayList<>();
-            for(DatabaseHelper.ModelType modelType : DatabaseHelper.ModelType.values()) { activeModels.add(Arrays.asList(modelType)); }
+            //for(DatabaseHelper.ModelType modelType : DatabaseHelper.ModelType.values()) { activeModels.add(Arrays.asList(modelType)); }
+            activeModels = this.getAllModelsCombinations();
         }
 
         for(List<ModelType> trainingModel : activeModels) {
@@ -513,7 +531,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             USER_DATA,
             FEATURE_DATA,
             RESOURCE_DATA,
-            TRAIN_RAW_DATA
+            TRAIN_RAW_DATA,
+            SUS_DATA
         };
 
         for(int i = 0; i < upgrade_tables.length; i++) {
@@ -657,16 +676,23 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 activeModels.add(Arrays.asList(modelType));
             }
         } else {
-            Generator.subset(DatabaseHelper.ModelType.HOLD, DatabaseHelper.ModelType.SWIPE, DatabaseHelper.ModelType.KEYSTROKE, DatabaseHelper.ModelType.SIGNATURE)
-                    .simple()
-                    .stream()
-                    .filter(s -> !s.isEmpty())
-                    .filter(s -> s.size() != DatabaseHelper.ModelType.values().length - 1)
-                    .forEach(x -> activeModels.add(x));
-            activeModels.add(Arrays.asList(DatabaseHelper.ModelType.FULL));
+            activeModels = getAllModelsCombinations();
         }
 
         return activeModels;
+    }
+
+    private List<List<DatabaseHelper.ModelType>> getAllModelsCombinations() {
+        List<List<DatabaseHelper.ModelType>> allModels = new ArrayList<>();
+        Generator.subset(DatabaseHelper.ModelType.HOLD, DatabaseHelper.ModelType.SWIPE, DatabaseHelper.ModelType.KEYSTROKE, DatabaseHelper.ModelType.SIGNATURE)
+                .simple()
+                .stream()
+                .filter(s -> !s.isEmpty())
+                .filter(s -> s.size() != DatabaseHelper.ModelType.values().length - 1)
+                .forEach(x -> allModels.add(x));
+        allModels.add(Arrays.asList(DatabaseHelper.ModelType.FULL));
+
+        return allModels;
     }
 
     public boolean addTrainRecord(Swipe swipe) {
@@ -927,6 +953,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public void deleteRealResults() {
         SQLiteDatabase db = this.getWritableDatabase();
         db.execSQL("DELETE FROM " + REAL_RESULTS);
+    }
+
+    public void deleteSUSData() {
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.execSQL("DELETE FROM " + SUS_DATA);
     }
 
     public boolean saveRealResults(double instances, double TAR, double FRR, double ER, double avgSampleTime, double trainingTime, int classifierSamples, List<ModelType> trainingModel) {
@@ -1215,6 +1246,29 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return resourceData;
     }
 
+    public boolean saveSUSData(Integer[] answers) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues contentValues = new ContentValues();
+
+        for(int i = 0; i < DEFAULT_SUS_QUESTIONS; i++) {
+            contentValues.put(COL_QUESTION + i, answers[i]);
+        }
+        contentValues.put(COL_USER_ID, this.getUserData().get(COL_NICKNAME));
+
+        long result = db.insert(SUS_DATA, null, contentValues);
+        return result != -1;
+    }
+
+    public boolean hasSUSData() {
+        SQLiteDatabase db = this.getReadableDatabase();
+        String query = "SELECT * FROM " + SUS_DATA;
+
+        Cursor cursor = db.rawQuery(query, null);
+        cursor.moveToFirst();
+
+        return cursor.getCount()>0;
+    }
+
     public synchronized void saveAsCSV(String tableName, String filePath, ContentResolver resolver, String downloadPath) {
 
         FileOutputStream fos;
@@ -1338,6 +1392,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         this.saveAsCSV(FEATURE_DATA, currentDateTime + "_" + "featureData.csv", resolver, downloadPath);
         this.saveAsCSV(RESOURCE_DATA, currentDateTime + "_" + "resourceData.csv", resolver, downloadPath);
         this.saveAsCSV(TRAIN_RAW_DATA, currentDateTime + "_" + "rawData.csv", resolver, downloadPath);
+        this.saveAsCSV(SUS_DATA, currentDateTime + "_" + "SUSData.csv", resolver, downloadPath);
     }
 
     public void resetDB(boolean GANOnly) {
@@ -1357,6 +1412,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             db.execSQL("DELETE FROM " + TEST_RESULTS);
             db.execSQL("DELETE FROM " + TEST_AUTHENTICATION);
             db.execSQL("DELETE FROM " + TRAIN_RAW_DATA);
+            db.execSQL("DELETE FROM " + SUS_DATA);
         }
     }
 
