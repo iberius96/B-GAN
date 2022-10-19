@@ -1283,6 +1283,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     private void toggleSUSQuestionsView(int visibility) {
+        this.isTrackingSwipe = (visibility != View.VISIBLE);
         this.isTakingSUSQuestions = (visibility == View.VISIBLE);
         this.SUSQuestionNr = 1;
 
