@@ -331,6 +331,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         }
 
         if(
+                this.isTrainingMode &&
                 this.dbHelper.getFeatureData().get(DatabaseHelper.COL_RAW_DATA) == 1 &&
                 this.xOrientations.size() != 0 &&
                 !rawDataCollector.isRunning()
@@ -548,7 +549,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             double testingTime = (double) (endTime - startTime) / 1_000_000_000;
 
             double authenticationValue;
-            if (swipe.getUserId() == "Attacker") {
+            if (swipe.getUserId().equals("Attacker")) {
                 authenticationValue = prediction != 0.0 ? 1.0 : 0.0;
             } else {
                 authenticationValue = prediction == 0.0 ? 1.0 : 0.0;
@@ -582,7 +583,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             double testingTime = (double) (endTime - startTime) / 1_000_000_000;
 
             double authenticationValue;
-            if (swipe.getUserId() == "Attacker") {
+            if (swipe.getUserId().equals("Attacker")) {
                 authenticationValue = prediction != 0.0 ? 1.0 : 0.0;
             } else {
                 authenticationValue = prediction == 0.0 ? 1.0 : 0.0;
