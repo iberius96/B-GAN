@@ -103,7 +103,8 @@ public class ResourceMonitor implements Runnable {
                     cpu_freq[i] = 1170;
                 }
             } catch (IOException | InterruptedException e) {
-
+                Thread.currentThread().interrupt();
+                return new Integer[DEFAULT_CORES];
             }
         }
 
