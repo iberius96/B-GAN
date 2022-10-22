@@ -120,9 +120,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public static final String COL_RAW_DATA_FREQUENCY = "raw_data_frequency";
 
     // Resource columns
-    private static final String COL_MIN_CPU_TEMP = "min_cpu_temp";
-    private static final String COL_MAX_CPU_TEMP = "max_cpu_temp";
-    private static final String COL_AVG_CPU_TEMP = "avg_cpu_temp";
+    private static final String COL_MIN_CPU_FREQ = "min_cpu_freq";
+    private static final String COL_MAX_CPU_FREQ = "max_cpu_freq";
+    private static final String COL_AVG_CPU_FREQ = "avg_cpu_freq";
     private static final String COL_MIN_MEMORY_USAGE = "min_memory_usage";
     private static final String COL_MAX_MEMORY_USAGE = "max_memory_usage";
     private static final String COL_AVG_MEMORY_USAGE = "avg_memory_usage";
@@ -324,9 +324,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         String createResourceDataTable = "CREATE TABLE " + RESOURCE_DATA
                 + " (id INTEGER PRIMARY KEY AUTOINCREMENT, "
-                + COL_MIN_CPU_TEMP + " float(53), "
-                + COL_MAX_CPU_TEMP + " float(53), "
-                + COL_AVG_CPU_TEMP + " float(53), "
+                + COL_MIN_CPU_FREQ + " varchar(255), "
+                + COL_MAX_CPU_FREQ + " varchar(255), "
+                + COL_AVG_CPU_FREQ + " varchar(255), "
                 + COL_MIN_MEMORY_USAGE + " float(53), "
                 + COL_MAX_MEMORY_USAGE + " float(53), "
                 + COL_AVG_MEMORY_USAGE + " float(53), "
@@ -1204,13 +1204,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return true;
     }
 
-    public boolean saveResourceData(Double[] cpu_temps, Double[] memory_usage, Double power_draw, Double training_time, String model_type) {
+    public boolean saveResourceData(String[] cpu_freq, Double[] memory_usage, Double power_draw, Double training_time, String model_type) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
 
-        contentValues.put(COL_MIN_CPU_TEMP, cpu_temps[0]);
-        contentValues.put(COL_MAX_CPU_TEMP, cpu_temps[1]);
-        contentValues.put(COL_AVG_CPU_TEMP, cpu_temps[2]);
+        contentValues.put(COL_MIN_CPU_FREQ, cpu_freq[0]);
+        contentValues.put(COL_MAX_CPU_FREQ, cpu_freq[1]);
+        contentValues.put(COL_AVG_CPU_FREQ, cpu_freq[2]);
         contentValues.put(COL_MIN_MEMORY_USAGE, memory_usage[0]);
         contentValues.put(COL_MAX_MEMORY_USAGE, memory_usage[1]);
         contentValues.put(COL_AVG_MEMORY_USAGE, memory_usage[2]);
@@ -1220,30 +1220,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         long result = db.insert(RESOURCE_DATA, null, contentValues);
         return result != -1;
-    }
-
-    public ArrayList<String> getResourceData() {
-        SQLiteDatabase db = this.getReadableDatabase();
-        String query = "SELECT * FROM " + RESOURCE_DATA;
-
-        Cursor cursor = db.rawQuery(query, null);
-        cursor.moveToFirst();
-
-        ArrayList<String> resourceData = new ArrayList<>();
-
-        resourceData.add(Float.toString(cursor.getFloat(cursor.getColumnIndex(COL_MIN_CPU_TEMP))));
-        resourceData.add(Float.toString(cursor.getFloat(cursor.getColumnIndex(COL_MAX_CPU_TEMP))));
-        resourceData.add(Float.toString(cursor.getFloat(cursor.getColumnIndex(COL_AVG_CPU_TEMP))));
-        resourceData.add(Float.toString(cursor.getFloat(cursor.getColumnIndex(COL_MIN_MEMORY_USAGE))));
-        resourceData.add(Float.toString(cursor.getFloat(cursor.getColumnIndex(COL_MAX_MEMORY_USAGE))));
-        resourceData.add(Float.toString(cursor.getFloat(cursor.getColumnIndex(COL_AVG_MEMORY_USAGE))));
-        resourceData.add(Long.toString(cursor.getLong(cursor.getColumnIndex(COL_POWER_DRAW))));
-        resourceData.add(Double.toString(cursor.getDouble(cursor.getColumnIndex(COL_TRAINING_TIME))));
-        resourceData.add(cursor.getString(cursor.getColumnIndex(COL_MODEL_TYPE)));
-
-        cursor.close();
-
-        return resourceData;
     }
 
     public boolean saveSUSData(Integer[] answers) {
@@ -1310,7 +1286,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                                 colNames[i].equals(COL_KEYSTROKE_START_INTERVALS) ||
                                 colNames[i].equals(COL_KEYSTROKE_END_INTERVALS) ||
                                 colNames[i].equals(COL_SIGNATURE_SEGMENTS_X) ||
-                                colNames[i].equals(COL_SIGNATURE_SEGMENTS_Y)) {
+                                colNames[i].equals(COL_SIGNATURE_SEGMENTS_Y) ||
+                                colNames[i].equals(COL_MIN_CPU_FREQ) ||
+                                colNames[i].equals(COL_MAX_CPU_FREQ) ||
+                                colNames[i].equals(COL_AVG_CPU_FREQ)) {
                             arrStr[i] = curCSV.getString(i);
                         } else {
                             arrStr[i] = Double.toString(curCSV.getDouble(i));
@@ -1349,7 +1328,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                                     colNames[i].equals(COL_KEYSTROKE_START_INTERVALS) ||
                                     colNames[i].equals(COL_KEYSTROKE_END_INTERVALS) ||
                                     colNames[i].equals(COL_SIGNATURE_SEGMENTS_X) ||
-                                    colNames[i].equals(COL_SIGNATURE_SEGMENTS_Y)) {
+                                    colNames[i].equals(COL_SIGNATURE_SEGMENTS_Y) ||
+                                    colNames[i].equals(COL_MIN_CPU_FREQ) ||
+                                    colNames[i].equals(COL_MAX_CPU_FREQ) ||
+                                    colNames[i].equals(COL_AVG_CPU_FREQ)) {
                                 arrStr[i] = curCSV.getString(i);
                             } else {
                                 arrStr[i] = Double.toString(curCSV.getDouble(i));

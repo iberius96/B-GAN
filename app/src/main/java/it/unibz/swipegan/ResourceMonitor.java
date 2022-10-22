@@ -6,8 +6,12 @@ import android.os.BatteryManager;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 public class ResourceMonitor implements Runnable {
 
@@ -16,16 +20,18 @@ public class ResourceMonitor implements Runnable {
     private ActivityManager activityManager;
     private BatteryManager batteryManager;
 
-    private ArrayList<Float> tempValues;
+    private ArrayList<Integer[]> freqValues;
     private ArrayList<Float> memoryValues;
     private ArrayList<Long> batteryValues;
     private double trainingTime;
+
+    private final static int DEFAULT_CORES = 8;
 
     public void start(ActivityManager activityManager, BatteryManager batteryManager) {
         this.activityManager = activityManager;
         this.batteryManager = batteryManager;
 
-        this.tempValues = new ArrayList<>();
+        this.freqValues = new ArrayList<>();
         this.memoryValues = new ArrayList<>();
         this.batteryValues = new ArrayList<>();
 
@@ -40,24 +46,40 @@ public class ResourceMonitor implements Runnable {
             resourceMonitorThread.interrupt();
         }
 
-        ArrayList<Float> curTempValues = (ArrayList<Float>) tempValues.clone();
+        ArrayList<Integer[]> curFreqValues = (ArrayList<Integer[]>) freqValues.clone();
         ArrayList<Float> curMemoryValues = (ArrayList<Float>) memoryValues.clone();
         ArrayList<Long> curBatteryValues = (ArrayList<Long>) batteryValues.clone();
 
-        Double[] arrayTemps = {curTempValues.stream().mapToDouble(d -> d).min().orElse(0.0),  curTempValues.stream().mapToDouble(d -> d).max().orElse(0.0), curTempValues.stream().mapToDouble(d -> d).average().orElse(0.0)};
+        Integer[] minCpuFreq = new Integer[DEFAULT_CORES];
+        Integer[] maxCpuFreq = new Integer[DEFAULT_CORES];
+        Integer[] avgCpuFreq = new Integer[DEFAULT_CORES];
+
+        for(int i = 0; i < DEFAULT_CORES; i++) {
+            final int core = i;
+            minCpuFreq[i] = curFreqValues.stream().mapToInt(r->r[core]).min().getAsInt();
+            maxCpuFreq[i] = curFreqValues.stream().mapToInt(r->r[core]).max().getAsInt();
+            avgCpuFreq[i] = (int) curFreqValues.stream().mapToInt(r->r[core]).average().getAsDouble();
+        }
+
+        String[] arrayCpu = {
+                Arrays.toString(minCpuFreq),
+                Arrays.toString(maxCpuFreq),
+                Arrays.toString(avgCpuFreq)
+        };
+
         Double[] arrayMemory = {curMemoryValues.stream().mapToDouble(d -> d).min().orElse(0.0),  curMemoryValues.stream().mapToDouble(d -> d).max().orElse(0.0), curMemoryValues.stream().mapToDouble(d -> d).average().orElse(0.0)};
 
         dbHelpber.saveResourceData(
-                arrayTemps,
-                arrayMemory,
-                curBatteryValues.stream().mapToDouble(d -> d).sum(),
-                trainingTime,
-                modelType);
+            arrayCpu,
+            arrayMemory,
+            curBatteryValues.stream().mapToDouble(d -> d).sum(),
+            trainingTime,
+            modelType);
     }
 
     public void run() {
         while (!resourceMonitorThread.interrupted()) {
-            this.tempValues.add(getCpuTemperature());
+            this.freqValues.add(getCpuFrequency());
             this.memoryValues.add(getUsedMemory());
             this.batteryValues.add(getPowerDraw());
         }
@@ -65,23 +87,27 @@ public class ResourceMonitor implements Runnable {
         resourceMonitorThread = null;
     }
 
-    private static float getCpuTemperature()
+    private static Integer[] getCpuFrequency()
     {
         Process process;
-        try {
-            process = Runtime.getRuntime().exec("cat sys/class/thermal/thermal_zone0/temp");
-            process.waitFor();
-            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-            String line = reader.readLine();
-            if(line!=null) {
-                float temp = Float.parseFloat(line);
-                return temp / 1000.0f;
-            }else{
-                return 51.0f;
+        Integer[] cpu_freq = new Integer[DEFAULT_CORES];
+        for(int i = 0; i < DEFAULT_CORES; i++) {
+            try {
+                process = Runtime.getRuntime().exec("cat /sys/devices/system/cpu/cpu" + i + "/cpufreq/scaling_cur_freq");
+                process.waitFor();
+                BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+                String line = reader.readLine();
+                if(line!=null) {
+                    cpu_freq[i] = Integer.parseInt(line);
+                } else{
+                    cpu_freq[i] = 1170;
+                }
+            } catch (IOException | InterruptedException e) {
+
             }
-        } catch (InterruptedException | IOException e) {
-            return 0.0f;
         }
+
+        return cpu_freq;
     }
 
     public float getUsedMemory() {
