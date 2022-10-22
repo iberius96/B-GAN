@@ -42,13 +42,13 @@ public class ResourceMonitor implements Runnable {
     }
 
     public void stop(DatabaseHelper dbHelpber, String modelType) {
-        if (resourceMonitorThread != null) {
-            resourceMonitorThread.interrupt();
-        }
-
         ArrayList<Integer[]> curFreqValues = (ArrayList<Integer[]>) freqValues.clone();
         ArrayList<Float> curMemoryValues = (ArrayList<Float>) memoryValues.clone();
         ArrayList<Long> curBatteryValues = (ArrayList<Long>) batteryValues.clone();
+
+        if (resourceMonitorThread != null) {
+            resourceMonitorThread.interrupt();
+        }
 
         Integer[] minCpuFreq = new Integer[DEFAULT_CORES];
         Integer[] maxCpuFreq = new Integer[DEFAULT_CORES];
