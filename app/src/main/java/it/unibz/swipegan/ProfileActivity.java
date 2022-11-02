@@ -30,7 +30,7 @@ public class ProfileActivity extends AppCompatActivity {
         genderRadioGroupIndices.add(new Integer(R.id.genderNoneRadioButton));
         genderRadioGroupIndices.add(new Integer(R.id.genderMaleRadioButton));
         genderRadioGroupIndices.add(new Integer(R.id.genderFemaleRadioButton));
-        int genderIdx = (int) Double.parseDouble(userData.get(DatabaseHelper.COL_GENDER));
+        int genderIdx = Integer.parseInt(userData.get(DatabaseHelper.COL_GENDER));
         genderRadioGroup.check(genderRadioGroupIndices.get(genderIdx));
 
         RadioGroup ageRadioGroup = findViewById(R.id.ageRadioGroup);
@@ -40,7 +40,7 @@ public class ProfileActivity extends AppCompatActivity {
         ageRadioGroupIndices.add(new Integer(R.id.age40RadioButton));
         ageRadioGroupIndices.add(new Integer(R.id.age60RadioButton));
         ageRadioGroupIndices.add(new Integer(R.id.age80RadioButton));
-        int ageIdx = (int) Double.parseDouble(userData.get(DatabaseHelper.COL_AGE));
+        int ageIdx = Integer.parseInt(userData.get(DatabaseHelper.COL_AGE));
         ageRadioGroup.check(ageRadioGroupIndices.get(ageIdx));
 
         EditText nationalityEditText = findViewById(R.id.nationalityEditText);
@@ -52,7 +52,7 @@ public class ProfileActivity extends AppCompatActivity {
         holdingRadioGroupIndices.add(new Integer(R.id.holdingRightRadioButton));
         holdingRadioGroupIndices.add(new Integer(R.id.holdingLeftRadioButton));
         holdingRadioGroupIndices.add(new Integer(R.id.holdingBothRadioButton));
-        int holdingIdx = (int) Double.parseDouble(userData.get(DatabaseHelper.COL_HOLDING_HAND));
+        int holdingIdx = Integer.parseInt(userData.get(DatabaseHelper.COL_HOLDING_HAND));
         holdingRadioGroup.check(holdingRadioGroupIndices.get(holdingIdx));
 
         Button saveProfileButton = findViewById(R.id.saveProfileButton);

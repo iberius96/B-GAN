@@ -293,10 +293,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         String createUserDataTable = "CREATE TABLE " + USER_DATA
                 + " (id INTEGER PRIMARY KEY AUTOINCREMENT, "
                 + COL_NICKNAME + " varchar(20), "
-                + COL_GENDER + " float(53), "
-                + COL_AGE + " float(53), "
+                + COL_GENDER + " integer(1), "
+                + COL_AGE + " integer(1), "
                 + COL_NATIONALITY + " varchar(20), "
-                + COL_HOLDING_HAND + " float(53))";
+                + COL_HOLDING_HAND + " integer(1))";
 
         String createFeatureDataTable = "CREATE TABLE " + FEATURE_DATA
                 + " (id INTEGER PRIMARY KEY AUTOINCREMENT, "
@@ -1060,7 +1060,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return result != -1;
     }
 
-    public boolean saveUserData(String nickname, double gender, double age, String nationality, double holdingHand) {
+    public boolean saveUserData(String nickname, int gender, int age, String nationality, int holdingHand) {
         SQLiteDatabase db = this.getWritableDatabase();
         db.execSQL("DELETE FROM " + USER_DATA);
 
@@ -1086,10 +1086,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         Map<String, String> userData = new HashMap<>();
 
         userData.put(COL_NICKNAME, cursor.getString(cursor.getColumnIndex(COL_NICKNAME)));
-        userData.put(COL_GENDER, Double.toString(cursor.getDouble(cursor.getColumnIndex(COL_GENDER))));
-        userData.put(COL_AGE, Double.toString(cursor.getDouble(cursor.getColumnIndex(COL_AGE))));
+        userData.put(COL_GENDER, Integer.toString(cursor.getInt(cursor.getColumnIndex(COL_GENDER))));
+        userData.put(COL_AGE, Integer.toString(cursor.getInt(cursor.getColumnIndex(COL_AGE))));
         userData.put(COL_NATIONALITY, cursor.getString(cursor.getColumnIndex(COL_NATIONALITY)));
-        userData.put(COL_HOLDING_HAND, Double.toString(cursor.getDouble(cursor.getColumnIndex(COL_HOLDING_HAND))));
+        userData.put(COL_HOLDING_HAND, Integer.toString(cursor.getInt(cursor.getColumnIndex(COL_HOLDING_HAND))));
 
         cursor.close();
 
@@ -1275,7 +1275,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                     for (int i = 0; i < colCounts; i++) {
                         if (colNames[i].equals(COL_USER_ID) ||
                                 colNames[i].equals(COL_NICKNAME) ||
-                                colNames[i].equals(COL_NICKNAME) ||
+                                colNames[i].equals(COL_NATIONALITY) ||
                                 colNames[i].equals(COL_MODEL_TYPE) ||
                                 colNames[i].equals(COL_AUTHENTICATION) ||
                                 colNames[i].equals(COL_AUTHENTICATION_TIME) ||
@@ -1317,7 +1317,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                         for (int i = 0; i < colCounts; i++) {
                             if (colNames[i].equals(COL_USER_ID) ||
                                     colNames[i].equals(COL_NICKNAME) ||
-                                    colNames[i].equals(COL_NICKNAME) ||
+                                    colNames[i].equals(COL_NATIONALITY) ||
                                     colNames[i].equals(COL_MODEL_TYPE) ||
                                     colNames[i].equals(COL_AUTHENTICATION) ||
                                     colNames[i].equals(COL_AUTHENTICATION_TIME) ||

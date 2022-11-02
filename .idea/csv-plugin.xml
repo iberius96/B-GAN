@@ -66,6 +66,13 @@
             </Attribute>
           </value>
         </entry>
+        <entry key="$USER_HOME$/Library/Caches/Google/AndroidStudio2021.2/device-explorer/samsung-sm_g991b-R5CR809X1NW/storage/self/primary/Download/SwipeGAN/2022-11-02_17-40_userData.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
       </map>
     </option>
   </component>
