@@ -33,93 +33,366 @@ import static com.google.common.base.CaseFormat.LOWER_UNDERSCORE;
 import au.com.bytecode.opencsv.CSVWriter;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
+    /**
+     * Getter instance of the database helper
+     */
     private static DatabaseHelper sInstance;
 
+    /**
+     * DB name
+     */
     private static final String DATABASE_NAME = "GAN.db";
 
+    /**
+     * Training interactions table name
+     */
     public static final String REAL_SWIPES = "REAL_SWIPES";
+
+    /**
+     * Normalized training interactions table name
+     */
     private static final String REAL_SWIPES_NORMALIZED = "REAL_SWIPES_NORMALIZED";
+
+    /**
+     * GAN interactions table name
+     */
     private static final String GAN_SWIPES = "GAN_SWIPES";
+
+    /**
+     * Normalized GAN interactions table name
+     */
     private static final String GAN_SWIPES_NORMALIZED = "GAN_SWIPES_NORMALIZED";
+
+    /**
+     * Test interactions table name
+     */
     public static final String TEST_SWIPES = "TEST_SWIPES";
+
+    /**
+     * Normalized test interactions table name
+     */
     private static final String TEST_SWIPES_NORMALIZED = "TEST_SWIPES_NORMALIZED";
 
+    /**
+     * Training results table name
+     */
     private static final String REAL_RESULTS = "REAL_RESULTS";
+
+    /**
+     * Training results table name (models trained with genuine + synthetic samples)
+     */
     private static final String GAN_RESULTS = "GAN_RESULTS";
+
+    /**
+     * Test results table name
+     */
     private static final String TEST_RESULTS = "TEST_RESULTS";
 
+    /**
+     * Test authentication results table name
+     */
     private static final String TEST_AUTHENTICATION = "TEST_AUTHENTICATION";
 
+    /**
+     * User data table name
+     */
     private static final String USER_DATA = "USER_DATA";
+
+    /**
+     * Feature data table name
+     */
     private static final String FEATURE_DATA = "FEATURE_DATA";
+
+    /**
+     * Resource data table name
+     */
     private static final String RESOURCE_DATA = "RESOURCE_DATA";
 
+    /**
+     * Raw training interaction data table name
+     */
     private static final String TRAIN_RAW_DATA = "TRAIN_RAW_DATA";
 
+    /**
+     * SUS questions data table name
+     */
     private static final String SUS_DATA = "SUS_DATA";
 
+    /**
+     * Authentication result column name
+     */
     public static final String COL_AUTHENTICATION = "AUTHENTICATION";
+
+    /**
+     * Authentication time column name
+     */
     public static final String COL_AUTHENTICATION_TIME = "AUTHENTICATION_TIME";
 
+    /**
+     * Weighted ensemble model column name
+     */
     public static final String COL_WEIGHTED_ENSEMBLE = "WEIGHTED_ENSEMBLE";
 
+    /**
+     * Interaction step duration column name
+     */
     private static final String COL_DURATION = "duration";
+
+    /**
+     * Interaction step length column name
+     */
     private static final String COL_LENGTH = "length";
+
+    /**
+     * Swipe/Signature X segment column name
+     */
     public static final String COL_SEGMENTS_X = "segments_x";
+
+    /**
+     * Swipe/Signature Y segment column name
+     */
     public static final String COL_SEGMENTS_Y = "segments_y";
+
+    /**
+     * Minimum touch size column name
+     */
     private static final String COL_MIN_SIZE = "min_size";
+
+    /**
+     * Maximum touch size column name
+     */
     private static final String COL_MAX_SIZE = "max_size";
+
+    /**
+     * Average touch size column name
+     */
     private static final String COL_AVG_SIZE = "avg_size";
+
+    /**
+     * Initial touch size column name
+     */
     private static final String COL_DOWN_SIZE = "down_size";
+
+    /**
+     * Final touch size column name
+     */
     private static final String COL_UP_SIZE = "up_size";
+
+    /**
+     * Touch start position X value column name
+     */
     private static final String COL_START_X = "start_x";
+
+    /**
+     * Touch start position Y value column name
+     */
     private static final String COL_START_Y = "start_y";
+
+    /**
+     * Touch end position X value column name
+     */
     private static final String COL_END_X = "end_x";
+
+    /**
+     * Touch end position Y value column name
+     */
     private static final String COL_END_Y = "end_y";
+
+    /**
+     * Device holding position column name
+     */
     private static final String COL_HOLDING_POSITION = "holding_position";
 
+    /**
+     * Interactions count column name
+     */
     private static final String COL_INSTANCES = "INSTANCES";
+
+    /**
+     * TAR value column name
+     */
     private static final String COL_TAR = "TAR";
+
+    /**
+     * FRR value column name
+     */
     private static final String COL_FRR = "FRR";
+
+    /**
+     * TRR value column name
+     */
     private static final String COL_TRR = "TRR";
+
+    /**
+     * FAR value column name
+     */
     private static final String COL_FAR = "FAR";
+
+    /**
+     * ER value column name
+     */
     private static final String COL_ER = "ER";
+
+    /**
+     * Average interaction time column name
+     */
     private static final String COL_AVG_SAMPLE_TIME = "AVG_SAMPLE_TIME";
+
+    /**
+     * Training time column name
+     */
     private static final String COL_TRAINING_TIME = "TRAINING_TIME";
+
+    /**
+     * GAN training time column name
+     */
     private static final String COL_GAN_TIME = "GAN_TIME";
+
+    /**
+     * Average per-interaction test time column name
+     */
     private static final String COL_AVG_TEST_TIME = "AVG_TEST_TIME";
+
+    /**
+     * User ID column name
+     */
     private static final String COL_USER_ID = "USER_ID";
+
+    /**
+     * Train/Test interactions count column name
+     */
     private static final String COL_CLASSIFIER_SAMPLES = "CLASSIFIER_SAMPLES";
+
+    /**
+     * Model type column name
+     */
     private static final String COL_MODEL_TYPE = "MODEL_TYPE";
 
+    /**
+     * Nickname column name
+     */
     public static final String COL_NICKNAME = "nickname";
+
+    /**
+     * Gender column name
+     */
     public static final String COL_GENDER = "gender";
+
+    /**
+     * Age column name
+     */
     public static final String COL_AGE = "age";
+
+    /**
+     * Nationality column name
+     */
     public static final String COL_NATIONALITY = "nationality";
+
+    /**
+     * Hand used to hold the device column name
+     */
     public static final String COL_HOLDING_HAND = "holding_hand";
 
     // Feature data columns
+
+    /**
+     * Type of model configuration (FULL, INDIVIDUAL_FULL, ALL) column name
+     */
     public static final String COL_MODELS_COMBINATIONS = "models_combinations";
+
+    /**
+     * Acceleration column name
+     */
     public static final String COL_ACCELERATION = "acceleration";
+
+    /**
+     * Angular velocity column name
+     */
     public static final String COL_ANGULAR_VELOCITY = "angular_velocity";
+
+    /**
+     * Orientation column name
+     */
     public static final String COL_ORIENTATION = "orientation";
+
+    /**
+     * Swipe duration column name
+     */
     public static final String COL_SWIPE_DURATION = "swipe_duration";
+
+    /**
+     * Swipe shape column name
+     */
     public static final String COL_SWIPE_SHAPE = "swipe_shape";
+
+    /**
+     * Swipe segments nr column name
+     */
     public static final String COL_SWIPE_SHAPE_SEGMENTS = "swipe_shape_segments";
+
+    /**
+     * Touch size column name
+     */
     public static final String COL_SWIPE_TOUCH_SIZE = "swipe_touch_size";
+
+    /**
+     * Swipe start/end position column name
+     */
     public static final String COL_SWIPE_START_END_POS = "swipe_start_end_pos";
+
+    /**
+     * Swipe velocity column name
+     */
     public static final String COL_SWIPE_VELOCITY = "swipe_velocity";
+
+    /**
+     * Keystroke column name
+     */
     public static final String COL_KEYSTROKE = "keystroke";
+
+    /**
+     * PIN length column name
+     */
     public static final String COL_PIN_LENGTH = "pin_length";
+
+    /**
+     * Signature column name
+     */
     public static final String COL_SIGNATURE = "signature";
+
+    /**
+     * Signature start/end position column name
+     */
     public static final String COL_SIGNATURE_START_END_POS = "signature_start_end_pos";
+
+    /**
+     * Signature velocity column name
+     */
     public static final String COL_SIGNATURE_VELOCITY = "signature_velocity";
+
+    /**
+     * Signature shape column name
+     */
     public static final String COL_SIGNATURE_SHAPE = "signature_shape";
+
+    /**
+     * Signature segments nr column name
+     */
     public static final String COL_SIGNATURE_SHAPE_SEGMENTS = "signature_shape_segments";
+
+    /**
+     * Raw data column name
+     */
     public static final String COL_RAW_DATA = "raw_data";
+
+    /**
+     * Frequency of raw data sampling column name
+     */
     public static final String COL_RAW_DATA_FREQUENCY = "raw_data_frequency";
 
     // Resource columns
+
+
     private static final String COL_MIN_CPU_FREQ = "min_cpu_freq";
     private static final String COL_MAX_CPU_FREQ = "max_cpu_freq";
     private static final String COL_AVG_CPU_FREQ = "avg_cpu_freq";
@@ -253,6 +526,23 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return sInstance;
     }
 
+    /**
+     * Generates all the db tables.
+     *
+     * The list of generated tables looks as follows:
+     * Table containing the training results for all the models generated using genuine user interactions (REAL_RESULTS).
+     * Table containing the training results for all the models generated using both genuine ans synthetic interactions (GAN_RESULTS).
+     * Table containing the testing results (TEST_RESULTS).
+     * Table containing the provided user information (USER_DATA).
+     * Table containing info on the features used to train the models (FEATURE_DATA).
+     * Table containing device resource information over the training phase (RESOURCE_DATA).
+     * Table containing the training data collected as a continuous stream (TRAIN_RAW_DATA).
+     * Table containing the responses for each SUS question (SUS_DATA).
+     * Tables containing data related to the individual interactions (REAL_SWIPES, GAN_SWIPES, TEST_SWIPES, REAL_SWIPES_NORMALIZED, GAN_SWIPES_NORMALIZED, TEST_SWIPES_NORMALIZED).
+     * Table containing authentication results for the individual interactions against all generated models (TEST_AUTHENTICATION).
+     *
+     * @param db The database.
+     */
     @Override
     public void onCreate(SQLiteDatabase db) {
         String createRealResultsTable = "CREATE TABLE " + REAL_RESULTS
@@ -428,6 +718,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
     }
 
+    /**
+     * Generates the set of interaction tables.
+     *
+     * @param db The database.
+     * @param regenerate Indicates whether a set of interaction tables already exists in the current db.
+     * @param hasKeystrokes Indicates whether the keystroke model is currently active.
+     * @param hasSignature Indicates whether the signature model is currently active.
+     */
     public void generateSwipesTables(SQLiteDatabase db, boolean regenerate, boolean hasKeystrokes, boolean hasSignature) {
         if(db == null) { db = this.getWritableDatabase(); }
         String[] swipes_tables = {REAL_SWIPES, GAN_SWIPES, TEST_SWIPES, REAL_SWIPES_NORMALIZED, GAN_SWIPES_NORMALIZED, TEST_SWIPES_NORMALIZED};
@@ -486,6 +784,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
     }
 
+    /**
+     * Generates the table containing the authentication results of the individual interaction for all the active models.
+     *
+     * @param db The database.
+     * @param regenerate Indicates whether a test authentication table already exists in the current db.
+     * @param activeModels The list of active models that will evaluate the test interactions.
+     *
+     */
     public void generateTestAuthenticationTable(SQLiteDatabase db, boolean regenerate, List<List<ModelType>> activeModels) {
         if(db == null) { db = this.getWritableDatabase(); }
         if(regenerate) { db.execSQL("DROP TABLE " + TEST_AUTHENTICATION); }
@@ -515,6 +821,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL(create_statement);
     }
 
+    /**
+     * Called when the database needs to be upgraded.
+     *
+     * @param db The database.
+     * @param oldVersion The old database version.
+     * @param newVersion The new database version.
+     */
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         String[] upgrade_tables = {
