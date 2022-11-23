@@ -1637,8 +1637,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     public synchronized void saveData(View view) {
 
         try {
-            Map<String, String> userData = dbHelper.getUserData();
-            dbHelper.saveAllTablesAsCSV(getContentResolver(), getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS).getPath() + File.separator + userData.get(DatabaseHelper.COL_NICKNAME));
+            dbHelper.saveAllTablesAsCSV(getContentResolver());
             //this.showAlertDialog("SUCCESS", "CSV files have been saved into the file manager");
             this.showSnackBar(getString(R.string.csv_saved), "#238823");
 

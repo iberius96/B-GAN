@@ -2100,27 +2100,26 @@ public class DatabaseHelper extends SQLiteOpenHelper {
      * Triggers .csv saving procedure for all DB tables.
      *
      * @param resolver Object providing access to the content model.
-     * @param downloadPath Path defining where the .csv files will be saved.
      */
-    public void saveAllTablesAsCSV(ContentResolver resolver, String downloadPath){
+    public void saveAllTablesAsCSV(ContentResolver resolver){
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd_HH-mm");
         String currentDateTime = dateFormat.format(new Date());
 
-        this.saveAsCSV(REAL_SWIPES, currentDateTime + "_" + "realSwipes.csv", resolver, downloadPath);
-        this.saveAsCSV(GAN_SWIPES, currentDateTime + "_" + "ganSwipes.csv", resolver, downloadPath);
-        this.saveAsCSV(TEST_SWIPES, currentDateTime + "_" + "testSwipes.csv", resolver, downloadPath);
-        this.saveAsCSV(REAL_SWIPES_NORMALIZED, currentDateTime + "_" + "realSwipesNormalized.csv", resolver, downloadPath);
-        this.saveAsCSV(GAN_SWIPES_NORMALIZED, currentDateTime + "_" + "ganSwipesNormalized.csv", resolver, downloadPath);
-        this.saveAsCSV(TEST_SWIPES_NORMALIZED, currentDateTime + "_" + "testSwipesNormalized.csv", resolver, downloadPath);
-        this.saveAsCSV(REAL_RESULTS, currentDateTime + "_" + "realResults.csv", resolver, downloadPath);
-        this.saveAsCSV(GAN_RESULTS, currentDateTime + "_" + "ganResults.csv", resolver, downloadPath);
-        this.saveAsCSV(TEST_RESULTS, currentDateTime + "_" + "testResults.csv", resolver, downloadPath);
-        this.saveAsCSV(TEST_AUTHENTICATION, currentDateTime + "_" + "testAuthentication.csv", resolver, downloadPath);
-        this.saveAsCSV(USER_DATA, currentDateTime + "_" + "userData.csv", resolver, downloadPath);
-        this.saveAsCSV(FEATURE_DATA, currentDateTime + "_" + "featureData.csv", resolver, downloadPath);
-        this.saveAsCSV(RESOURCE_DATA, currentDateTime + "_" + "resourceData.csv", resolver, downloadPath);
-        this.saveAsCSV(TRAIN_RAW_DATA, currentDateTime + "_" + "rawData.csv", resolver, downloadPath);
-        this.saveAsCSV(SUS_DATA, currentDateTime + "_" + "SUSData.csv", resolver, downloadPath);
+        this.saveAsCSV(REAL_SWIPES, currentDateTime + "_" + "realSwipes.csv", resolver);
+        this.saveAsCSV(GAN_SWIPES, currentDateTime + "_" + "ganSwipes.csv", resolver);
+        this.saveAsCSV(TEST_SWIPES, currentDateTime + "_" + "testSwipes.csv", resolver);
+        this.saveAsCSV(REAL_SWIPES_NORMALIZED, currentDateTime + "_" + "realSwipesNormalized.csv", resolver);
+        this.saveAsCSV(GAN_SWIPES_NORMALIZED, currentDateTime + "_" + "ganSwipesNormalized.csv", resolver);
+        this.saveAsCSV(TEST_SWIPES_NORMALIZED, currentDateTime + "_" + "testSwipesNormalized.csv", resolver);
+        this.saveAsCSV(REAL_RESULTS, currentDateTime + "_" + "realResults.csv", resolver);
+        this.saveAsCSV(GAN_RESULTS, currentDateTime + "_" + "ganResults.csv", resolver);
+        this.saveAsCSV(TEST_RESULTS, currentDateTime + "_" + "testResults.csv", resolver);
+        this.saveAsCSV(TEST_AUTHENTICATION, currentDateTime + "_" + "testAuthentication.csv", resolver);
+        this.saveAsCSV(USER_DATA, currentDateTime + "_" + "userData.csv", resolver);
+        this.saveAsCSV(FEATURE_DATA, currentDateTime + "_" + "featureData.csv", resolver);
+        this.saveAsCSV(RESOURCE_DATA, currentDateTime + "_" + "resourceData.csv", resolver);
+        this.saveAsCSV(TRAIN_RAW_DATA, currentDateTime + "_" + "rawData.csv", resolver);
+        this.saveAsCSV(SUS_DATA, currentDateTime + "_" + "SUSData.csv", resolver);
     }
 
     /**
