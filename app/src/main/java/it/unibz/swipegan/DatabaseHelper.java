@@ -34,417 +34,590 @@ import au.com.bytecode.opencsv.CSVWriter;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
     /**
-     * Getter instance of the database helper
+     * Getter instance of the database helper.
      */
     private static DatabaseHelper sInstance;
 
     /**
-     * DB name
+     * DB name.
      */
     private static final String DATABASE_NAME = "GAN.db";
 
     /**
-     * Training interactions table name
+     * Training interactions table name.
      */
     public static final String REAL_SWIPES = "REAL_SWIPES";
 
     /**
-     * Normalized training interactions table name
+     * Normalized training interactions table name.
      */
     private static final String REAL_SWIPES_NORMALIZED = "REAL_SWIPES_NORMALIZED";
 
     /**
-     * GAN interactions table name
+     * GAN interactions table name.
      */
     private static final String GAN_SWIPES = "GAN_SWIPES";
 
     /**
-     * Normalized GAN interactions table name
+     * Normalized GAN interactions table name.
      */
     private static final String GAN_SWIPES_NORMALIZED = "GAN_SWIPES_NORMALIZED";
 
     /**
-     * Test interactions table name
+     * Test interactions table name.
      */
     public static final String TEST_SWIPES = "TEST_SWIPES";
 
     /**
-     * Normalized test interactions table name
+     * Normalized test interactions table name.
      */
     private static final String TEST_SWIPES_NORMALIZED = "TEST_SWIPES_NORMALIZED";
 
     /**
-     * Training results table name
+     * Training results table name.
      */
     private static final String REAL_RESULTS = "REAL_RESULTS";
 
     /**
-     * Training results table name (models trained with genuine + synthetic samples)
+     * Training results table name (models trained with genuine + synthetic samples).
      */
     private static final String GAN_RESULTS = "GAN_RESULTS";
 
     /**
-     * Test results table name
+     * Test results table name.
      */
     private static final String TEST_RESULTS = "TEST_RESULTS";
 
     /**
-     * Test authentication results table name
+     * Test authentication results table name.
      */
     private static final String TEST_AUTHENTICATION = "TEST_AUTHENTICATION";
 
     /**
-     * User data table name
+     * User data table name.
      */
     private static final String USER_DATA = "USER_DATA";
 
     /**
-     * Feature data table name
+     * Feature data table name.
      */
     private static final String FEATURE_DATA = "FEATURE_DATA";
 
     /**
-     * Resource data table name
+     * Resource data table name.
      */
     private static final String RESOURCE_DATA = "RESOURCE_DATA";
 
     /**
-     * Raw training interaction data table name
+     * Raw training interaction data table name.
      */
     private static final String TRAIN_RAW_DATA = "TRAIN_RAW_DATA";
 
     /**
-     * SUS questions data table name
+     * SUS questions data table name.
      */
     private static final String SUS_DATA = "SUS_DATA";
 
     /**
-     * Authentication result column name
+     * Authentication result column name.
      */
     public static final String COL_AUTHENTICATION = "AUTHENTICATION";
 
     /**
-     * Authentication time column name
+     * Authentication time column name.
      */
     public static final String COL_AUTHENTICATION_TIME = "AUTHENTICATION_TIME";
 
     /**
-     * Weighted ensemble model column name
+     * Weighted ensemble model column name.
      */
     public static final String COL_WEIGHTED_ENSEMBLE = "WEIGHTED_ENSEMBLE";
 
     /**
-     * Interaction step duration column name
+     * Interaction step duration column name.
      */
     private static final String COL_DURATION = "duration";
 
     /**
-     * Interaction step length column name
+     * Interaction step length column name.
      */
     private static final String COL_LENGTH = "length";
 
     /**
-     * Swipe/Signature X segment column name
+     * Swipe/Signature X segment column name.
      */
     public static final String COL_SEGMENTS_X = "segments_x";
 
     /**
-     * Swipe/Signature Y segment column name
+     * Swipe/Signature Y segment column name.
      */
     public static final String COL_SEGMENTS_Y = "segments_y";
 
     /**
-     * Minimum touch size column name
+     * Minimum touch size column name.
      */
     private static final String COL_MIN_SIZE = "min_size";
 
     /**
-     * Maximum touch size column name
+     * Maximum touch size column name.
      */
     private static final String COL_MAX_SIZE = "max_size";
 
     /**
-     * Average touch size column name
+     * Average touch size column name.
      */
     private static final String COL_AVG_SIZE = "avg_size";
 
     /**
-     * Initial touch size column name
+     * Initial touch size column name.
      */
     private static final String COL_DOWN_SIZE = "down_size";
 
     /**
-     * Final touch size column name
+     * Final touch size column name.
      */
     private static final String COL_UP_SIZE = "up_size";
 
     /**
-     * Touch start position X value column name
+     * Touch start position X value column name.
      */
     private static final String COL_START_X = "start_x";
 
     /**
-     * Touch start position Y value column name
+     * Touch start position Y value column name.
      */
     private static final String COL_START_Y = "start_y";
 
     /**
-     * Touch end position X value column name
+     * Touch end position X value column name.
      */
     private static final String COL_END_X = "end_x";
 
     /**
-     * Touch end position Y value column name
+     * Touch end position Y value column name.
      */
     private static final String COL_END_Y = "end_y";
 
     /**
-     * Device holding position column name
+     * Device holding position column name.
      */
     private static final String COL_HOLDING_POSITION = "holding_position";
 
     /**
-     * Interactions count column name
+     * Interactions count column name.
      */
     private static final String COL_INSTANCES = "INSTANCES";
 
     /**
-     * TAR value column name
+     * TAR value column name.
      */
     private static final String COL_TAR = "TAR";
 
     /**
-     * FRR value column name
+     * FRR value column name.
      */
     private static final String COL_FRR = "FRR";
 
     /**
-     * TRR value column name
+     * TRR value column name.
      */
     private static final String COL_TRR = "TRR";
 
     /**
-     * FAR value column name
+     * FAR value column name.
      */
     private static final String COL_FAR = "FAR";
 
     /**
-     * ER value column name
+     * ER value column name.
      */
     private static final String COL_ER = "ER";
 
     /**
-     * Average interaction time column name
+     * Average interaction time column name.
      */
     private static final String COL_AVG_SAMPLE_TIME = "AVG_SAMPLE_TIME";
 
     /**
-     * Training time column name
+     * Training time column name.
      */
     private static final String COL_TRAINING_TIME = "TRAINING_TIME";
 
     /**
-     * GAN training time column name
+     * GAN training time column name.
      */
     private static final String COL_GAN_TIME = "GAN_TIME";
 
     /**
-     * Average per-interaction test time column name
+     * Average per-interaction test time column name.
      */
     private static final String COL_AVG_TEST_TIME = "AVG_TEST_TIME";
 
     /**
-     * User ID column name
+     * User ID column name.
      */
     private static final String COL_USER_ID = "USER_ID";
 
     /**
-     * Train/Test interactions count column name
+     * Train/Test interactions count column name.
      */
     private static final String COL_CLASSIFIER_SAMPLES = "CLASSIFIER_SAMPLES";
 
     /**
-     * Model type column name
+     * Model type column name.
      */
     private static final String COL_MODEL_TYPE = "MODEL_TYPE";
 
     /**
-     * Nickname column name
+     * Nickname column name.
      */
     public static final String COL_NICKNAME = "nickname";
 
     /**
-     * Gender column name
+     * Gender column name.
      */
     public static final String COL_GENDER = "gender";
 
     /**
-     * Age column name
+     * Age column name.
      */
     public static final String COL_AGE = "age";
 
     /**
-     * Nationality column name
+     * Nationality column name.
      */
     public static final String COL_NATIONALITY = "nationality";
 
     /**
-     * Hand used to hold the device column name
+     * Hand used to hold the device column name.
      */
     public static final String COL_HOLDING_HAND = "holding_hand";
 
     // Feature data columns
 
     /**
-     * Type of model configuration (FULL, INDIVIDUAL_FULL, ALL) column name
+     * Type of model configuration (FULL, INDIVIDUAL_FULL, ALL) column name.
      */
     public static final String COL_MODELS_COMBINATIONS = "models_combinations";
 
     /**
-     * Acceleration column name
+     * Acceleration column name.
      */
     public static final String COL_ACCELERATION = "acceleration";
 
     /**
-     * Angular velocity column name
+     * Angular velocity column name.
      */
     public static final String COL_ANGULAR_VELOCITY = "angular_velocity";
 
     /**
-     * Orientation column name
+     * Orientation column name.
      */
     public static final String COL_ORIENTATION = "orientation";
 
     /**
-     * Swipe duration column name
+     * Swipe duration column name.
      */
     public static final String COL_SWIPE_DURATION = "swipe_duration";
 
     /**
-     * Swipe shape column name
+     * Swipe shape column name.
      */
     public static final String COL_SWIPE_SHAPE = "swipe_shape";
 
     /**
-     * Swipe segments nr column name
+     * Swipe segments nr column name.
      */
     public static final String COL_SWIPE_SHAPE_SEGMENTS = "swipe_shape_segments";
 
     /**
-     * Touch size column name
+     * Touch size column name.
      */
     public static final String COL_SWIPE_TOUCH_SIZE = "swipe_touch_size";
 
     /**
-     * Swipe start/end position column name
+     * Swipe start/end position column name.
      */
     public static final String COL_SWIPE_START_END_POS = "swipe_start_end_pos";
 
     /**
-     * Swipe velocity column name
+     * Swipe velocity column name.
      */
     public static final String COL_SWIPE_VELOCITY = "swipe_velocity";
 
     /**
-     * Keystroke column name
+     * Keystroke column name.
      */
     public static final String COL_KEYSTROKE = "keystroke";
 
     /**
-     * PIN length column name
+     * PIN length column name.
      */
     public static final String COL_PIN_LENGTH = "pin_length";
 
     /**
-     * Signature column name
+     * Signature column name.
      */
     public static final String COL_SIGNATURE = "signature";
 
     /**
-     * Signature start/end position column name
+     * Signature start/end position column name.
      */
     public static final String COL_SIGNATURE_START_END_POS = "signature_start_end_pos";
 
     /**
-     * Signature velocity column name
+     * Signature velocity column name.
      */
     public static final String COL_SIGNATURE_VELOCITY = "signature_velocity";
 
     /**
-     * Signature shape column name
+     * Signature shape column name.
      */
     public static final String COL_SIGNATURE_SHAPE = "signature_shape";
 
     /**
-     * Signature segments nr column name
+     * Signature segments nr column name.
      */
     public static final String COL_SIGNATURE_SHAPE_SEGMENTS = "signature_shape_segments";
 
     /**
-     * Raw data column name
+     * Raw data column name.
      */
     public static final String COL_RAW_DATA = "raw_data";
 
     /**
-     * Frequency of raw data sampling column name
+     * Frequency of raw data sampling column name.
      */
     public static final String COL_RAW_DATA_FREQUENCY = "raw_data_frequency";
 
     // Resource columns
 
-
+    /**
+     *  Minimum CPU frequency column name.
+     */
     private static final String COL_MIN_CPU_FREQ = "min_cpu_freq";
+
+    /**
+     *  Maximum CPU frequency column name.
+     */
     private static final String COL_MAX_CPU_FREQ = "max_cpu_freq";
+
+    /**
+     *  Average CPU frequency column name.
+     */
     private static final String COL_AVG_CPU_FREQ = "avg_cpu_freq";
+
+    /**
+     *  Minimum memory usage column name.
+     */
     private static final String COL_MIN_MEMORY_USAGE = "min_memory_usage";
+
+    /**
+     *  Maximum memory usage column name.
+     */
     private static final String COL_MAX_MEMORY_USAGE = "max_memory_usage";
+
+    /**
+     *  Average memory usage column name.
+     */
     private static final String COL_AVG_MEMORY_USAGE = "avg_memory_usage";
+
+    /**
+     *  Power draw column name.
+     */
     private static final String COL_POWER_DRAW = "power_draw";
 
     // Keystrokes columns
+
+    /**
+     *  Keystroke individual durations column name.
+     */
     public static final String COL_KEYSTROKE_DURATIONS = "keystroke_durations";
+
+    /**
+     *  Keystroke individual intervals column name.
+     */
     public static final String COL_KEYSTROKE_INTERVALS = "keystroke_intervals";
+
+    /**
+     *  Start time of individual keystroke intervals column name.
+     */
     public static final String COL_KEYSTROKE_START_INTERVALS = "keystroke_start_intervals";
+
+    /**
+     *  End time of individual keystroke intervals column name.
+     */
     public static final String COL_KEYSTROKE_END_INTERVALS = "keystroke_end_intervals";
+
+    /**
+     *  Keystroke full duration column name.
+     */
     public static final String COL_KEYSTROKE_FULL_DURATION = "keystroke_full_duration";
 
     // Signature columns
+
+    /**
+     *  Signature start X position column name.
+     */
     public static final String COL_SIGNATURE_START_X = "signature_start_x";
+
+    /**
+     *  Signature start Y position column name.
+     */
     public static final String COL_SIGNATURE_START_Y = "signature_start_y";
+
+    /**
+     *  Signature end X position column name.
+     */
     public static final String COL_SIGNATURE_END_X = "signature_end_x";
+
+    /**
+     *  Signature end Y position column name.
+     */
     public static final String COL_SIGNATURE_END_Y = "signature_end_y";
+
+    /**
+     *  Signature std X positions column name.
+     */
     public static final String COL_SIGNATURE_STD_X = "signature_std_x";
+
+    /**
+     *  Signature std Y positions column name.
+     */
     public static final String COL_SIGNATURE_STD_Y = "signature_std_y";
+
+    /**
+     *  Signature X displacement column name.
+     */
     public static final String COL_SIGNATURE_DIFF_X = "signature_diff_x";
+
+    /**
+     *  Signature Y displacement column name.
+     */
     public static final String COL_SIGNATURE_DIFF_Y = "signature_diff_y";
+
+    /**
+     *  Signature start/end position euclidean distance column name.
+     */
     public static final String COL_SIGNATURE_EUCLIDEAN_DISTANCE = "signature_euclidean_distance";
+
+    /**
+     *  Signature average X velocity column name.
+     */
     public static final String COL_SIGNATURE_AVG_X_VELOCITY = "signature_avg_x_velocity";
+
+    /**
+     *  Signature average Y velocity column name.
+     */
     public static final String COL_SIGNATURE_AVG_Y_VELOCITY = "signature_avg_y_velocity";
+
+    /**
+     *  Signature maximum X velocity column name.
+     */
     public static final String COL_SIGNATURE_MAX_X_VELOCITY = "signature_max_x_velocity";
+
+    /**
+     *  Signature maximum Y velocity column name.
+     */
     public static final String COL_SIGNATURE_MAX_Y_VELOCITY = "signature_max_y_velocity";
+
+    /**
+     *  Signature X segments size column name.
+     */
     public static final String COL_SIGNATURE_SEGMENTS_X = "signature_segments_x";
+
+    /**
+     *  Signature Y segments size column name.
+     */
     public static final String COL_SIGNATURE_SEGMENTS_Y = "signature_segments_y";
 
     // Raw data columns
+
+    /**
+     *  Touch size column name.
+     */
     public static final String COL_SIZE = "size";
+
+    /**
+     *  X coordinate value column name.
+     */
     public static final String COL_X = "x";
+
+    /**
+     *  Y coordinate value column name.
+     */
     public static final String COL_Y = "y";
+
+    /**
+     *  X velocity column name.
+     */
     public static final String COL_VELOCITY_X = "velocity_x";
+
+    /**
+     *  Y velocity column name.
+     */
     public static final String COL_VELOCITY_Y = "velocity_Y";
+
+    /**
+     *  X accelerometer value column name.
+     */
     public static final String COL_ACCELEROMETER_X = "accelerometer_x";
+
+    /**
+     *  Y accelerometer value column name.
+     */
     public static final String COL_ACCELEROMETER_Y = "accelerometer_y";
+
+    /**
+     *  Z accelerometer value column name.
+     */
     public static final String COL_ACCELEROMETER_Z = "accelerometer_z";
+
+    /**
+     *  X gyroscope value column name.
+     */
     public static final String COL_GYROSCOPE_X = "gyroscope_x";
+
+    /**
+     *  Y gyroscope value column name.
+     */
     public static final String COL_GYROSCOPE_Y = "gyroscope_y";
+
+    /**
+     *  Z gyroscope value column name.
+     */
     public static final String COL_GYROSCOPE_Z = "gyroscope_z";
+
+    /**
+     *  X orientation value column name.
+     */
     public static final String COL_ORIENTATION_X = "orientation_x";
+
+    /**
+     *  Y orientation value column name.
+     */
     public static final String COL_ORIENTATION_Y = "orientation_y";
+
+    /**
+     *  Z orientation value column name.
+     */
     public static final String COL_ORIENTATION_Z = "orientation_z";
+
+    /**
+     *  Current gesture (Swipe/Keystroke/Signature) identifier column name.
+     */
     public static final String COL_GESTURE_ID = "gesture_id";
 
     // SUS columns
+
+    /**
+     *  SUS question prefix column name.
+     */
     private static final String COL_QUESTION = "question_";
 
+    /**
+     *  Set of interaction prefix for column names.
+     */
     public static final String[] head_features = {
             COL_DURATION,
             COL_LENGTH,
@@ -455,10 +628,24 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     };
 
     // Used to reference velocity- and all swipe- related features
+    /**
+     *  Set of interaction feature suffix for column names.
+     */
     public static final String[] features = {"Velocity", "Accelerometer", "Gyroscope", "Orientation"};
+
+    /**
+     *  Set of interaction metric (Min/Max/Avg/Var/Std) suffix for column names.
+     */
     public static final String[] metrics = {"Min", "Max", "Avg", "Var", "Std"};
+
+    /**
+     *  Set of interaction dimension (X/Y/Z) suffix for column names.
+     */
     public static final String[] dimensions = {"X", "Y", "Z"};
 
+    /**
+     * Set of keystroke features column names.
+     */
     public static final String[] keystroke_features = {
             COL_KEYSTROKE_DURATIONS,
             COL_KEYSTROKE_INTERVALS,
@@ -467,6 +654,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             COL_KEYSTROKE_FULL_DURATION
     };
 
+    /**
+     * Set of signature features column names.
+     */
     public static final String[] signature_features = {
         COL_SIGNATURE_START_X, COL_SIGNATURE_START_Y,
         COL_SIGNATURE_END_X, COL_SIGNATURE_END_Y,
@@ -478,6 +668,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         COL_SIGNATURE_SEGMENTS_X, COL_SIGNATURE_SEGMENTS_Y
     };
 
+    /**
+     * Set of raw data features column names.
+     */
     public static final String[] raw_features = {
         COL_SIZE,
         COL_X, COL_Y,
@@ -494,6 +687,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         COL_GESTURE_ID
     };
 
+    /**
+     * Enum used to identify the type of the individual models (Hold/Swipe/Keystroke/Signature/Full).
+     * Full model refers to the model obtained by performing feature level fusion on all the individual models.
+     */
     public enum ModelType {
         HOLD,
         SWIPE,
@@ -502,23 +699,61 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         FULL
     };
 
+    /**
+     * Enum used to identify the set of models to build during the training procedure.
+     * Full allows only the model obtained by performing feature level fusion on all the active features to be built.
+     * Individual_Full allows for the training of the four individual models and the one obtained by performing feature level fusion.
+     * All allows to build all the models mentioned above together with all the different combination obtainable by performing feature level fusion on the individual models.
+     */
     public enum ModelsCombinations {
         FULL,
         INDIVIDUAL_FULL,
         ALL
     }
 
-    public static final Integer BASE_FEATURES = 66; // TODO: Change this hardcoded value
+    /**
+     * Defines the number of base features collected in a single interaction.
+     */
+    public static final Integer BASE_FEATURES = 66;
+
+    /**
+     * Defines the default number of segments used to decompose swipe and signature gestures.
+     */
     public static final Integer DEFAULT_SEGMENTS = 10;
+
+    /**
+     * Defines the default value of the PIN length.
+     */
     public static final Integer DEFAULT_PIN_LENGTH = 8;
+
+    /**
+     * Defines the default value (0 = Disabled, 1 = Enabled) for the setting controlling raw data collection.
+     */
     public static final Integer DEFAULT_RAW_DATA = 1;
+
+    /**
+     * Defines the default frequency (in Hz) at which the raw data is collected.
+     */
     public static final Integer DEFAULT_FREQUENCY = 50;
+
+    /**
+     * Defines the default number of SUS questions.
+     */
     public static final int DEFAULT_SUS_QUESTIONS = 10;
 
+    /**
+     * Class Constructor.
+     * @param context Interface to global information about the application environment.
+     */
     public DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, 1);
     }
 
+    /**
+     * Returns the instance of the DatabaseHelper class.
+     * @param context Interface to global information about the application environment.
+     * @return An instance of the DatabaseHelper class.
+     */
     public static synchronized DatabaseHelper getInstance(Context context) {
         if (sInstance == null) {
             sInstance = new DatabaseHelper(context.getApplicationContext());
@@ -790,7 +1025,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
      * @param db The database.
      * @param regenerate Indicates whether a test authentication table already exists in the current db.
      * @param activeModels The list of active models that will evaluate the test interactions.
-     *
      */
     public void generateTestAuthenticationTable(SQLiteDatabase db, boolean regenerate, List<List<ModelType>> activeModels) {
         if(db == null) { db = this.getWritableDatabase(); }
@@ -855,6 +1089,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         onCreate(db);
     }
 
+    /**
+     * Goes through the individual feature values of the interaction and adds them to the specified table.
+     *
+     * @param swipe The swipe object representing the interaction that needs to be added the the DB.
+     * @param tableName The name of the table to which the interaction needs to be added to.
+     * @return True if the interaction was successfully added to the DB; False otherwise.
+     */
     private boolean addSwipe(Swipe swipe, String tableName) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
@@ -944,6 +1185,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return result != -1;
     }
 
+    /**
+     * Goes through the individual feature values of the raw entry and adds them to the specified table.
+     *
+     * @param rawDataEntry The current raw data entry expressed by an Hashmap of column names strings as keys.
+     * @param tableName The name of the table to which the raw data entry needs to be added to.
+     * @return True if the interaction was successfully added to the DB; False otherwise.
+     */
     public boolean addRawDataEntry(Map<String, Double> rawDataEntry, String tableName) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
@@ -956,6 +1204,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return result != -1;
     }
 
+    /**
+     * Retrieves authentication results (0 = Misclassified, 1 = Correctly classified) and times of a given interactions with regards to all active models and adds them to the relevant table.
+     *
+     * @param db The database.
+     * @param swipe The interaction for which authentication results and times are being stored.
+     */
     private void addSwipeAuthentication(SQLiteDatabase db, Swipe swipe) {
         ContentValues contentValues = new ContentValues();
 
@@ -978,6 +1232,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.insert(TEST_AUTHENTICATION, null, contentValues);
     }
 
+    /**
+     * Builds the list of active models with regards to the selected value in the model profile (Full/Individual_Full/All).
+     *
+     * @return The list of active models.
+     */
     public List<List<DatabaseHelper.ModelType>> getActiveModels() {
         List<List<DatabaseHelper.ModelType>> activeModels = new ArrayList<>();
         Integer modelsCombination = this.getFeatureData().get(DatabaseHelper.COL_MODELS_COMBINATIONS);
@@ -995,6 +1254,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return activeModels;
     }
 
+    /**
+     * Generates all possible combinations (of any size) of the individual models (Hold,Swipe,Keystroke,Signature).
+     *
+     * @return List containing the names of all the model combinations.
+     */
     private List<List<DatabaseHelper.ModelType>> getAllModelsCombinations() {
         List<List<DatabaseHelper.ModelType>> allModels = new ArrayList<>();
         Generator.subset(DatabaseHelper.ModelType.HOLD, DatabaseHelper.ModelType.SWIPE, DatabaseHelper.ModelType.KEYSTROKE, DatabaseHelper.ModelType.SIGNATURE)
@@ -1008,14 +1272,32 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return allModels;
     }
 
+    /**
+     * Triggers the insertion of a given train interaction in the relevant table.
+     *
+     * @param swipe The train interaction that needs to be inserted in the relevant table.
+     * @return True if the interaction was successfully added to the DB; False otherwise.
+     */
     public boolean addTrainRecord(Swipe swipe) {
         return this.addSwipe(swipe, REAL_SWIPES);
     }
 
+    /**
+     * Triggers the insertion of a given synthetic interaction in the relevant table.
+     *
+     * @param swipe The synthetic interaction that needs to be inserted in the relevant table.
+     * @return True if the interaction was successfully added to the DB; False otherwise.
+     */
     public boolean addGANRecord(Swipe swipe) {
         return this.addSwipe(swipe, GAN_SWIPES);
     }
 
+    /**
+     * Triggers the insertion of a given set of synthetic interactions in the relevant table.
+     *
+     * @param swipes The list of synthetic interactions that need to be inserted in the relevant table.
+     * @return True if the interaction was successfully added to the DB; False otherwise.
+     */
     public boolean[] addGANRecords(ArrayList<Swipe> swipes) {
         boolean [] result = new boolean[swipes.size()];
         for (int i=0; i < swipes.size(); i++) {
@@ -1024,10 +1306,22 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return result;
     }
 
+    /**
+     * Triggers the insertion of a given test interaction in the relevant table.
+     *
+     * @param swipe The test interaction that needs to be inserted in the relevant table.
+     * @return True if the interaction was successfully added to the DB; False otherwise.
+     */
     public boolean addTestRecord(Swipe swipe) {
         return this.addSwipe(swipe, TEST_SWIPES);
     }
 
+    /**
+     * Retrieves the normalized values (min-max scaling) of the provided set of interactions and stores them to the specified table.
+     *
+     * @param allSwipes The original set of (non-normalized) interactions.
+     * @param tableName The name of the table to which the normalized interaction needs to be added to.
+     */
     public void addSwipesNormalized(ArrayList<Swipe> allSwipes, String tableName) {
         SQLiteDatabase db = this.getWritableDatabase();
 
@@ -1122,6 +1416,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
     }
 
+    /**
+     * Retrieves all the stored interactions from the specified table.
+     *
+     * @param tableName The name of the table from which to get the interactions from.
+     * @return The list of retrieved interactions as Swipe objects.
+     */
     public ArrayList<Swipe> getAllSwipes(String tableName) {
         SQLiteDatabase db = this.getReadableDatabase();
         String query = "SELECT * FROM " + tableName;
@@ -1215,6 +1515,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return swipes;
     }
 
+    /**
+     * Gets the number of records contained in the specified table.
+     *
+     * @param tableName The name of the table from which the records need to be counted.
+     * @return The number of records stored in the specified table.
+     */
     public int getRecordsCount(String tableName) {
         SQLiteDatabase db = this.getReadableDatabase();
         String query = "SELECT * FROM " + tableName;
@@ -1224,6 +1530,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return count;
     }
 
+    /**
+     * Gets the set of individual test results from the specified column and user type (User/Attacker).
+     *
+     * @param userId The type of user (User/Attacker) from which to get the individual test results from.
+     * @param column The column from which to get the individual results.
+     * @return The set of individual results.
+     */
     public ArrayList<double[]> getTestingData(String userId, String column) {
         SQLiteDatabase db = this.getReadableDatabase();
         String query = "SELECT * FROM " + TEST_SWIPES + " WHERE " + COL_USER_ID + " == '" + userId + "'";
@@ -1243,6 +1556,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     }
 
+    /**
+     * Deletes all tables containing test-related data (TEST_SWIPES, TEST_SWIPES_NORMALIZED, TEST_RESULTS, TEST_AUTHENTICATION).
+     */
     public void deleteTestingData() {
         SQLiteDatabase db = this.getWritableDatabase();
         db.execSQL("DELETE FROM " + TEST_SWIPES);
@@ -1251,6 +1567,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL("DELETE FROM " + TEST_AUTHENTICATION);
     }
 
+    /**
+     * Deletes all tables containing GAN-related data (GAN_SWIPES, GAN_SWIPES_NORMALIZED, GAN_RESULTS).
+     */
     public void deleteGANData() {
         SQLiteDatabase db = this.getWritableDatabase();
         db.execSQL("DELETE FROM " + GAN_SWIPES);
@@ -1258,16 +1577,25 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL("DELETE FROM " + GAN_RESULTS);
     }
 
+    /**
+     * Deletes the table containing resource-related data (RESOURCE_DATA).
+     */
     public void deleteResourceData() {
         SQLiteDatabase db = this.getWritableDatabase();
         db.execSQL("DELETE FROM " + RESOURCE_DATA);
     }
 
+    /**
+     * Deletes the table containing data related to the training results (REAL_RESULTS).
+     */
     public void deleteRealResults() {
         SQLiteDatabase db = this.getWritableDatabase();
         db.execSQL("DELETE FROM " + REAL_RESULTS);
     }
 
+    /**
+     * Deletes the table containing the answers to the SUS questions (SUS_DATA).
+     */
     public void deleteSUSData() {
         SQLiteDatabase db = this.getWritableDatabase();
         db.execSQL("DELETE FROM " + SUS_DATA);
@@ -1354,6 +1682,20 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return weightData;
     }
 
+    /**
+     * Saves the test result metrics to the relevant table.
+     *
+     * @param instances Number of test interactions used to generate the performance metrics.
+     * @param TAR True Acceptance Rate.
+     * @param FRR False Rejection Rate.
+     * @param TRR True Rejection Rate.
+     * @param FAR False Acceptance Rate.
+     * @param avgSampleTime Average duration of the test interactions.
+     * @param avgTestTime Average time required by the model to process a single interaction.
+     * @param classifierSamples Number of interactions used to train the models.
+     * @param trainingModel Model name.
+     * @return True if the interaction was successfully added to the DB; False otherwise.
+     */
     public boolean saveTestResults(double instances, double TAR, double FRR, double TRR, double FAR, double avgSampleTime, double avgTestTime, int classifierSamples, String trainingModel) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
@@ -1373,6 +1715,16 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return result != -1;
     }
 
+    /**
+     * Saves user data to the relevant table.
+     *
+     * @param nickname Nickname used for the current user.
+     * @param gender Gender of the user.
+     * @param age Age range of the user.
+     * @param nationality Nationality of the user.
+     * @param holdingHand Hand used by the user to hold the device.
+     * @return True if the interaction was successfully added to the DB; False otherwise.
+     */
     public boolean saveUserData(String nickname, int gender, int age, String nationality, int holdingHand) {
         SQLiteDatabase db = this.getWritableDatabase();
         db.execSQL("DELETE FROM " + USER_DATA);
@@ -1389,6 +1741,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return result != -1;
     }
 
+    /**
+     * Gets the user data from the relevant table.
+     *
+     * @return The user data in the form of an Hashmap with column names as keys.
+     */
     public Map<String, String> getUserData() {
         SQLiteDatabase db = this.getReadableDatabase();
         String query = "SELECT * FROM " + USER_DATA;
@@ -1409,6 +1766,32 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return userData;
     }
 
+    /**
+     * Saves feature information to the relevant table.
+     *
+     * @param models_combinations Chosen model combination (Full, Individual_Full, All) used during training.
+     * @param acceleration Indicates whether the features related to the device acceleration are enabled.
+     * @param angular_velocity Indicates whether the features related to the angular velocity are enabled.
+     * @param orientation Indicates whether the features related to the orientation are enabled.
+     * @param swipe_duration Indicates whether the features related to the swipe duration are enabled.
+     * @param swipe_shape Indicates whether the features related to the swipe shape are enabled.
+     * @param swipe_shape_segments Indicates the number of segments used to decompose the swipe gesture.
+     * @param swipe_touch_size Indicates whether the features related to the touch size are enabled.
+     * @param swipe_start_end_pos Indicates whether the features related to the swipe start/end position are enabled.
+     * @param swipe_velocity Indicates whether the features related to the swipe velocity are enabled.
+     * @param keystroke Indicates whether the keystroke gesture is enabled.
+     * @param pin_length Indicates length of the PIN code.
+     * @param keystroke_durations Indicates whether the features related to the keystroke durations are enabled.
+     * @param keystroke_intervals Indicates whether the features related to the keystroke intervals are enabled.
+     * @param signature Indicates whether the signature gesture is enabled.
+     * @param signature_start_end_pos Indicates whether the features related to the signature start/end positions are enabled.
+     * @param signature_velocity Indicates whether the features related to the signature velocity are enabled.
+     * @param signature_shape Indicates whether the features related to the signature shape are enabled.
+     * @param signature_shape_segments Indicates the number of segments used to decompose the signature gesture.
+     * @param raw_data Indicates whether the raw data collection is enabled.
+     * @param raw_data_frequency Indicates the frequency (in Hz) used to collect the raw data entries.
+     * @return True if the interaction was successfully added to the DB; False otherwise.
+     */
     public boolean saveFeatureData(
             int models_combinations,
             int acceleration, int angular_velocity, int orientation,
@@ -1447,6 +1830,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return result != -1;
     }
 
+    /**
+     * Gets feature information from the relevant table.
+     *
+     * @return The feature data in the form of an Hashmap with column names as keys.
+     */
     public Map<String, Integer> getFeatureData() {
         SQLiteDatabase db = this.getReadableDatabase();
         String query = "SELECT * FROM " + FEATURE_DATA;
@@ -1483,6 +1871,17 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return featureData;
     }
 
+    /**
+     * Checks whether a given model is currently enabled.
+     * In order to be considered enabled, a given model needs to have at least one active feature.
+     * Note that in this context a model can be represented by:
+     *  The set of features belonging to one of the individual parts of the interactions (Hold/Swipe/Keystroke/Signature).
+     *  A combination of features coming from two or more of the individual interaction parts.
+     *  A Full model containing all the available features.
+     *
+     * @param models List containing the individual models (Hold,Swipe,Keystroke,Signature,Full) that are part of the one currently being analysed.
+     * @return True if the model has at least one feature enabled. False otherwise.
+     */
     public boolean isModelEnabled(List<ModelType> models) {
         for(ModelType model : models) {
             Integer feature_count = 0;
@@ -1517,6 +1916,16 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return true;
     }
 
+    /**
+     * Saves te device resource data collected during training to the relevant table.
+     *
+     * @param cpu_freq Array containing the minimum, maximum and average CPU frequencies for all CPU cores.
+     * @param memory_usage Array containing the minimum, maximum and average memory usage.
+     * @param power_draw Total power draw in microamperes.
+     * @param training_time Training time in seconds.
+     * @param model_type String name of the model the training resource data refers to.
+     * @return True if the interaction was successfully added to the DB; False otherwise.
+     */
     public boolean saveResourceData(String[] cpu_freq, Double[] memory_usage, Double power_draw, Double training_time, String model_type) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
@@ -1535,6 +1944,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return result != -1;
     }
 
+    /**
+     * Saves the response to the SUS questions to the relevant table.
+     *
+     * @param answers Array containing the answer values of the SUS questions.
+     * @return True if the interaction was successfully added to the DB; False otherwise.
+     */
     public boolean saveSUSData(Integer[] answers) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
@@ -1548,6 +1963,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return result != -1;
     }
 
+    /**
+     * Determines whether the current DB contains response data for the SUS questions.
+     *
+     * @return True if response data exists; False otherwise
+     */
     public boolean hasSUSData() {
         SQLiteDatabase db = this.getReadableDatabase();
         String query = "SELECT * FROM " + SUS_DATA;
@@ -1558,7 +1978,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return cursor.getCount()>0;
     }
 
-    public synchronized void saveAsCSV(String tableName, String filePath, ContentResolver resolver, String downloadPath) {
+    /**
+     * Saves the data contained in the specified table as a .csv file.
+     *
+     * @param tableName The name of the table that needs to be saved as .csv.
+     * @param filePath Path defining where the .csv file will be saved.
+     * @param resolver Object providing access to the content model.
+     */
+    public synchronized void saveAsCSV(String tableName, String filePath, ContentResolver resolver) {
 
         FileOutputStream fos;
         SQLiteDatabase db = this.getReadableDatabase();
@@ -1669,6 +2096,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
     }
 
+    /**
+     * Triggers .csv saving procedure for all DB tables.
+     *
+     * @param resolver Object providing access to the content model.
+     * @param downloadPath Path defining where the .csv files will be saved.
+     */
     public void saveAllTablesAsCSV(ContentResolver resolver, String downloadPath){
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd_HH-mm");
         String currentDateTime = dateFormat.format(new Date());
@@ -1690,6 +2123,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         this.saveAsCSV(SUS_DATA, currentDateTime + "_" + "SUSData.csv", resolver, downloadPath);
     }
 
+    /**
+     * Deletes the current DB tables.
+     *
+     * @param GANOnly Defines whether only the GAN-related tables should be deleted.
+     */
     public void resetDB(boolean GANOnly) {
         SQLiteDatabase db = this.getWritableDatabase();
 
