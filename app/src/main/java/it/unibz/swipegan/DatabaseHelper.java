@@ -1601,6 +1601,19 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL("DELETE FROM " + SUS_DATA);
     }
 
+    /**
+     * Saves the train result metrics of the models generated using only the genuine samples to the relevant table.
+     *
+     * @param instances Number of test interactions used to generate the performance metrics.
+     * @param TAR True Acceptance Rate.
+     * @param FRR False Rejection Rate.
+     * @param ER Error rate.
+     * @param avgSampleTime Average duration of the test interactions.
+     * @param trainingTime Time required to build the model.
+     * @param classifierSamples Total interactions used to train the models (synthetic + non-synthetic interactions).
+     * @param trainingModel Model name.
+     * @return True if the interaction was successfully added to the DB; False otherwise.
+     */
     public boolean saveRealResults(double instances, double TAR, double FRR, double ER, double avgSampleTime, double trainingTime, int classifierSamples, List<ModelType> trainingModel) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
@@ -1619,6 +1632,19 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return result != -1;
     }
 
+    /**
+     * Saves the train result metrics of the models generated using the synthetic samples to the relevant table.
+     *
+     * @param instances Number of test interactions used to generate the performance metrics.
+     * @param TAR True Acceptance Rate.
+     * @param FRR False Rejection Rate.
+     * @param avgSampleTime Average duration of the test interactions.
+     * @param trainingTime Time required to build the model.
+     * @param ganTime Time required to build the GAN and generate the synthetic samples.
+     * @param classifierSamples Total interactions used to train the models (synthetic + non-synthetic interactions).
+     * @param trainingModel Model name.
+     * @return True if the interaction was successfully added to the DB; False otherwise.
+     */
     public boolean saveGANResults(double instances, double TAR, double FRR, double ER, double avgSampleTime, double trainingTime, double ganTime, int classifierSamples, List<ModelType> trainingModel) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
@@ -1638,6 +1664,16 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return result != -1;
     }
 
+    /**
+     * Computes the weights assigned to the individual models for use in the ensemble.
+     * Starting from the error rate of the individual models, a success index is computed for all the individual models (index(c) = 1 - (er(c) / (sum_{i=1}^{n} er(i)))
+     * Then, the success index is used to computed the individual weights (weight(c) = index(c) / (sum_{i=1}^{n} index(i)))
+     *
+     * Weight calculation taken from "TSME: Multi-modal and Unobtrusive Behavioural User Authentication for Smartphones" (Buriro et al., 2016)
+     *
+     * @param isGanMode Defines whether the current models have been trained using also synthetic samples.
+     * @return The set of weights in the form of an Hashmap with model types as keys.
+     */
     public Map<ModelType, Double> getModelWeights(boolean isGanMode) {
         SQLiteDatabase db = this.getReadableDatabase();
 
