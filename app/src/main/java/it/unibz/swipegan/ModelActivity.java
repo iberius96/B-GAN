@@ -20,7 +20,26 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * Handles the logic responsible for correctly populating and updating the model profile view and its related fields.
+ *
+ * The model profile view allows to:
+ *  Select the set of models to build during the training procedure (Full model only, Individual models + Full, Individual models + Full + All combinations of individual models).
+ *  Enable / Disable the gathering of raw data and specify the frequency at which the data is collected.
+ *  Enable / Disable the Swipe-related features (Duration, Shape + Nr of segments, Touch size, Velocity).
+ *  Enable / Disable the Hold-related features (Acceleration, Angular velocity, Orientation).
+ *  Enable / Disable the Keystroke gesture, set the PIN length and enable / disable the related features (Press durations, Keystroke intervals).
+ *  Enable / Disable the Signature gesture and its related features (Start / End position, Velocity, Shape + Nr of segments).
+ */
 public class ModelActivity extends AppCompatActivity {
+    /**
+     * Called upon the creation of the Activity, it populates the model profile fields based on the data currently stored in the DB.
+     * Additionally, it sets up the Save button event listener which allows the system to:
+     *  1. Save any changes made to the model profile to the DB.
+     *  2. Send the updated model profile settings to the main activity.
+     *
+     * @param savedInstanceState Reference to the bundle object.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

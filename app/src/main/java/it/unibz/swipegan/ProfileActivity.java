@@ -13,7 +13,23 @@ import androidx.appcompat.app.AppCompatActivity;
 import java.util.ArrayList;
 import java.util.Map;
 
+/**
+ * Handles the logic responsible for correctly populating and updating the user profile view and its related fields.
+ *
+ * The user profile view allows to set the user's:
+ *  Nickname.
+ *  Gender (DWTD, Male, Female).
+ *  Age range (DWTD, 0-20, 21-40, 41-60, 60+).
+ *  Nationality.
+ *  Hand used for holding the device (DWTD, Right, Left, Both).
+ */
 public class ProfileActivity extends AppCompatActivity {
+    /**
+     * Called upon the creation of the Activity, it populates the user profile fields based on the data currently stored in the DB.
+     * Additionally, it sets up the Save button event listener which allows the system to save any changes made to the user profile to the DB.
+     *
+     * @param savedInstanceState Reference to the bundle object.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
