@@ -36,32 +36,32 @@ public class SignatureView extends View {
     private boolean clearCalled = false;
 
     /**
-     * Holds the set of X coordinates making up the signature points.
+     * The set of X coordinates making up the signature points.
      */
     private ArrayList<Float> xLocations = null;
 
     /**
-     * Holds the set of Y coordinates making up the signature points.
+     * The set of Y coordinates making up the signature points.
      */
     private ArrayList<Float> yLocations = null;
 
     /**
-     * Holds the set of X velocities between the points making up the signature points.
+     * The set of X velocities between the points making up the signature points.
      */
     private ArrayList<Float> xVelocityTranslation = null;
 
     /**
-     * Holds the set of Y velocities between the points making up the signature points.
+     * The set of Y velocities between the points making up the signature points.
      */
     private ArrayList<Float> yVelocityTranslation = null;
 
     /**
-     * Holds the set of individual screen area touch sizes.
+     * The set of individual screen area touch sizes.
      */
     private ArrayList<Float> sizes = null;
 
     /**
-     * Stores the main activity object.
+     * The main activity object.
      */
     private MainActivity mainActivity;
 

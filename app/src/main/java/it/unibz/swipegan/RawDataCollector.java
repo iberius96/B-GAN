@@ -19,22 +19,22 @@ import java.util.Arrays;
  */
 public class RawDataCollector implements Runnable {
     /**
-     * Stores the frequency (expressed in Hz) at which the raw data is collected.
+     * The frequency (expressed in Hz) at which the raw data is collected.
      */
     private Integer frequency;
 
     /**
-     * Stores the thread object controlling the execution of the raw data collector.
+     * The thread object controlling the execution of the raw data collector.
      */
     private Thread rawDataCollectorThread;
 
     /**
-     * Stores the main activity object.
+     * The main activity object.
      */
     private MainActivity mainActivity;
 
     /**
-     * Stores the database helper object.
+     * The database helper object.
      */
     private DatabaseHelper dbHelper;
 

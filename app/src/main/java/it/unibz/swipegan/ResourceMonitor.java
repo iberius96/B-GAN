@@ -24,43 +24,43 @@ import java.util.stream.Collectors;
  */
 public class ResourceMonitor implements Runnable {
     /**
-     * Stores the thread object controlling the execution of the resource monitor.
+     * The thread object controlling the execution of the resource monitor.
      */
     private Thread resourceMonitorThread;
 
     /**
-     * Stores the activity manager object used to access the main memory information.
+     * The activity manager object used to access the main memory information.
      */
     private ActivityManager activityManager;
 
     /**
-     * Stores the battery manager object used to access the battery information.
+     * The battery manager object used to access the battery information.
      */
     private BatteryManager batteryManager;
 
     /**
-     * Stores the set of frequency values gathered from the CPU.
+     * The set of frequency values gathered from the CPU.
      * Each entry is a list of integer containing one frequency value per CPU core.
      */
     private ArrayList<Integer[]> freqValues;
 
     /**
-     * Stores the set of memory values (in the form of percentage of currently used memory).
+     * The set of memory values (in the form of percentage of currently used memory).
      */
     private ArrayList<Float> memoryValues;
 
     /**
-     * Stores the set of battery consumption values (in the form of instantaneous battery current in microamperes).
+     * The set of battery consumption values (in the form of instantaneous battery current in microamperes).
      */
     private ArrayList<Long> batteryValues;
 
     /**
-     * Stores the training time (in seconds) of the model for which the resource data is currently being gathered.
+     * The training time (in seconds) of the model for which the resource data is currently being gathered.
      */
     private double trainingTime;
 
     /**
-     * Defines the default value for the number of CPU cores.
+     * The default value for the number of CPU cores.
      */
     private final static int DEFAULT_CORES = 8;
 

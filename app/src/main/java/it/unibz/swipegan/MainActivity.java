@@ -61,70 +61,259 @@ import weka.core.Instance;
 import weka.core.Instances;
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
-    public static final int INVISIBLE = View.INVISIBLE;
+    /**
+     * Swipe gesture star time.
+     */
     private long startTime = 0;
+
+    /**
+     * Indicates whether the application is currently in training mode (i.e. Training interaction are being collected).
+     */
     private boolean isTrainingMode = true;
+
+    /**
+     * Indicates whether the classifier training procedure is currently ongoing.
+     */
     private boolean isTrainingClassifier = false;
+
+    /**
+     * Indicates whether the application is currently gathering a swipe gesture.
+     */
     private boolean isTrackingSwipe = true;
+
+    /**
+     * Indicates whether the application is currently displaying SUS questions.
+     */
     private boolean isTakingSUSQuestions = false;
+
+    /**
+     * Indicates whether existing test interactions from a previous testing phase need to be preserved.
+     */
     private boolean keepTestSwipes;
+
+    /**
+     * Counter for the SUS question nr.
+     */
     private int SUSQuestionNr = 1;
+
+    /**
+     * Identifier for the current holding position (1 = Sitting, 2 = Standing, 3 = Walking).
+     */
     private int holdingPosition = 0;
 
+    /**
+     * Indicates the currently active gesture (one of SWIPE, KEYSTROKE, SIGNATURE)
+     */
     private DatabaseHelper.ModelType currentGesture = DatabaseHelper.ModelType.SWIPE;
 
+    /**
+     * Set of X location values of the swipe gesture.
+     */
     private ArrayList<Float> xLocations = null;
+
+    /**
+     * Set of Y location values of the swipe gesture.
+     */
     private ArrayList<Float> yLocations = null;
+
+    /**
+     * Set of X velocity values of the swipe gesture.
+     */
     private ArrayList<Float> xVelocityTranslation = null;
+
+    /**
+     * Set of Y velocity values of the swipe gesture.
+     */
     private ArrayList<Float> yVelocityTranslation = null;
+
+    /**
+     * Set of touch sizes values of the swipe gesture.
+     */
     private ArrayList<Float> sizes = null;
+
+    /**
+     * Full duration value of the swipe gesture.
+     */
     private int duration = 0;
 
+    /**
+     * Full length value of the swipe gesture.
+     */
     private double length = 0;
 
+    /**
+     * Indicates whether the accelerometer data is currently being collected.
+     */
     private boolean isTrackingAccelerometer = false;
+
+    /**
+     * Set of X values recoded from the accelerometers sensor.
+     */
     private ArrayList<Float> xAccelerometers = null;
+
+    /**
+     * Set of Y values recoded from the accelerometers sensor.
+     */
     private ArrayList<Float> yAccelerometers = null;
+
+    /**
+     * Set of Z values recoded from the accelerometers sensor.
+     */
     private ArrayList<Float> zAccelerometers = null;
 
+    /**
+     * Indicates whether the gyroscope data is currently being collected.
+     */
     private boolean isTrackingGyroscope = false;
+
+    /**
+     * Set of X values recoded from the gyroscope sensor.
+     */
     private ArrayList<Float> xGyroscopes = null;
+
+    /**
+     * Set of Y values recoded from the gyroscope sensor.
+     */
     private ArrayList<Float> yGyroscopes = null;
+
+    /**
+     * Set of Z values recoded from the gyroscope sensor.
+     */
     private ArrayList<Float> zGyroscopes = null;
 
+    /**
+     * Indicates whether the magnetometer data is currently being collected.
+     */
     private boolean isTrackingMagnetometer = false;
+
+    /**
+     * Set of X orientation values.
+     */
     private ArrayList<Float> xOrientations = null;
+
+    /**
+     * Set of Y orientation values.
+     */
     private ArrayList<Float> yOrientations = null;
+
+    /**
+     * Set of Z orientation values.
+     */
     private ArrayList<Float> zOrientations = null;
 
     private float[] mGravity;
     private float[] mGeomagnetic;
 
+    /**
+     * SensorManager object allowing access the device's sensors.
+     */
     private SensorManager sensorManager;
+
+    /**
+     * Sensor object for the accelerometer.
+     */
     private Sensor accelerometer;
+
+    /**
+     * Sensor object for the gyroscope.
+     */
     private Sensor gyroscope;
+
+    /**
+     * Sensor object for the magnetometer.
+     */
     private Sensor magnetometer;
 
+    /**
+     * DatabaseHelper object.
+     */
     private DatabaseHelper dbHelper;
 
+    /**
+     * Set of generated classifiers.
+     */
     private CustomOneClassClassifier oneClassClassifiers[];
+
+    /**
+     * Set of identifiers for the active models.
+     */
     private List<List<DatabaseHelper.ModelType>> trainingModels;
+
+    /**
+     * GAN object.
+     */
     private GAN gan;
 
+    /**
+     * GAN button.
+     */
     private Button ganButton;
+
+    /**
+     * Train button.
+     */
     private Button trainButton;
+
+    /**
+     * Save button.
+     */
     private Button saveButton;
+
+    /**
+     * Reset button.
+     */
     private Button resetButton;
+
+    /**
+     * Profile button.
+     */
     private Button profileButton;
+
+    /**
+     * Text view for the interactions input.
+     */
     private TextView inputTextView;
+
+    /**
+     * Text view for the training progress.
+     */
     private TextView progressTextView;
+
+    /**
+     * Circular training progress bar.
+     */
     private ProgressBar progressBar;
+
+    /**
+     * Swipe gesture image view.
+     */
     private ImageView swipeImageView;
+
+    /**
+     * Testing attack switch.
+     */
     private Switch attackSwitch;
+
+    /**
+     * Radio button for the sitting position.
+     */
     private RadioButton sittingRadioButton;
+
+    /**
+     * Radio button for the standing position.
+     */
     private RadioButton standingRadioButton;
+
+    /**
+     * Radio button for the walking position.
+     */
     private RadioButton walkingRadioButton;
+
+    /**
+     * Radio button group for the body position.
+     */
     private RadioGroup holdingPositionRadioGroup;
+
     private Button keystrokeButton0;
     private Button keystrokeButton1;
     private Button keystrokeButton2;
@@ -135,12 +324,35 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private Button keystrokeButton7;
     private Button keystrokeButton8;
     private Button keystrokeButton9;
+
+    /**
+     * Next button to confirm the signature gesture.
+     */
     private Button nextButton;
+
+    /**
+     * Clear button to delete the signature gesture.
+     */
     private Button clearButton;
+
+    /**
+     * SignatureView object.
+     */
     private SignatureView signatureView;
 
+    /**
+     * Counter for the keystroke digits.
+     */
     private int keystrokeCount = 0;
+
+    /**
+     * Keystroke gesture start time.
+     */
     private long keystrokeStartTime = 0;
+
+    /**
+     * Keystroke gesture end time.
+     */
     private long keystrokeEndTime = 0;
 
     private double lastKeystrokeX = 0.0;
@@ -176,6 +388,14 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     RawDataCollector rawDataCollector;
     Map<DatabaseHelper.ModelType, Double> weightData = null;
 
+    /**
+     * Called upon the creation of the Activity, it sets up the basic UI elements (together, if necessary, with their event listeners).
+     * Additionally, it initialises the DB Helper, raw data collector and GAN objects.
+     * Finally, it initializes the lists that will hold the collected data (X / Y location and velocity and X / Y / Z acceleration, angular velocity and orientations) together with the sensors
+     * objects (and corresponding listeners) that will allow for their collection
+     *
+     * @param savedInstanceState Reference to the bundle object.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -294,11 +514,25 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         new Thread(() -> this.gan = new GAN(segments, pinLength, signatureSegments)).start();
     }
 
+    /**
+     * Called when the accuracy of the registered sensor has changed.
+     * Mandatory implementation of empty method required due to main activity class implementing the SensorEventListener.
+     *
+     * @param sensor The sensor.
+     * @param accuracy The new accuracy of this sensor.
+     */
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
 
     }
 
+    /**
+     * Called when there is a new sensor event.
+     * Adds the current values for acceleration (Sensor.TYPE_ACCELEROMETER), angular velocity (Sensor.TYPE_GYROSCOPE) and orientation (Sensor.TYPE_ACCELEROMETER + Sensor.TYPE_MAGNETIC_FIELD).
+     * If enabled in the model profile, starts the raw data collector if one is not already running and the training phase is currently undergoing.
+     *
+     * @param event The sensor event.
+     */
     @Override
     public void onSensorChanged(SensorEvent event) {
         if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER && this.isTrackingAccelerometer) {
@@ -349,18 +583,36 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         return output;
     }
 
+    /**
+     * Sets the boolean variables controlling device sensors tracking (Accelerometer / Gyroscope / Magnetometer).
+     *
+     * @param tracking The boolean value to set the tracking variables to.
+     */
     public void setSensorsTracking(boolean tracking) {
         this.isTrackingAccelerometer = tracking;
         this.isTrackingGyroscope = tracking;
         this.isTrackingMagnetometer = tracking;
     }
 
+    /**
+     * Checks whether the device is currently tracking data from its sensors.
+     *
+     * @return True if the device is tracking data from all sensors (Accelerometer / Gyroscope / Magnetometer); False otherwise.
+     */
     public boolean isTrackingSensors() {
         return  this.isTrackingAccelerometer == true &&
                 this.isTrackingGyroscope == true &&
                 this.isTrackingMagnetometer == true;
     }
 
+    /**
+     * Handles touch screen motion events.
+     * When necessary, triggers the logic handling the processing of a given swipe gesture.
+     * Immediately returns (with a call to the superclass) if the training procedure is currently undergoing.
+     *
+     * @param event The motion event.
+     * @return True if the event was handled, false otherwise.
+     */
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         if (this.isTrainingClassifier) {
@@ -374,6 +626,16 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         return super.onTouchEvent(event);
     }
 
+    /**
+     * Handles the data collection process (swipe length, duration, touch sizes, locations, velocities) of all swipe gestures.
+     * With the start of the swipe gesture (MotionEvent.ACTION_DOWN), it resets the length and start time variables and enables sensors tracking.
+     * On each subsequent call of onSensorChanged() during the swipe (MotionEvent.ACTION_MOVE), it computes and updates the X / Y velocity and length values.
+     * Once the gesture is completed (MotionEvent.ACTION_UP), it finalizes the swipe duration and start / end position distance and executes the logic required to either:
+     *  Adding the (train or test) swipe to the DB (if no other gestures are enabled).
+     *  Triggering the logic required to switch to the subsequent gesture (Keystroke or Signature).
+     *
+     * @param event The motion event passed by the onTouchEvent() method.
+     */
     private void handleSwipeEvent(MotionEvent event) {
         int index = event.getActionIndex();
         int action = event.getActionMasked();
@@ -486,6 +748,17 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         }
     }
 
+    /**
+     * Retrieves the most recent available data related to a single raw data sample.
+     * In this context, the method reads the latest data for:
+     *  X / Y / Z values of Accelerometer / Gyroscope / Orientation.
+     *  Screen touch size.
+     *  X / Y touch coordinates values.
+     *  X / Y velocity values.
+     *  An ID value for the currently active gesture (0 = Swipe, 1 = Keystroke, 2 = Signature).
+     *
+     * @return The values of a single raw data entry in the form of an Hashmap with columns string names as keys.
+     */
     public Map<String, Double> getRawData() {
         Map<String, Double> rawData = new HashMap<String, Double>();
 
@@ -523,6 +796,19 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         return rawData;
     }
 
+    /**
+     * Generates the authentication results (and processing times) associated with executing the given test interaction against all active models.
+     * Model predictions for the given interaction are generated by calling the .getPredictionFrom() method.
+     * A correct classification will receive an authentication value of 1 (as opposed to a value of 0 for a misclassification).
+     * The method also handles the logic related to obtaining a classification result from the weighted ensemble model.
+     * In this context, all individual models (Hold, Swipe, Keystroke, Signature) are queried against the given interaction.
+     * The final classification is obtained by weighting the results obtained from the individual models.
+     * (Details of the weight calculation are provided in DatabaseHelper.getModelWeights())
+     * Additionally, the method visually outputs a result message (ACCEPTED / REJECTED) which represents the classification results of the weighted ensemble (or the full model if the WE is not an active model).
+     * Finally, the method adds the test record and associated authentication results to the DB.
+     *
+     * @param swipe The interaction to be tested against all active models.
+     */
     private void processTestRecord(Swipe swipe) {
         String outputMessage = "";
         outputMessage += String.format("%1$-15s %2$-16s %3$-18s", getString(R.string.inputs), getString(R.string.prediction), getString(R.string.test_time));
@@ -610,6 +896,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         this.attackSwitch.setEnabled(true); // Re-enable attack toggle
     }
 
+    /**
+     * Empties the DB tables containing test data and re-processes all the currently stored test interactions.
+     * Called when test interactions are kept from a previous testing session and need to be re-evaluate against a different set of models.
+     *
+     * @param testSwipes The set of test interactions.
+     */
     private void reProcessTestRecords(ArrayList<Swipe> testSwipes) {
         this.dbHelper.deleteTestingData();
 
@@ -618,6 +910,15 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         }
     }
 
+    /**
+     * Gets the classification result of a given interaction against the specified model.
+     * Predictions are obtained by calling the OneClassClassifier.classifyInstance() method and passing the weka.core.Instance object generated from the given interaction.
+     * Note that .classifyInstances() returns the index of the most likely class identified (NaN if neither of the available classes were identified).
+     *
+     * @param swipe The interaction that will be tested against the model.
+     * @param modelType The identifier of the model that needs to perform the classification.
+     * @return Classification results for the given interaction. Interactions classified as genuine return a prediction value of 0.
+     */
     private double getPredictionFrom(Swipe swipe, List<DatabaseHelper.ModelType> modelType) {
         Instance instance = swipe.getAsWekaInstance(this.getWekaDataset(modelType), false, dbHelper, modelType);
         instance.setDataset(this.getWekaDataset(modelType));
@@ -625,7 +926,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         double prediction = 0.0;
 
         try {
-            // classifyInstances returns the index of the most likely class identified (NaN if neither class was identified)
             prediction = this.oneClassClassifiers[this.trainingModels.indexOf(modelType)].classifyInstance(instance);
             System.out.println(getString(R.string.prediction) + ": " + prediction);
         } catch (Exception e) {
@@ -634,6 +934,14 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         return prediction;
     }
 
+    /**
+     * Stops the raw data collector, the device sensors tracking and empties the locally stored interactions values.
+     * This includes:
+     *  X / Y / Z values of Accelerometer / Gyroscope / Orientation.
+     *  Screen touch size.
+     *  X / Y touch coordinates values.
+     *  X / Y velocity values.
+     */
     private void resetSwipeValues() {
         if(rawDataCollector.isRunning()) {
             rawDataCollector.stop();
@@ -663,6 +971,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         this.setSensorsTracking(false);
     }
 
+    /**
+     * Gathers all data related to the provided interactions and generates the corresponding Swipe object.
+     *
+     * @return The newly generated Swipe object representing the current interaction.
+     */
     public Swipe getSwipe() {
         double duration = this.duration;
 
@@ -744,6 +1057,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         return newSwipe;
     }
 
+    /**
+     * Retrieves and set the Hold related features for a new Swipe object that is currently being generated.
+     * These features include Min / Max / Avg / Var / Std X / Y / Z values for Accelerometer / Gyroscope / Orientation
+     *
+     * @param swipe The swipe object that is currently being created.
+     */
     public void setHoldFeatures(Swipe swipe) {
         DoubleSummaryStatistics xAccelerometerStats = this.xAccelerometers.stream().mapToDouble(x -> (double) x).summaryStatistics();
         double minXAccelerometer = xAccelerometerStats.getMin();
@@ -863,9 +1182,20 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         swipe.setVarZOrientation(varZOrientation);
     }
 
+    /**
+     * Computes the set of segment sizes (provided in percentage values between 0-1 over the full gesture length) starting from the provided locations.
+     *
+     * Firstly, it checks whether the specified number of segments can be generated given the available set of gesture locations.
+     * (Note: If that is not the case, the maximum number of segments will be generated instead. This means that for a gesture with X locations, X-1 segments will be generated).
+     * Then, the interval size of an individual segment is computed ((nr. of locations - 1) / nr of segments).
+     * This interval size is computed in relation to the total nr of provided locations and will instruct the system on how to select the anchor points that will define the start / end of a given segment.
+     * These anchor locations are then used to compute the size of each segment with regards to the total size of the gesture (for the provided dimension).
+     *
+     * @param locations The full set of (X or Y) locations of points belonging to a Swipe or Signature gesture.
+     * @param segments The number of segments to divide the gesture into.
+     * @return The set of segment sizes provided in percentage values (between 0-1) over the full size of the gesture for the given dimension.
+     */
     public double[] getSegmentsOffset(ArrayList<Float> locations, Integer segments) {
-        // To generate x segments, a minimum of x+1 locations are required
-        // If the selected nr of segments exceeds the available locations, the maximum nr of segments for the current swipe is used instead
         Integer collectable_segments = segments + 1 > locations.size() ? locations.size() - 1 : segments;
 
         float interval_size = (float) (locations.size() - 1) / collectable_segments;
@@ -887,6 +1217,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         return ret;
     }
 
+    /**
+     * Disables Train / GAN / Profile / Reset DB buttons
+     */
     public void disableUserInteraction() {
         this.trainButton.setEnabled(false);
         this.ganButton.setEnabled(false);
@@ -894,6 +1227,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         this.resetButton.setEnabled(false);
     }
 
+    /**
+     * Enables Train / GAN / Profile / Reset DB buttons
+     */
     public void enableUserInteraction() {
         this.trainButton.setEnabled(true);
         this.ganButton.setEnabled(true);
@@ -901,6 +1237,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         this.resetButton.setEnabled(true);
     }
 
+    /**
+     * Builds the edit profile alert dialog.
+     *
+     * @param view The view that was clicked.
+     */
     public void editProfile(View view) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setMessage(getString(R.string.choose_profile_edit)).setTitle(getString(R.string.choose_profile));
@@ -924,11 +1265,33 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         dialog.show();
     }
 
+    /**
+     * Triggers the process allowing the application to switch to either the User (class ProfileActivity) or Model (class ModelActivity) profile screen.
+     *
+     * @param targetActivity The activity (either ProfileActivity or ModelActivity) to switch to.
+     */
     private void switchActivities(Class targetActivity) {
         Intent switchActivityIntent = new Intent(this, targetActivity);
         startActivityForResult(switchActivityIntent, targetActivity == ModelActivity.class ? 0 : 1); // TODO: Refactor request code
     }
 
+    /**
+     * Collects data upon closure of the User (class ProfileActivity) or Model (class ModelActivity) profile screen.
+     * The method is called when a launched activity exits, giving the requestCode with which it was started, the resultCode it returned, and any additional data from it.
+     * When the Model activity is closed with result code Activity.RESULT_OK, the system extracts from the intent data the current and initial selections for all contained settings.
+     * Additionally, the DB is reset if:
+     *  The keystroke gesture or signature gesture are enabled / disabled.
+     *  The value for the collection frequency of the raw data, the number of swipe segments, the pin length or the number of signature segments is changed.
+     * This is done because changes to this settings might create a mismatch with data already present in the DB.
+     * Here is important to note that disabling only certain features from a given model (apart from the ones mentioned above) won't cause a DB reset.
+     * This is due to the fact that the data related to a disabled feature is still collected from the interaction but not used during training.
+     *
+     * When the User profile activity is closed with result code Activity.RESULT_OK, a DB reset is triggered.
+     *
+     * @param requestCode The integer request code originally supplied to startActivityForResult() (0 for ModelActivity and 1 for ProfileActivity).
+     * @param resultCode The integer result code returned by the child activity through its setResult().
+     * @param data An Intent, which can return result data to the caller (various data can be attached to Intent "extras").
+     */
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -1001,6 +1364,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         }
     }
 
+    /**
+     * Sets the visibility of the Numpad UI elements.
+     *
+     * @param visibility The visibility of the Numpad UI elements, one of VISIBLE, INVISIBLE or GONE.
+     */
     private void setNumpadVisibility(Integer visibility) {
         this.setAccessoryUI(visibility);
 
@@ -1025,6 +1393,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         }
     }
 
+    /**
+     * Sets the OnTouchListener for the Numpad buttons.
+     */
     private void setKeystrokeButtonsEventListener() {
         for(int i = 0; i < NUMPAD_SIZE; i++) {
             try {
@@ -1038,14 +1409,45 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         }
     }
 
+    /**
+     * The OnTouchListener used for the Numpad buttons.
+     */
     class KeystrokeOnTouchListener implements View.OnTouchListener {
+        /**
+         * Stores the main activity object.
+         */
         private MainActivity mainActivity;
 
+        /**
+         * Constructor of the OnTouchListener.
+         * Initializes the local main activity object.
+         *
+         * @param mainActivity The instance of the main activity object.
+         */
         public KeystrokeOnTouchListener(MainActivity mainActivity) {
             super();
             this.mainActivity = mainActivity;
         }
 
+        /**
+         * Called when a touch event is dispatched to a view. This allows listeners to get a chance to respond before the target view.
+         * When a Numpad button is pressed (MotionEvent.ACTION_DOWN):
+         *  Enables the device sensor tracking if the current digit is the first one of the keystroke gesture.
+         *  Records the keystroke digit start time.
+         *  Saves the intervals from the current start time to the previous start and end times if the current digit is not the first one of the keystroke gesture.
+         *  Saves the touch X / Y position and touch size.
+         * When a Numpad button is released (MotionEvent.ACTION_UP):
+         *  Records the keystroke digit end time.
+         *  Saves the intervals from the current end time to the previous end time if the current digit is not the first one of the keystroke gesture.
+         *  Computes and saves the total duration of the current keystroke digit.
+         *  Increases the keystroke digit count.
+         * Additionally, when a Numpad button is released and the last keystroke digit has been reached, the full duration of the keystroke gesture is computed and saved.
+         * At this point, the logic for switching to the Signature gesture or to save / process the train / test record is triggered (if the Signature gesture is currently disabled).
+         *
+         * @param v The view the touch event has been dispatched to.
+         * @param event The MotionEvent object containing full information about the event.
+         * @return True if the listener has consumed the event, false otherwise.
+         */
         @Override
         public boolean onTouch(View v, MotionEvent event) {
             int index = event.getActionIndex();
@@ -1117,12 +1519,20 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         }
     }
 
+    /**
+     * Resets the keystroke digit count, start and end times.
+     */
     private void resetKeystrokeValues() {
         this.keystrokeCount = 0;
         this.keystrokeStartTime = 0;
         this.keystrokeEndTime = 0;
     }
 
+    /**
+     * Sets the visibility of the signature UI elements.
+     *
+     * @param visibility The visibility of the Signature UI elements, one of VISIBLE, INVISIBLE or GONE.
+     */
     private void setSignatureVisibility(Integer visibility) {
         this.setAccessoryUI(visibility);
 
@@ -1131,6 +1541,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         this.clearButton.setVisibility(visibility);
     }
 
+    /**
+     * It ends the signature gesture or triggers the next SUS question.
+     * If the signature gesture is currently being recorder, the method finalizes the recorded signature data, clears the drawn signature and disables the signature view.
+     * On the other end, if the SUS question are currently being answered, the method saves the current answer and moves to the next question.
+     * @param view The view that was clicked.
+     */
     public synchronized void nextInput(View view) {
         if(this.isTakingSUSQuestions) {
             if(SUSQuestionRadioGroup.getCheckedRadioButtonId() != -1) {
@@ -1189,7 +1605,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 this.resetSwipeValues();
                 this.isTrackingSwipe = true;
                 this.currentGesture = DatabaseHelper.ModelType.SWIPE;
-                this.setSignatureVisibility(INVISIBLE);
+                this.setSignatureVisibility(View.INVISIBLE);
 
                 if(this.isTrainingMode) {
                     this.dbHelper.addTrainRecord(this.pendingSwipe);
@@ -1199,9 +1615,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 }
             }
         }
-
     }
 
+    /**
+     * Gets the SUS answer by checking which radio button is currently selected.
+     */
     private void getSUSAnswer() {
         int selected = 0;
         switch (SUSQuestionRadioGroup.getCheckedRadioButtonId()) {
@@ -1225,10 +1643,23 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         this.SUSAnswers[this.SUSQuestionNr - 1] = selected;
     }
 
+    /**
+     * Triggers the deletion of the currently drawn signature.
+     * @param view The view that was clicked.
+     */
     public synchronized void clearSignature(View view) {
         this.signatureView.clearPath();
     }
 
+    /**
+     * Toggles visibility of some 'accessory' UI elements, namely:
+     *  The profile, reset, train and GAN buttons.
+     *  The interactions input text.
+     *  The swipe image.
+     *  The sitting / standing / walking radio buttons.
+     *
+     * @param visibility The visibility of the accessory UI elements, one of VISIBLE, INVISIBLE or GONE.
+     */
     public void setAccessoryUI(Integer visibility) {
         this.profileButton.setEnabled(visibility == View.INVISIBLE);
         this.resetButton.setEnabled(visibility == View.INVISIBLE);
@@ -1242,6 +1673,14 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         this.walkingRadioButton.setEnabled(visibility == View.INVISIBLE);
     }
 
+    /**
+     * If called during training, it triggers a reset of all DB data.
+     * If called during testing:
+     *  It saves the SUS data and switches back to training mode if the SUS have been taken.
+     *  It shows the alert dialog asking to take the SUS questions if they are yet to be taken.
+     *
+     * @param view The view that was clicked.
+     */
     public void resetData(View view) {
         if(this.isTrainingMode) {
             this.dbHelper.resetDB(false);
@@ -1283,6 +1722,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         }
     }
 
+    /**
+     * Toggles visibility of SUS questions UI elements.
+     *
+     * @param visibility The visibility of the SUS questions UI elements, one of VISIBLE, INVISIBLE or GONE.
+     */
     private void toggleSUSQuestionsView(int visibility) {
         this.isTrackingSwipe = (visibility != View.VISIBLE);
         this.isTakingSUSQuestions = (visibility == View.VISIBLE);
@@ -1300,6 +1744,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         this.nextButton.setVisibility(visibility);
     }
 
+    /**
+     *
+     * @param testSwipes
+     */
     private void switchToTrainingView(ArrayList<Swipe> testSwipes) {
         // If test results were kept from previous training iterations, recompute all test interactions against the model
         if(this.keepTestSwipes) {
@@ -1634,8 +2082,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         }
     }
 
+    /**
+     * Triggers the creation of the set of .csv files from the DB data.
+     * @param view The view that was clicked.
+     */
     public synchronized void saveData(View view) {
-
         try {
             dbHelper.saveAllTablesAsCSV(getContentResolver());
             //this.showAlertDialog("SUCCESS", "CSV files have been saved into the file manager");
@@ -1647,6 +2098,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     }
 
+    /**
+     * Builds and shows an alert dialog with the provided title and message.
+     *
+     * @param title The alert dialog title.
+     * @param message The alert dialog message.
+     */
     public void showAlertDialog(String title, String message) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setCancelable(true);
@@ -1656,6 +2113,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         builder.show();
     }
 
+    /**
+     * Builds and shows a snack bar with the provided message and color.
+     *
+     * @param message The snack bar message.
+     * @param hexColor The hex code of the snack bar color.
+     */
     public void showSnackBar(String message, String hexColor) {
         View parentLayout = findViewById(android.R.id.content);
         Snackbar snackbar = Snackbar.make(parentLayout, message, Snackbar.LENGTH_LONG);
