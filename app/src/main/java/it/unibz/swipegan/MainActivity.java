@@ -355,37 +355,110 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
      */
     private long keystrokeEndTime = 0;
 
+    /**
+     * X coordinate recorded for the most recent digit in the keystroke gesture.
+     */
     private double lastKeystrokeX = 0.0;
+
+    /**
+     * Y coordinate recorded for the most recent digit in the keystroke gesture.
+     */
     private double lastKeystrokeY = 0.0;
+
+    /**
+     * Touch size value recorded for the most recent digit in the keystroke gesture.
+     */
     private double lastKeystrokeSize = 0.0;
 
+    /**
+     * The current interaction that is yet to be completed and processed as a train or test record.
+     */
     private Swipe pendingSwipe = null;
 
+    /**
+     * Default nr of buttons that are part of the Numpad.
+     */
     private static final Integer NUMPAD_SIZE = 10;
 
+    /**
+     * Radio group of the SUS questions.
+     */
     private RadioGroup SUSQuestionRadioGroup;
+
     private RadioButton SUSQuestionRadioButton1;
     private RadioButton SUSQuestionRadioButton2;
     private RadioButton SUSQuestionRadioButton3;
     private RadioButton SUSQuestionRadioButton4;
     private RadioButton SUSQuestionRadioButton5;
+
+    /**
+     * Text view used to display the current SUS question.
+     */
     private TextView SUSQuestionTextView;
+
+    /**
+     * Disagree text for the SUS question.
+     */
     private TextView SUSQuestionDisagreeTextView;
+
+    /**
+     * Agree text for the SUS question.
+     */
     private TextView SUSQuestionAgreeTextView;
 
+    /**
+     * Set of answers to the SUS questions
+     */
     private Integer[] SUSAnswers = new Integer[DatabaseHelper.DEFAULT_SUS_QUESTIONS];
 
-    // Classifier options
+    /**
+     * Default data generator for numeric attributes.
+     */
     String m_DefaultNumericGenerator = "weka.classifiers.meta.generators.GaussianGenerator -S 1 -M 0.0 -SD 1.0"; //-num
+
+    /**
+     * Default data generator for nominal attributes.
+     */
     String m_DefaultNominalGenerator = "weka.classifiers.meta.generators.NominalGenerator -S 1"; //-nom
+
+    /**
+     * Rejection rate of valid target objects (used to set the threshold).
+     */
     String m_TargetRejectionRate = "0.001"; //-trr
+
+    /**
+     * Value of the class attribute to consider the target class.
+     */
     String m_TargetClassLabel = "1"; //-tcl
+
+    /**
+     * Number of times to repeat cross validation during learning.
+     */
     String m_NumRepeats = "10"; //-cvr
+
+    /**
+     * Percentage of heldout data.
+     */
     String m_PercentHeldout = "10.0"; //-cvf
+
+    /**
+     * Proportion of the data that will be generated.
+     */
     String m_ProportionGenerated = "0.5"; //-P
+
+    /**
+     * Model seed.
+     */
     String m_Seed = "1"; //-S
 
+    /**
+     * The raw data collector.
+     */
     RawDataCollector rawDataCollector;
+
+    /**
+     * The set of model weights used in the ensemble.
+     */
     Map<DatabaseHelper.ModelType, Double> weightData = null;
 
     /**
@@ -1745,11 +1818,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     /**
+     * Transitions the application (UI elements) back to the training view once the testing phase (or SUS data collection phase) has been concluded.
+     * Upon transitioning, the method also prepares a summary alert dialog related to the testing phase results.
+     * Additionally, if test interaction from a previous testing phase were kept, the method re-processes the old interactions against the new models before computing the results.
      *
-     * @param testSwipes
+     * @param testSwipes The set of all test interactions.
      */
     private void switchToTrainingView(ArrayList<Swipe> testSwipes) {
-        // If test results were kept from previous training iterations, recompute all test interactions against the model
         if(this.keepTestSwipes) {
             this.reProcessTestRecords(testSwipes);
         }
@@ -1819,6 +1894,17 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         this.resetButton.setText(getString(R.string.reset_db));
     }
 
+    /**
+     * Computes the set of test metrics from the passed testing interactions against the passed model.
+     *
+     * @param testSwipes The set of test interactions from which to compute the test metrics.
+     * @param curUserAuthentication The set of authentication results obtained by executing the genuine test interactions against the passed model.
+     * @param curUserAuthenticationTime The set of authentication times required to execute the genuine test interactions against the passed model.
+     * @param curAttackerAuthentication The set of authentication results obtained by executing the non-genuine test interactions against the passed model.
+     * @param curAttackerAuthenticationTime The set of authentication times required to execute the non-genuine test interactions against the passed model.
+     * @param model The name of the model to which the interactions are tested against.
+     * @return String value containing a summary of the test results (Nr of testing instances, TAR, FRR, TRR, FAR, Avg duration of a single interaction, Avg testing time for a single interaction, Nr of training instances).
+     */
     private String computeTestMetrics(
             ArrayList<Swipe> testSwipes,
             double[] curUserAuthentication, DoubleStream curUserAuthenticationTime,
@@ -1854,6 +1940,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         return strSummary;
     }
 
+    /**
+     * Triggers the logic related to the non-GAN training procedure.
+     * Additionally, it disables the interactivity of the UI elements.
+     *
+     * @param view The view that was clicked.
+     */
     public void train(View view) {
         dbHelper.resetDB(true);
 
@@ -1862,9 +1954,14 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         this.progressTextView.setText(getString(R.string.training_classifier));
         this.train(false);
-
     }
 
+    /**
+     * Triggers the logic related to the GAN training procedure.
+     * Additionally, it disables the interactivity of the UI elements.
+     *
+     * @param view The view that was clicked.
+     */
     public void trainWithGAN(View view) {
         this.isTrainingClassifier = true;
         this.disableUserInteraction();
@@ -1873,6 +1970,14 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         this.train(true);
     }
 
+    /**
+     * Triggers the training procedure for the individual active models.
+     * Additionally, it handles the execution of the resource monitor for each training procedure and computes the individual training times.
+     * If some test interactions already exist in the DB, the method also builds and prompts an alert message asking if they need to be kept.
+     * Finally, it prepares the UI elements related to the model training view.
+     *
+     * @param isGanMode Signals whether a GAN training has been called. If True, the method also triggers the generation of the synthetic samples.
+     */
     public void train(boolean isGanMode) {
 
         if (this.dbHelper.getRecordsCount(DatabaseHelper.REAL_SWIPES) < 5) {
@@ -1994,6 +2099,19 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         }
     }
 
+    /**
+     * Handles the actual training steps of an individual model.
+     * Firstly, it triggers the generation of the weka.core.Instances object and fills it with the instances of the given training interactions.
+     * Then, it initializes the weka.classifiers.meta.OneClassClassifier object with the defined hyperparameters and builds the classifier using the training instances.
+     * At the same time, the method handles the execution of the raw data collector and the calculation of the training time value.
+     * Once the one class classifier has been built, the training results (Error Rate, TAR, FRR) values are also collected.
+     * The training results are computed by calling the weka.classifiers.Evaluation.crossValidateModel() method that: "Performs a (stratified if class is nominal) cross-validation for a classifier on a set of instances".
+     *
+     * @param trainSwipes The set of train interactions.
+     * @param hasGan Signals whether a GAN training has been called.
+     * @param ganTime The time required to generate the synthetic samples.
+     * @param trainingModel Identifier of the model to train.
+     */
     public void trainClassifierWith(ArrayList<Swipe> trainSwipes, boolean hasGan, double ganTime, List<DatabaseHelper.ModelType> trainingModel) {
         Instances dataSet = this.getWekaDataset(trainingModel);
 
@@ -2129,6 +2247,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         snackbar.show();
     }
 
+    /**
+     * Generates the weka.core.Instances object that will hold the training samples for the model.
+     * The attributes of the Instances object are added dynamically depending on the model at hand and on the active settings in the model profile.
+     *
+     * @param trainingModel The identifier of the model that will be trained using the generated Instances object.
+     * @return The weka.core.Instances object representing the set of training interactions.
+     */
     public Instances getWekaDataset(List<DatabaseHelper.ModelType> trainingModel) {
         Map<String, Integer> featureData = dbHelper.getFeatureData();
         boolean useAcceleration = featureData.get(DatabaseHelper.COL_ACCELERATION) == 1;
