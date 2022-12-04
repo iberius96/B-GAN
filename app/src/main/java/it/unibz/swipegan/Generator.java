@@ -10,9 +10,10 @@ import java.util.Spliterators;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-/*
-  Combinatorics Library 3
-  Copyright 2009-2016 Dmytro Paukov d.paukov@gmail.com
+/**
+ *   Code from Combinatorics Library 3.
+ *   See: https://github.com/dpaukov/combinatoricslib3
+ *   Copyright 2009-2016 Dmytro Paukov d.paukov@gmail.com
  */
 public class Generator {
 
@@ -29,6 +30,11 @@ public class Generator {
     }
 }
 
+/**
+ *   Code from Combinatorics Library 3.
+ *   See: https://github.com/dpaukov/combinatoricslib3
+ *   Copyright 2009-2016 Dmytro Paukov d.paukov@gmail.com
+ */
 class SubSetGenerator<T> {
 
     final Collection<T> originalVector;
@@ -42,6 +48,11 @@ class SubSetGenerator<T> {
     }
 }
 
+/**
+ *   Code from Combinatorics Library 3.
+ *   See: https://github.com/dpaukov/combinatoricslib3
+ *   Copyright 2009-2016 Dmytro Paukov d.paukov@gmail.com
+ */
 class SimpleSubSetGenerator<T> implements IGenerator<List<T>> {
 
     final List<T> originalVector;
@@ -56,6 +67,11 @@ class SimpleSubSetGenerator<T> implements IGenerator<List<T>> {
     }
 }
 
+/**
+ *   Code from Combinatorics Library 3.
+ *   See: https://github.com/dpaukov/combinatoricslib3
+ *   Copyright 2009-2016 Dmytro Paukov d.paukov@gmail.com
+ */
 class SimpleSubSetIterator<T> implements Iterator<List<T>> {
 
     private final SimpleSubSetGenerator<T> generator;
@@ -135,6 +151,11 @@ class SimpleSubSetIterator<T> implements Iterator<List<T>> {
     }
 }
 
+/**
+ *   Code from Combinatorics Library 3.
+ *   See: https://github.com/dpaukov/combinatoricslib3
+ *   Copyright 2009-2016 Dmytro Paukov d.paukov@gmail.com
+ */
 class CombinationGenerator<T> {
     final Collection<T> originalVector;
 
@@ -147,6 +168,11 @@ class CombinationGenerator<T> {
     }
 }
 
+/**
+ *   Code from Combinatorics Library 3.
+ *   See: https://github.com/dpaukov/combinatoricslib3
+ *   Copyright 2009-2016 Dmytro Paukov d.paukov@gmail.com
+ */
 class SimpleCombinationGenerator<T> implements IGenerator<List<T>> {
 
     final List<T> originalVector;
@@ -173,6 +199,11 @@ class SimpleCombinationGenerator<T> implements IGenerator<List<T>> {
     }
 }
 
+/**
+ *   Code from Combinatorics Library 3.
+ *   See: https://github.com/dpaukov/combinatoricslib3
+ *   Copyright 2009-2016 Dmytro Paukov d.paukov@gmail.com
+ */
 class SimpleCombinationIterator<T> implements Iterator<List<T>> {
 
     private final SimpleCombinationGenerator<T> generator;
@@ -255,6 +286,11 @@ class SimpleCombinationIterator<T> implements Iterator<List<T>> {
     }
 }
 
+/**
+ *   Code from Combinatorics Library 3.
+ *   See: https://github.com/dpaukov/combinatoricslib3
+ *   Copyright 2009-2016 Dmytro Paukov d.paukov@gmail.com
+ */
 interface IGenerator<T> extends Iterable<T> {
     default Stream<T> stream() {
         return StreamSupport.stream(Spliterators.spliteratorUnknownSize(iterator(), 0), false);

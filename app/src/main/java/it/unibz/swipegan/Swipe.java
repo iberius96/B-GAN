@@ -17,661 +17,1586 @@ import weka.core.Instance;
 import weka.core.Instances;
 
 public class Swipe {
+    
+    /**
+     * Swipe duration (in seconds).
+     */
     private double duration;
+    
+    /**
+     * Swipe length.
+     */
     private double length;
+    
+    /**
+     * Swipe X segments.
+     */
     private double[] segmentsX;
+    
+    /**
+     * Swipe Y segments.
+     */
     private double[] segmentsY;
+    
+    /**
+     * Minimum Swipe touch size.
+     */
     private double minSize;
+    
+    /**
+     * Maximum Swipe touch size.
+     */
     private double maxSize;
+    
+    /**
+     * Average Swipe touch size.
+     */
     private double avgSize;
+    
+    /**
+     * Initial Swipe touch size.
+     */
     private double downSize;
+    
+    /**
+     * Final Swipe touch size.
+     */
     private double upSize;
+    
+    /**
+     * Swipe start X coordinate.
+     */
     private double startX;
+    
+    /**
+     * Swipe start Y coordinate.
+     */
     private double startY;
+    
+    /**
+     * Swipe end X coordinate.
+     */
     private double endX;
+    
+    /**
+     * Swipe end Y coordinate.
+     */
     private double endY;
+    
+    /**
+     * Minimum Swipe X velocity.
+     */
     private double minXVelocity;
+    
+    /**
+     * Maximum Swipe X velocity.
+     */
     private double maxXVelocity;
+    
+    /**
+     * Average Swipe X velocity.
+     */
     private double avgXVelocity;
+    
+    /**
+     * Variance Swipe X velocity.
+     */
     private double varXVelocity;
+    
+    /**
+     * Standard deviation Swipe X velocity.
+     */
     private double stdXVelocity;
+    
+    /**
+     * Minimum Swipe Y velocity.
+     */
     private double minYVelocity;
+    
+    /**
+     * Maximum Swipe Y velocity.
+     */
     private double maxYVelocity;
+    
+    /**
+     * Average Swipe Y velocity.
+     */
     private double avgYVelocity;
+    
+    /**
+     * Variance Swipe Y velocity.
+     */
     private double varYVelocity;
+    
+    /**
+     * Standard deviation Swipe Y velocity.
+     */
     private double stdYVelocity;
+    
+    /**
+     * Minimum X acceleration.
+     */
     private double minXAccelerometer;
+    
+    /**
+     * Maximum X acceleration.
+     */
     private double maxXAccelerometer;
+    
+    /**
+     * Average X acceleration.
+     */
     private double avgXAccelerometer;
+    
+    /**
+     * Variance X acceleration.
+     */
     private double varXAccelerometer;
+    
+    /**
+     * Standard deviation X acceleration.
+     */
     private double stdXAccelerometer;
+    
+    /**
+     * Minimum Y acceleration.
+     */
     private double minYAccelerometer;
+    
+    /**
+     * Maximum Y acceleration.
+     */
     private double maxYAccelerometer;
+    
+    /**
+     * Average Y acceleration.
+     */
     private double avgYAccelerometer;
+    
+    /**
+     * Variance Y acceleration.
+     */
     private double varYAccelerometer;
+    
+    /**
+     * Standard deviation Y acceleration.
+     */
     private double stdYAccelerometer;
+    
+    /**
+     * Minimum Z acceleration.
+     */
     private double minZAccelerometer;
+    
+    /**
+     * Maximum Z acceleration.
+     */
     private double maxZAccelerometer;
+    
+    /**
+     * Average Z acceleration.
+     */
     private double avgZAccelerometer;
+    
+    /**
+     * Variance Z acceleration.
+     */
     private double varZAccelerometer;
+    
+    /**
+     * Standard deviation Z acceleration.
+     */
     private double stdZAccelerometer;
+    
+    /**
+     * Minimum X angular velocity.
+     */
     private double minXGyroscope;
+    
+    /**
+     * Maximum X angular velocity.
+     */
     private double maxXGyroscope;
+    
+    /**
+     * Average X angular velocity.
+     */
     private double avgXGyroscope;
+    
+    /**
+     * Variance X angular velocity.
+     */
     private double varXGyroscope;
+    
+    /**
+     * Standard deviation X angular velocity.
+     */
     private double stdXGyroscope;
+    
+    /**
+     * Minimum Y angular velocity.
+     */
     private double minYGyroscope;
+    
+    /**
+     * Maximum Y angular velocity.
+     */
     private double maxYGyroscope;
+    
+    /**
+     * Average Y angular velocity.
+     */
     private double avgYGyroscope;
+    
+    /**
+     * Variance Y angular velocity.
+     */
     private double varYGyroscope;
+    
+    /**
+     * Standard deviation Y angular velocity.
+     */
     private double stdYGyroscope;
+    
+    /**
+     * Minimum Z angular velocity.
+     */
     private double minZGyroscope;
+    
+    /**
+     * Maximum Z angular velocity.
+     */
     private double maxZGyroscope;
+    
+    /**
+     * Average Z angular velocity.
+     */
     private double avgZGyroscope;
+    
+    /**
+     * Variance Z angular velocity.
+     */
     private double varZGyroscope;
+    
+    /**
+     * Standard deviation Z angular velocity.
+     */
     private double stdZGyroscope;
+    
+    /**
+     * Minimum X orientation value.
+     */
     private double minXOrientation;
+    
+    /**
+     * Maximum X orientation value.
+     */
     private double maxXOrientation;
+    
+    /**
+     * Average X orientation value.
+     */
     private double avgXOrientation;
+    
+    /**
+     * Variance X orientation value.
+     */
     private double varXOrientation;
+    
+    /**
+     * Standard deviation X orientation value.
+     */
     private double stdXOrientation;
+    
+    /**
+     * Minimum Y orientation value.
+     */
     private double minYOrientation;
+    
+    /**
+     * Maximum Y orientation value.
+     */
     private double maxYOrientation;
+    
+    /**
+     * Average Y orientation value.
+     */
     private double avgYOrientation;
+    
+    /**
+     * Variance Y orientation value.
+     */
     private double varYOrientation;
+    
+    /**
+     * Standard deviation Y orientation value.
+     */
     private double stdYOrientation;
+    
+    /**
+     * Minimum Z orientation value.
+     */
     private double minZOrientation;
+    
+    /**
+     * Maximum Z orientation value.
+     */
     private double maxZOrientation;
+    
+    /**
+     * Average Z orientation value.
+     */
     private double avgZOrientation;
+    
+    /**
+     * Variance Z orientation value.
+     */
     private double varZOrientation;
+    
+    /**
+     * Standard deviation Z orientation value.
+     */
     private double stdZOrientation;
 
-    //Keystroke features
+    /**
+     * Keystroke individual press durations.
+     */
     private double[] keystrokeDurations = null;
+    
+    /**
+     * Keystroke individual press intervals.
+     */
     private double[] keystrokeIntervals = null;
+    
+    /**
+     * Keystroke start intervals.
+     */
     private double[] keystrokeStartIntervals = null;
+    
+    /**
+     * Keystroke end intervals.
+     */
     private double[] keystrokeEndIntervals = null;
+    
+    /**
+     * Full Keystroke duration.
+     */
     private double keystrokeFullDuration = -1;
 
-    //Signature features
+    /**
+     * Signature initial X coordinate value.
+     */
     private double signatureStartX = -1;
+    
+    /**
+     * Signature initial Y coordinate value.
+     */
     private double signatureStartY = -1;
+    
+    /**
+     * Signature final X coordinate value.
+     */
     private double signatureEndX = -1;
+    
+    /**
+     * Signature final Y coordinate value.
+     */
     private double signatureEndY = -1;
+    
+    /**
+     * Signature standard deviation X coordinate value.
+     */
     private double signatureStdX = -1;
+    
+    /**
+     * Signature standard deviation Y coordinate value.
+     */
     private double signatureStdY = -1;
+    
+    /**
+     * Signature X coordinate min / max difference.
+     */
     private double signatureDiffX = -1;
+    
+    /**
+     * Signature Y coordinate min / max difference.
+     */
     private double signatureDiffY = -1;
+    
+    /**
+     * Signature start end position euclidean distance.
+     */
     private double signatureEuclideanDistance = -1;
+    
+    /**
+     * Signature average horizontal velocity.
+     */
     private double signatureAvgXVelocity = -1;
+    
+    /**
+     * Signature average vertical velocity.
+     */
     private double signatureAvgYVelocity = -1;
+    
+    /**
+     * Signature maximum horizontal velocity.
+     */
     private double signatureMaxXVelocity = -1;
+    
+    /**
+     * Signature maximum vertical velocity.
+     */
     private double signatureMaxYVelocity = -1;
+    
+    /**
+     * Signature X segment values.
+     */
     private double[] signatureSegmentsX = null;
+    
+    /**
+     * Signature Y segment values.
+     */
     private double[] signatureSegmentsY = null;
 
+    
+    /**
+     * Holding position identifier (1 = Sitting, 2 = Standing, 3 = Walking).
+     */
     private double holdingPosition;
     private String userId;
-
-    // Test swipe features
+    
+    /**
+     * Test interaction authentication results.
+     */
     private double[] authentication;
+    
+    /**
+     * Test interaction authentication times.
+     */
     private double[] authenticationTime;
 
+    /**
+     * Nr. of training samples.
+     */
     private int classifierSamples = 0;
 
+    /**
+     * Class constructor.
+     */
     public Swipe() {
 
     }
 
+    /**
+     * Getter for the
+     * 
+     * @return
+     */
     public double getDuration() {
         return duration;
     }
 
+    /**
+     * 
+     * @param duration
+     */
     public void setDuration(double duration) {
         this.duration = duration;
     }
 
+    /**
+     * Getter for the
+     * 
+     * @return
+     */
     public double getLength() {
         return length;
     }
 
+    /**
+     * 
+     * @param length
+     */
     public void setLength(double length) {
         this.length = length;
     }
 
+    /**
+     * Getter for the
+     * 
+     * @return
+     */
     public double[] getSegmentsX() {
         return segmentsX;
     }
 
+    /**
+     * 
+     * @param segmentsX
+     */
     public void setSegmentsX(double[] segmentsX) {
         this.segmentsX = segmentsX;
     }
 
+    /**
+     * Getter for the
+     * 
+     * @return
+     */
     public double[] getSegmentsY() {
         return segmentsY;
     }
 
+    /**
+     * 
+     * @param segmentsY
+     */
     public void setSegmentsY(double[] segmentsY) {
         this.segmentsY = segmentsY;
     }
 
+    /**
+     * Getter for the
+     * 
+     * @return
+     */
     public double getMinSize() {
         return minSize;
     }
 
+    /**
+     * 
+     * 
+     * @param minSize
+     */
     public void setMinSize(double minSize) {
         this.minSize = minSize;
     }
 
+    /**
+     * Getter for the
+     * 
+     * @return
+     */
     public double getMaxSize() {
         return maxSize;
     }
 
+    /**
+     * 
+     * @param maxSize
+     */
     public void setMaxSize(double maxSize) {
         this.maxSize = maxSize;
     }
 
+    /**
+     * 
+     * @return
+     */
     public double getAvgSize() {
         return avgSize;
     }
 
+    /**
+     * 
+     * @param avgSize
+     */
     public void setAvgSize(double avgSize) {
         this.avgSize = avgSize;
     }
 
+    /**
+     * 
+     * @return
+     */
     public double getDownSize() {
         return downSize;
     }
 
+    /**
+     * 
+     * @param downSize
+     */
     public void setDownSize(double downSize) {
         this.downSize = downSize;
     }
 
+    /**
+     * 
+     * @return
+     */
     public double getUpSize() {
         return upSize;
     }
 
+    /**
+     * 
+     * @param upSize
+     */
     public void setUpSize(double upSize) {
         this.upSize = upSize;
     }
 
+    /**
+     * 
+     * @return
+     */
     public double getStartX() {
         return startX;
     }
 
+    /**
+     * 
+     * @param startX
+     */
     public void setStartX(double startX) {
         this.startX = startX;
     }
 
+    /**
+     * 
+     * @return
+     */
     public double getStartY() {
         return startY;
     }
 
+    /**
+     * 
+     * @param startY
+     */
     public void setStartY(double startY) {
         this.startY = startY;
     }
 
+    /**
+     * 
+     * @return
+     */
     public double getEndX() {
         return endX;
     }
 
+    /**
+     * 
+     * @param endX
+     */
     public void setEndX(double endX) {
         this.endX = endX;
     }
 
+    /**
+     * 
+     * @return
+     */
     public double getEndY() {
         return endY;
     }
 
+    /**
+     * 
+     * @param endY
+     */
     public void setEndY(double endY) {
         this.endY = endY;
     }
 
+    /**
+     * 
+     * @return
+     */
     public double getMinXVelocity() {
         return minXVelocity;
     }
 
+    /**
+     * 
+     * @param minXVelocity
+     */
     public void setMinXVelocity(double minXVelocity) {
         this.minXVelocity = minXVelocity;
     }
 
+    /**
+     * 
+     * @return
+     */
     public double getMaxXVelocity() {
         return maxXVelocity;
     }
 
+    /**
+     * 
+     * @param maxXVelocity
+     */
     public void setMaxXVelocity(double maxXVelocity) {
         this.maxXVelocity = maxXVelocity;
     }
 
+    /**
+     * 
+     * @return
+     */
     public double getAvgXVelocity() {
         return avgXVelocity;
     }
 
+    /**
+     * 
+     * @param avgXVelocity
+     */
     public void setAvgXVelocity(double avgXVelocity) {
         this.avgXVelocity = avgXVelocity;
     }
 
+    /**
+     * 
+     * @return
+     */
     public double getStdXVelocity() {
         return stdXVelocity;
     }
 
+    /**
+     * 
+     * @param stdXVelocity
+     */
     public void setStdXVelocity(double stdXVelocity) {
         this.stdXVelocity = stdXVelocity;
     }
 
+    /**
+     * 
+     * @return
+     */
     public double getVarXVelocity() {
         return varXVelocity;
     }
 
+    /**
+     * 
+     * @param varXVelocity
+     */
     public void setVarXVelocity(double varXVelocity) {
         this.varXVelocity = varXVelocity;
     }
 
+    /**
+     * 
+     * @return
+     */
     public double getMinYVelocity() {
         return minYVelocity;
     }
 
+    /**
+     * 
+     * @param minYVelocity
+     */
     public void setMinYVelocity(double minYVelocity) {
         this.minYVelocity = minYVelocity;
     }
 
+    /**
+     * 
+     * @return
+     */
     public double getMaxYVelocity() {
         return maxYVelocity;
     }
 
+    /**
+     * 
+     * @param maxYVelocity
+     */
     public void setMaxYVelocity(double maxYVelocity) {
         this.maxYVelocity = maxYVelocity;
     }
 
+    /**
+     * 
+     * @return
+     */
     public double getAvgYVelocity() {
         return avgYVelocity;
     }
 
+    /**
+     * 
+     * @param avgYVelocity
+     */
     public void setAvgYVelocity(double avgYVelocity) {
         this.avgYVelocity = avgYVelocity;
     }
 
+    /**
+     * 
+     * @return
+     */
     public double getStdYVelocity() {
         return stdYVelocity;
     }
 
+    /**
+     * 
+     * @param stdYVelocity
+     */
     public void setStdYVelocity(double stdYVelocity) {
         this.stdYVelocity = stdYVelocity;
     }
 
+    /**
+     * 
+     * @return
+     */
     public double getVarYVelocity() {
         return varYVelocity;
     }
 
+    /**
+     * 
+     * @param varYVelocity
+     */
     public void setVarYVelocity(double varYVelocity) {
         this.varYVelocity = varYVelocity;
     }
 
+    /**
+     * 
+     * @return
+     */
     public double getMinXAccelerometer() {
         return minXAccelerometer;
     }
 
+    /**
+     * 
+     * @param minXAccelerometer
+     */
     public void setMinXAccelerometer(double minXAccelerometer) {
         this.minXAccelerometer = minXAccelerometer;
     }
 
+    /**
+     * 
+     * @return
+     */
     public double getMaxXAccelerometer() {
         return maxXAccelerometer;
     }
 
+    /**
+     * 
+     * @param maxXAccelerometer
+     */
     public void setMaxXAccelerometer(double maxXAccelerometer) {
         this.maxXAccelerometer = maxXAccelerometer;
     }
 
+    /**
+     * 
+     * @return
+     */
     public double getAvgXAccelerometer() {
         return avgXAccelerometer;
     }
 
+    /**
+     * 
+     * @param avgXAccelerometer
+     */
     public void setAvgXAccelerometer(double avgXAccelerometer) {
         this.avgXAccelerometer = avgXAccelerometer;
     }
 
+    /**
+     * 
+     * @return
+     */
     public double getStdXAccelerometer() {
         return stdXAccelerometer;
     }
 
+    /**
+     * 
+     * @param stdXAccelerometer
+     */
     public void setStdXAccelerometer(double stdXAccelerometer) {
         this.stdXAccelerometer = stdXAccelerometer;
     }
 
+    /**
+     * 
+     * @return
+     */
     public double getVarXAccelerometer() {
         return varXAccelerometer;
     }
 
+    /**
+     * 
+     * @param varXAccelerometer
+     */
     public void setVarXAccelerometer(double varXAccelerometer) {
         this.varXAccelerometer = varXAccelerometer;
     }
 
+    /**
+     * 
+     * @return
+     */
     public double getMinYAccelerometer() {
         return minYAccelerometer;
     }
 
+    /**
+     * 
+     * @param minYAccelerometer
+     */
     public void setMinYAccelerometer(double minYAccelerometer) {
         this.minYAccelerometer = minYAccelerometer;
     }
 
+    /**
+     * 
+     * @return
+     */
     public double getMaxYAccelerometer() {
         return maxYAccelerometer;
     }
 
+    /**
+     * 
+     * @param maxYAccelerometer
+     */
     public void setMaxYAccelerometer(double maxYAccelerometer) {
         this.maxYAccelerometer = maxYAccelerometer;
     }
 
+    /**
+     * 
+     * @return
+     */
     public double getAvgYAccelerometer() {
         return avgYAccelerometer;
     }
 
+    /**
+     * 
+     * @param avgYAccelerometer
+     */
     public void setAvgYAccelerometer(double avgYAccelerometer) {
         this.avgYAccelerometer = avgYAccelerometer;
     }
 
+    /**
+     * 
+     * @return
+     */
     public double getStdYAccelerometer() {
         return stdYAccelerometer;
     }
 
+    /**
+     * 
+     * @param stdYAccelerometer
+     */
     public void setStdYAccelerometer(double stdYAccelerometer) {
         this.stdYAccelerometer = stdYAccelerometer;
     }
 
+    /**
+     * 
+     * @return
+     */
     public double getVarYAccelerometer() {
         return varYAccelerometer;
     }
 
+    /**
+     * 
+     * @param varYAccelerometer
+     */
     public void setVarYAccelerometer(double varYAccelerometer) {
         this.varYAccelerometer = varYAccelerometer;
     }
 
+    /**
+     * 
+     * @return
+     */
     public double getMinZAccelerometer() {
         return minZAccelerometer;
     }
 
+    /**
+     * 
+     * @param minZAccelerometer
+     */
     public void setMinZAccelerometer(double minZAccelerometer) {
         this.minZAccelerometer = minZAccelerometer;
     }
 
+    /**
+     * 
+     * @return
+     */
     public double getMaxZAccelerometer() {
         return maxZAccelerometer;
     }
 
+    /**
+     * 
+     * @param maxZAccelerometer
+     */
     public void setMaxZAccelerometer(double maxZAccelerometer) {
         this.maxZAccelerometer = maxZAccelerometer;
     }
 
+    /**
+     * 
+     * @return
+     */
     public double getAvgZAccelerometer() {
         return avgZAccelerometer;
     }
 
+    /**
+     * 
+     * @param avgZAccelerometer
+     */
     public void setAvgZAccelerometer(double avgZAccelerometer) {
         this.avgZAccelerometer = avgZAccelerometer;
     }
 
+    /**
+     * 
+     * @return
+     */
     public double getStdZAccelerometer() {
         return stdZAccelerometer;
     }
 
+    /**
+     * 
+     * @param stdZAccelerometer
+     */
     public void setStdZAccelerometer(double stdZAccelerometer) {
         this.stdZAccelerometer = stdZAccelerometer;
     }
 
+    /**
+     * 
+     * @return
+     */
     public double getVarZAccelerometer() {
         return varZAccelerometer;
     }
 
+    /**
+     * 
+     * @param varZAccelerometer
+     */
     public void setVarZAccelerometer(double varZAccelerometer) {
         this.varZAccelerometer = varZAccelerometer;
     }
 
+    /**
+     * 
+     * @return
+     */
     public double getMinXGyroscope() {
         return minXGyroscope;
     }
 
+    /**
+     * 
+     * @param minXGyroscope
+     */
     public void setMinXGyroscope(double minXGyroscope) {
         this.minXGyroscope = minXGyroscope;
     }
 
+    /**
+     * 
+     * @return
+     */
     public double getMaxXGyroscope() {
         return maxXGyroscope;
     }
 
+    /**
+     * 
+     * @param maxXGyroscope
+     */
     public void setMaxXGyroscope(double maxXGyroscope) {
         this.maxXGyroscope = maxXGyroscope;
     }
 
+    /**
+     * 
+     * @return
+     */
     public double getAvgXGyroscope() {
         return avgXGyroscope;
     }
 
+    /**
+     * 
+     * @param avgXGyroscope
+     */
     public void setAvgXGyroscope(double avgXGyroscope) {
         this.avgXGyroscope = avgXGyroscope;
     }
 
+    /**
+     * 
+     * @return
+     */
     public double getStdXGyroscope() {
         return stdXGyroscope;
     }
 
+    /**
+     * 
+     * @param stdXGyroscope
+     */
     public void setStdXGyroscope(double stdXGyroscope) {
         this.stdXGyroscope = stdXGyroscope;
     }
 
+    /**
+     * 
+     * @return
+     */
     public double getVarXGyroscope() {
         return varXGyroscope;
     }
 
+    /**
+     * 
+     * @param varXGyroscope
+     */
     public void setVarXGyroscope(double varXGyroscope) {
         this.varXGyroscope = varXGyroscope;
     }
 
+    /**
+     * 
+     * @return
+     */
     public double getMinYGyroscope() {
         return minYGyroscope;
     }
 
+    /**
+     * 
+     * @param minYGyroscope
+     */
     public void setMinYGyroscope(double minYGyroscope) {
         this.minYGyroscope = minYGyroscope;
     }
 
+    /**
+     * 
+     * @return
+     */
     public double getMaxYGyroscope() {
         return maxYGyroscope;
     }
 
+    /**
+     * 
+     * @param maxYGyroscope
+     */
     public void setMaxYGyroscope(double maxYGyroscope) {
         this.maxYGyroscope = maxYGyroscope;
     }
 
+    /**
+     * 
+     * @return
+     */
     public double getAvgYGyroscope() {
         return avgYGyroscope;
     }
 
+    /**
+     * 
+     * @param avgYGyroscope
+     */
     public void setAvgYGyroscope(double avgYGyroscope) {
         this.avgYGyroscope = avgYGyroscope;
     }
 
-    public double getStdYGyroscope() {
+    /**
+     * 
+     * @return
+     */
+    public  double getStdYGyroscope() {
         return stdYGyroscope;
     }
 
-    public void setStdYGyroscope(double stdYGyroscope) {
+    /**
+     * 
+     * @param stdYGyroscope
+     */
+    public  void setStdYGyroscope(double stdYGyroscope) {
         this.stdYGyroscope = stdYGyroscope;
     }
 
-    public double getVarYGyroscope() {
+    /**
+     * 
+     * @return
+     */
+    public  double getVarYGyroscope() {
         return varYGyroscope;
     }
 
-    public void setVarYGyroscope(double varYGyroscope) {
+    /**
+     * 
+     * @param varYGyroscope
+     */
+    public  void setVarYGyroscope(double varYGyroscope) {
         this.varYGyroscope = varYGyroscope;
     }
 
-    public double getMinZGyroscope() {
+    /**
+     * 
+     * @return
+     */
+    public  double getMinZGyroscope() {
         return minZGyroscope;
     }
 
-    public void setMinZGyroscope(double minZGyroscope) {
+    /**
+     * 
+     * @param minZGyroscope
+     */
+    public  void setMinZGyroscope(double minZGyroscope) {
         this.minZGyroscope = minZGyroscope;
     }
 
-    public double getMaxZGyroscope() {
+    /**
+     * 
+     * @return
+     */
+    public  double getMaxZGyroscope() {
         return maxZGyroscope;
     }
 
-    public void setMaxZGyroscope(double maxZGyroscope) {
+    /**
+     * 
+     * @param maxZGyroscope
+     */
+    public  void setMaxZGyroscope(double maxZGyroscope) {
         this.maxZGyroscope = maxZGyroscope;
     }
 
-    public double getAvgZGyroscope() {
+    /**
+     * 
+     * @return
+     */
+    public  double getAvgZGyroscope() {
         return avgZGyroscope;
     }
 
-    public void setAvgZGyroscope(double avgZGyroscope) {
+    /**
+     * 
+     * @param avgZGyroscope
+     */
+    public  void setAvgZGyroscope(double avgZGyroscope) {
         this.avgZGyroscope = avgZGyroscope;
     }
 
-    public double getStdZGyroscope() {
+    /**
+     * 
+     * @return
+     */
+    public  double getStdZGyroscope() {
         return stdZGyroscope;
     }
 
-    public void setStdZGyroscope(double stdZGyroscope) {
+    /**
+     * 
+     * @param stdZGyroscope
+     */
+    public  void setStdZGyroscope(double stdZGyroscope) {
         this.stdZGyroscope = stdZGyroscope;
     }
 
-    public double getVarZGyroscope() {
+    /**
+     * 
+     * @return
+     */
+    public  double getVarZGyroscope() {
         return varZGyroscope;
     }
 
-    public void setVarZGyroscope(double varZGyroscope) {
-        this.varZGyroscope = varZGyroscope;
-    }
+    /**
+     * 
+     * @param varZGyroscope
+     */
+     public  void setVarZGyroscope(double varZGyroscope) {
+     this.varZGyroscope = varZGyroscope;
+     }
 
-    public double getMinXOrientation() {
-        return minXOrientation;
-    }
+     /**
+     *
+     * @return
+     */
+     public  double getMinXOrientation() {
+     return minXOrientation;
+     }
 
-    public void setMinXOrientation(double minXOrientation) {
-        this.minXOrientation = minXOrientation;
-    }
+     /**
+     *
+     * @param minXOrientation
+     */
+     public  void setMinXOrientation(double minXOrientation) {
+     this.minXOrientation = minXOrientation;
+     }
 
-    public double getMaxXOrientation() {
-        return maxXOrientation;
-    }
+     /**
+     *
+     * @return
+     */
+     public  double getMaxXOrientation() {
+     return maxXOrientation;
+     }
 
-    public void setMaxXOrientation(double maxXOrientation) {
-        this.maxXOrientation = maxXOrientation;
-    }
+     /**
+     *
+     * @param maxXOrientation
+     */
+     public  void setMaxXOrientation(double maxXOrientation) {
+     this.maxXOrientation = maxXOrientation;
+     }
 
-    public double getAvgXOrientation() {
-        return avgXOrientation;
-    }
+     /**
+     *
+     * @return
+     */
+     public  double getAvgXOrientation() {
+     return avgXOrientation;
+     }
 
-    public void setAvgXOrientation(double avgXOrientation) {
+     /**
+     *
+     * @param avgXOrientation
+     */
+    public  void setAvgXOrientation(double avgXOrientation) {
         this.avgXOrientation = avgXOrientation;
     }
 
-    public double getStdXOrientation() {
+    /**
+     * 
+     * @return
+     */
+    public  double getStdXOrientation() {
         return stdXOrientation;
     }
 
-    public void setStdXOrientation(double stdXOrientation) {
+    /**
+     * 
+     * @param stdXOrientation
+     */
+    public  void setStdXOrientation(double stdXOrientation) {
         this.stdXOrientation = stdXOrientation;
     }
 
-    public double getVarXOrientation() {
+    /**
+     * 
+     * @return
+     */
+    public  double getVarXOrientation() {
         return varXOrientation;
     }
 
-    public void setVarXOrientation(double varXOrientation) {
+    /**
+     * 
+     * @param varXOrientation
+     */
+    public  void setVarXOrientation(double varXOrientation) {
         this.varXOrientation = varXOrientation;
     }
 
-    public double getMinYOrientation() {
+    /**
+     * 
+     * @return
+     */
+    public  double getMinYOrientation() {
         return minYOrientation;
     }
 
-    public void setMinYOrientation(double minYOrientation) {
+    /**
+     * 
+     * @param minYOrientation
+     */
+    public  void setMinYOrientation(double minYOrientation) {
         this.minYOrientation = minYOrientation;
     }
 
-    public double getMaxYOrientation() {
+    /**
+     * 
+     * @return
+     */
+    public  double getMaxYOrientation() {
         return maxYOrientation;
     }
 
-    public void setMaxYOrientation(double maxYOrientation) {
+    /**
+     * 
+     * @param maxYOrientation
+     */
+    public  void setMaxYOrientation(double maxYOrientation) {
         this.maxYOrientation = maxYOrientation;
     }
 
-    public double getAvgYOrientation() {
+    /**
+     * 
+     * @return
+     */
+    public  double getAvgYOrientation() {
         return avgYOrientation;
     }
 
-    public void setAvgYOrientation(double avgYOrientation) {
+    /**
+     * 
+     * @param avgYOrientation
+     */
+    public  void setAvgYOrientation(double avgYOrientation) {
         this.avgYOrientation = avgYOrientation;
     }
 
-    public double getStdYOrientation() {
+    /**
+     * 
+     * @return
+     */
+    public  double getStdYOrientation() {
         return stdYOrientation;
     }
 
-    public void setStdYOrientation(double stdYOrientation) {
+    /**
+     * 
+     * @param stdYOrientation
+     */
+    public  void setStdYOrientation(double stdYOrientation) {
         this.stdYOrientation = stdYOrientation;
     }
 
-    public double getVarYOrientation() {
+    /**
+     * 
+     * @return
+     */
+    public  double getVarYOrientation() {
         return varYOrientation;
     }
 
-    public void setVarYOrientation(double varYOrientation) {
+    /**
+     * 
+     * @param varYOrientation
+     */
+    public  void setVarYOrientation(double varYOrientation) {
         this.varYOrientation = varYOrientation;
     }
 
-    public double getMinZOrientation() {
+    /**
+     * 
+     * @return
+     */
+    public  double getMinZOrientation() {
         return minZOrientation;
     }
 
-    public void setMinZOrientation(double minZOrientation) {
+    /**
+     * 
+     * @param minZOrientation
+     */
+    public  void setMinZOrientation(double minZOrientation) {
         this.minZOrientation = minZOrientation;
     }
 
-    public double getMaxZOrientation() {
-        return maxZOrientation;
-    }
+    /**
+     * 
+     * @return
+     */
+     public  double getMaxZOrientation() {
+     return maxZOrientation;
+     }
 
-    public void setMaxZOrientation(double maxZOrientation) {
-        this.maxZOrientation = maxZOrientation;
-    }
+     /**
+     *
+     * @param maxZOrientation
+     */
+     public  void setMaxZOrientation(double maxZOrientation) {
+     this.maxZOrientation = maxZOrientation;
+     }
 
-    public double getAvgZOrientation() {
-        return avgZOrientation;
-    }
+     /**
+     *
+     * @return
+     */
+     public  double getAvgZOrientation() {
+     return avgZOrientation;
+     }
 
-    public void setAvgZOrientation(double avgZOrientation) {
-        this.avgZOrientation = avgZOrientation;
-    }
+     /**
+     *
+     * @param avgZOrientation
+     */
+     public  void setAvgZOrientation(double avgZOrientation) {
+     this.avgZOrientation = avgZOrientation;
+     }
 
-    public double getStdZOrientation() {
-        return stdZOrientation;
-    }
+     /**
+     *
+     * @return
+     */
+     public  double getStdZOrientation() {
+     return stdZOrientation;
+     }
 
-    public void setStdZOrientation(double stdZOrientation) {
-        this.stdZOrientation = stdZOrientation;
-    }
+     /**
+     *
+     * @param stdZOrientation
+     */
+     public  void setStdZOrientation(double stdZOrientation) {
+     this.stdZOrientation = stdZOrientation;
+     }
 
-    public double getVarZOrientation() {
+     /**
+     *
+     * @return
+     */
+    public  double getVarZOrientation() {
         return varZOrientation;
     }
 
-    public void setVarZOrientation(double varZOrientation) {
+    /**
+     * 
+     * @param varZOrientation
+     */
+    public  void setVarZOrientation(double varZOrientation) {
         this.varZOrientation = varZOrientation;
     }
 
-    public double[] getKeystrokeDurations() {
+    /**
+     * 
+     * @return
+     */
+    public  double[] getKeystrokeDurations() {
         return this.keystrokeDurations;
     }
 
-    public void addKeystrokeDuration(double duration, int curKeystroke, int pinLength) {
+    /**
+     * 
+     * @param duration
+     * @param curKeystroke
+     * @param pinLength
+     */
+    public  void addKeystrokeDuration(double duration, int curKeystroke, int pinLength) {
         if(this.keystrokeDurations == null) {
             this.keystrokeDurations = new double[pinLength];
         }
@@ -679,15 +1604,29 @@ public class Swipe {
         this.keystrokeDurations[curKeystroke] = duration;
     }
 
-    public void setKeystrokeDurations(double[] keystrokeDurations) {
+    /**
+     * 
+     * @param keystrokeDurations
+     */
+    public  void setKeystrokeDurations(double[] keystrokeDurations) {
         this.keystrokeDurations = keystrokeDurations;
     }
 
-    public double[] getKeystrokeIntervals() {
+    /**
+     * 
+     * @return
+     */
+    public  double[] getKeystrokeIntervals() {
         return this.keystrokeIntervals;
     }
 
-    public void addKeystrokeInterval(double interval, int curKeystroke, int pinLength) {
+    /**
+     * 
+     * @param interval
+     * @param curKeystroke
+     * @param pinLength
+     */
+    public  void addKeystrokeInterval(double interval, int curKeystroke, int pinLength) {
         if(this.keystrokeIntervals == null) {
             this.keystrokeIntervals = new double[pinLength - 1];
         }
@@ -695,15 +1634,29 @@ public class Swipe {
         this.keystrokeIntervals[curKeystroke] = interval;
     }
 
-    public void setKeystrokeIntervals(double[] keystrokeIntervals) {
+    /**
+     * 
+     * @param keystrokeIntervals
+     */
+    public  void setKeystrokeIntervals(double[] keystrokeIntervals) {
         this.keystrokeIntervals = keystrokeIntervals;
     }
 
-    public double[] getKeystrokeStartIntervals() {
+    /**
+     * 
+     * @return
+     */
+    public  double[] getKeystrokeStartIntervals() {
         return this.keystrokeStartIntervals;
     }
 
-    public void addKeystrokeStartInterval(double startInterval, int curKeystroke, int pinLength) {
+    /**
+     * 
+     * @param startInterval
+     * @param curKeystroke
+     * @param pinLength
+     */
+    public  void addKeystrokeStartInterval(double startInterval, int curKeystroke, int pinLength) {
         if(this.keystrokeStartIntervals == null) {
             this.keystrokeStartIntervals = new double[pinLength - 1];
         }
@@ -711,15 +1664,29 @@ public class Swipe {
         this.keystrokeStartIntervals[curKeystroke] = startInterval;
     }
 
-    public void setKeystrokeStartIntervals(double[] keystrokeStartIntervals) {
+    /**
+     * 
+     * @param keystrokeStartIntervals
+     */
+    public  void setKeystrokeStartIntervals(double[] keystrokeStartIntervals) {
         this.keystrokeStartIntervals = keystrokeStartIntervals;
     }
 
-    public double[] getKeystrokeEndIntervals() {
+    /**
+     * 
+     * @return
+     */
+    public  double[] getKeystrokeEndIntervals() {
         return this.keystrokeEndIntervals;
     }
 
-    public void addKeystrokeEndInterval(double endInterval, int curKeystroke, int pinLength) {
+    /**
+     * 
+     * @param endInterval
+     * @param curKeystroke
+     * @param pinLength
+     */
+    public  void addKeystrokeEndInterval(double endInterval, int curKeystroke, int pinLength) {
         if(this.keystrokeEndIntervals == null) {
             this.keystrokeEndIntervals = new double[pinLength - 1];
         }
@@ -727,184 +1694,364 @@ public class Swipe {
         this.keystrokeEndIntervals[curKeystroke] = endInterval;
     }
 
-    public void setKeystrokeEndIntervals(double[] keystrokeEndIntervals) {
+    /**
+     * 
+     * @param keystrokeEndIntervals
+     */
+    public  void setKeystrokeEndIntervals(double[] keystrokeEndIntervals) {
         this.keystrokeEndIntervals = keystrokeEndIntervals;
     }
 
-    public double getKeystrokeFullDuration() {
+    /**
+     * 
+     * @return
+     */
+    public  double getKeystrokeFullDuration() {
         return this.keystrokeFullDuration;
     }
 
-    public void setKeystrokeFullDuration() {
+    /**
+     * 
+     */
+    public  void setKeystrokeFullDuration() {
         this.keystrokeFullDuration = Arrays.stream(this.getKeystrokeDurations()).sum() + Arrays.stream(this.getKeystrokeIntervals()).sum();
     }
 
-    public void setKeystrokeFullDurationNormalized(double keystrokeFullDuration) {
+    /**
+     * 
+     * @param keystrokeFullDuration
+     */
+    public  void setKeystrokeFullDurationNormalized(double keystrokeFullDuration) {
         this.keystrokeFullDuration = keystrokeFullDuration;
     }
 
-    public double getSignatureStartX() {
+    /**
+     * 
+     * @return
+     */
+    public  double getSignatureStartX() {
         return signatureStartX;
     }
 
-    public void setSignatureStartX(double signatureStartX) {
+    /**
+     * 
+     * @param signatureStartX
+     */
+    public  void setSignatureStartX(double signatureStartX) {
         this.signatureStartX = signatureStartX;
     }
 
-    public double getSignatureStartY() {
+    /**
+     * 
+     * @return
+     */
+    public  double getSignatureStartY() {
         return signatureStartY;
     }
 
-    public void setSignatureStartY(double signatureStartY) {
+    /**
+     * 
+     * @param signatureStartY
+     */
+    public  void setSignatureStartY(double signatureStartY) {
         this.signatureStartY = signatureStartY;
     }
 
-    public double getSignatureEndX() {
+    /**
+     * 
+     * @return
+     */
+    public  double getSignatureEndX() {
         return signatureEndX;
     }
 
-    public void setSignatureEndX(double signatureEndX) {
+    /**
+     * 
+     * @param signatureEndX
+     */
+    public  void setSignatureEndX(double signatureEndX) {
         this.signatureEndX = signatureEndX;
     }
 
-    public double getSignatureEndY() {
+    /**
+     * 
+     * @return
+     */
+    public  double getSignatureEndY() {
         return signatureEndY;
     }
 
-    public void setSignatureEndY(double signatureEndY) {
+    /**
+     * 
+     * @param signatureEndY
+     */
+    public  void setSignatureEndY(double signatureEndY) {
         this.signatureEndY = signatureEndY;
     }
 
-    public double getSignatureStdX() {
+    /**
+     * 
+     * @return
+     */
+    public  double getSignatureStdX() {
         return signatureStdX;
     }
 
-    public void setSignatureStdX(double signatureStdX) {
+    /**
+     * 
+     * @param signatureStdX
+     */
+    public  void setSignatureStdX(double signatureStdX) {
         this.signatureStdX = signatureStdX;
     }
 
-    public double getSignatureStdY() {
+    /**
+     * 
+     * @return
+     */
+    public  double getSignatureStdY() {
         return signatureStdY;
     }
 
-    public void setSignatureStdY(double signatureStdY) {
+    /**
+     * 
+     * @param signatureStdY
+     */
+    public  void setSignatureStdY(double signatureStdY) {
         this.signatureStdY = signatureStdY;
     }
 
-    public double getSignatureDiffX() {
+    /**
+     * 
+     * @return
+     */
+    public  double getSignatureDiffX() {
         return signatureDiffX;
     }
 
-    public void setSignatureDiffX(double signatureDiffX) {
+    /**
+     * 
+     * @param signatureDiffX
+     */
+    public  void setSignatureDiffX(double signatureDiffX) {
         this.signatureDiffX = signatureDiffX;
     }
 
-    public double getSignatureDiffY() {
+    /**
+     * 
+     * @return
+     */
+    public  double getSignatureDiffY() {
         return signatureDiffY;
     }
 
-    public void setSignatureDiffY(double signatureDiffY) {
+    /**
+     * 
+     * @param signatureDiffY
+     */
+    public  void setSignatureDiffY(double signatureDiffY) {
         this.signatureDiffY = signatureDiffY;
     }
 
-    public double getSignatureEuclideanDistance() {
+    /**
+     * 
+     * @return
+     */
+    public  double getSignatureEuclideanDistance() {
         return signatureEuclideanDistance;
     }
 
-    public void setSignatureEuclideanDistance(double signatureEuclideanDistance) {
+    /**
+     * 
+     * @param signatureEuclideanDistance
+     */
+    public  void setSignatureEuclideanDistance(double signatureEuclideanDistance) {
         this.signatureEuclideanDistance = signatureEuclideanDistance;
     }
 
-    public double getSignatureAvgXVelocity() {
+    /**
+     * 
+     * @return
+     */
+    public  double getSignatureAvgXVelocity() {
         return signatureAvgXVelocity;
     }
 
-    public void setSignatureAvgXVelocity(double signatureAvgXVelocity) {
+    /**
+     * 
+     * @param signatureAvgXVelocity
+     */
+    public  void setSignatureAvgXVelocity(double signatureAvgXVelocity) {
         this.signatureAvgXVelocity = signatureAvgXVelocity;
     }
 
-    public double getSignatureAvgYVelocity() {
+    /**
+     * 
+     * @return
+     */
+    public  double getSignatureAvgYVelocity() {
         return signatureAvgYVelocity;
     }
 
-    public void setSignatureAvgYVelocity(double signatureAvgYVelocity) {
+    /**
+     * 
+     * @param signatureAvgYVelocity
+     */
+    public  void setSignatureAvgYVelocity(double signatureAvgYVelocity) {
         this.signatureAvgYVelocity = signatureAvgYVelocity;
     }
 
-    public double getSignatureMaxXVelocity() {
+    /**
+     * 
+     * @return
+     */
+    public  double getSignatureMaxXVelocity() {
         return signatureMaxXVelocity;
     }
 
-    public void setSignatureMaxXVelocity(double signatureMaxXVelocity) {
+    /**
+     * 
+     * @param signatureMaxXVelocity
+     */
+    public  void setSignatureMaxXVelocity(double signatureMaxXVelocity) {
         this.signatureMaxXVelocity = signatureMaxXVelocity;
     }
 
-    public double getSignatureMaxYVelocity() {
+    /**
+     * 
+     * @return
+     */
+    public  double getSignatureMaxYVelocity() {
         return signatureMaxYVelocity;
     }
 
-    public void setSignatureMaxYVelocity(double signatureMaxYVelocity) {
+    /**
+     * 
+     * @param signatureMaxYVelocity
+     */
+    public  void setSignatureMaxYVelocity(double signatureMaxYVelocity) {
         this.signatureMaxYVelocity = signatureMaxYVelocity;
     }
 
-    public double[] getSignatureSegmentsX() {
+    /**
+     * 
+     * @return
+     */
+    public  double[] getSignatureSegmentsX() {
         return signatureSegmentsX;
     }
 
-    public void setSignatureSegmentsX(double[] signatureSegmentsX) {
+    /**
+     * 
+     * @param signatureSegmentsX
+     */
+    public  void setSignatureSegmentsX(double[] signatureSegmentsX) {
         this.signatureSegmentsX = signatureSegmentsX;
     }
 
-    public double[] getSignatureSegmentsY() {
+    /**
+     * 
+     * @return
+     */
+    public  double[] getSignatureSegmentsY() {
         return signatureSegmentsY;
     }
 
-    public void setSignatureSegmentsY(double[] signatureSegmentsY) {
+    /**
+     * 
+     * @param signatureSegmentsY
+     */
+    public  void setSignatureSegmentsY(double[] signatureSegmentsY) {
         this.signatureSegmentsY = signatureSegmentsY;
     }
 
-    public double getHoldingPosition() {
+    /**
+     * 
+     * @return
+     */
+    public  double getHoldingPosition() {
         return holdingPosition;
     }
 
-    public void setHoldingPosition(double holdingPosition) {
+    /**
+     * 
+     * @param holdingPosition
+     */
+    public  void setHoldingPosition(double holdingPosition) {
         this.holdingPosition = holdingPosition;
     }
 
-    public String getUserId() {
+    /**
+     * 
+     * @return
+     */
+    public  String getUserId() {
         return userId;
     }
 
-    public void setUserId(String userId) {
+    /**
+     * 
+     * @param userId
+     */
+    public  void setUserId(String userId) {
         this.userId = userId;
     }
 
-    public double[] getAuthentication() {
+    /**
+     * 
+     * @return
+     */
+    public  double[] getAuthentication() {
         return this.authentication;
     }
 
-    public void setAuthentication(double[] authentication) {
+    /**
+     * 
+     * @param authentication
+     */
+    public  void setAuthentication(double[] authentication) {
         this.authentication = authentication;
     }
 
-    public double[] getAuthenticationTime() {
+    /**
+     * 
+     * @return
+     */
+    public  double[] getAuthenticationTime() {
         return this.authenticationTime;
     }
 
-    public void setAuthenticationTime(double[] authenticationTime) {
+    /**
+     * 
+     * @param authenticationTime
+     */
+    public  void setAuthenticationTime(double[] authenticationTime) {
         this.authenticationTime = authenticationTime;
     }
 
-    public int getClassifierSamples() {
+    /**
+     * 
+     * @return
+     */
+    public  int getClassifierSamples() {
         return classifierSamples;
     }
 
-    public void setClassifierSamples(int classifierSamples) {
+    /**
+     * 
+     * @param classifierSamples
+     */
+    public  void setClassifierSamples(int classifierSamples) {
         this.classifierSamples = classifierSamples;
     }
 
-    // Gets the MIN/MAX values to use for normalization from the gathered training examples
-    public static Map<String, Double> getMinMaxValues(ArrayList<Swipe> allSwipes) {
+    /**
+     * Gets from the gathered training examples (and for each active feature) the minimum and maximum values that are used for min/max scaling.
+     *
+     * @param allSwipes The set of training interactions.
+     * @return
+     */
+    public  static Map<String, Double> getMinMaxValues(ArrayList<Swipe> allSwipes) {
         Map<String, Double> map = new HashMap<String, Double>();
 
         for(Swipe swipe : allSwipes) {
@@ -1020,7 +2167,12 @@ public class Swipe {
         return map;
     }
 
-    public double[] getNormalizedValues(ArrayList<Swipe> allSwipes) {
+    /**
+     * 
+     * @param allSwipes
+     * @return
+     */
+    public  double[] getNormalizedValues(ArrayList<Swipe> allSwipes) {
         Map<String, Double> map = getMinMaxValues(allSwipes);
 
         ArrayList<Double> ret = new ArrayList<Double>();
@@ -1130,7 +2282,15 @@ public class Swipe {
         return retArray;
     }
 
-    public static Swipe fromNormalizedValues(double[] values, double holdingPosition, String userId, ArrayList<Swipe> allSwipes) {
+    /**
+     * 
+     * @param values
+     * @param holdingPosition
+     * @param userId
+     * @param allSwipes
+     * @return
+     */
+    public  static Swipe fromNormalizedValues(double[] values, double holdingPosition, String userId, ArrayList<Swipe> allSwipes) {
         Map<String, Double> map = getMinMaxValues(allSwipes);
 
         Swipe swipe = new Swipe();
@@ -1254,8 +2414,12 @@ public class Swipe {
         return swipe;
     }
 
+    /**
+     * 
+     * @return
+     */
     @Override
-    public String toString() {
+    public  String toString() {
         return "Swipe{" +
                 "duration=" + duration +
                 "\n length=" + length +
@@ -1350,7 +2514,15 @@ public class Swipe {
                 '}';
     }
 
-    public Instance getAsWekaInstance(Instances dataSet, boolean isTrainInstance, DatabaseHelper dbHelper, List<DatabaseHelper.ModelType> trainingModel) {
+    /**
+     * 
+     * @param dataSet
+     * @param isTrainInstance
+     * @param dbHelper
+     * @param trainingModel
+     * @return
+     */
+    public  Instance getAsWekaInstance(Instances dataSet, boolean isTrainInstance, DatabaseHelper dbHelper, List<DatabaseHelper.ModelType> trainingModel) {
         Map<String, Integer> featureData = dbHelper.getFeatureData();
         boolean useAcceleration = featureData.get(DatabaseHelper.COL_ACCELERATION) == 1;
         boolean useAngularVelocity = featureData.get(DatabaseHelper.COL_ANGULAR_VELOCITY) == 1;

@@ -272,7 +272,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String COL_USER_ID = "USER_ID";
 
     /**
-     * Train/Test interactions count column name.
+     * Train interactions count column name.
      */
     private static final String COL_CLASSIFIER_SAMPLES = "CLASSIFIER_SAMPLES";
 
