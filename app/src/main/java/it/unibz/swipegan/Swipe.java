@@ -463,6 +463,10 @@ public class Swipe {
      * Holding position identifier (1 = Sitting, 2 = Standing, 3 = Walking).
      */
     private double holdingPosition;
+
+    /**
+     * User type identifier (User/Attacker).
+     */
     private String userId;
     
     /**
@@ -488,1113 +492,1253 @@ public class Swipe {
     }
 
     /**
-     * Getter for the
+     * Getter for the Swipe duration (in seconds).
      * 
-     * @return
+     * @return The Swipe duration (in seconds).
      */
     public double getDuration() {
         return duration;
     }
 
     /**
-     * 
-     * @param duration
+     * Setter for the Swipe duration (in seconds).
+     *
+     * @param duration The Swipe duration (in seconds).
      */
     public void setDuration(double duration) {
         this.duration = duration;
     }
 
     /**
-     * Getter for the
+     * Getter for the Swipe length.
      * 
-     * @return
+     * @return The Swipe length.
      */
     public double getLength() {
         return length;
     }
 
     /**
-     * 
-     * @param length
+     * Setter for the Swipe length.
+     *
+     * @param length The Swipe length.
      */
     public void setLength(double length) {
         this.length = length;
     }
 
     /**
-     * Getter for the
+     * Getter for the Swipe X segments.
      * 
-     * @return
+     * @return The Swipe X segments.
      */
     public double[] getSegmentsX() {
         return segmentsX;
     }
 
     /**
-     * 
-     * @param segmentsX
+     * Setter for the Swipe X segments.
+     *
+     * @param segmentsX The Swipe X segments.
      */
     public void setSegmentsX(double[] segmentsX) {
         this.segmentsX = segmentsX;
     }
 
     /**
-     * Getter for the
+     * Getter for the Swipe Y segments.
      * 
-     * @return
+     * @return The Swipe Y segments.
      */
     public double[] getSegmentsY() {
         return segmentsY;
     }
 
     /**
-     * 
-     * @param segmentsY
+     * Setter for the Swipe Y segments.
+     *
+     * @param segmentsY The Swipe Y segments.
      */
     public void setSegmentsY(double[] segmentsY) {
         this.segmentsY = segmentsY;
     }
 
     /**
-     * Getter for the
+     * Getter for the Minimum Swipe touch size.
      * 
-     * @return
+     * @return The Minimum Swipe touch size.
      */
     public double getMinSize() {
         return minSize;
     }
 
     /**
+     * Setter for the Minimum Swipe touch size.
      * 
-     * 
-     * @param minSize
+     * @param minSize The Minimum Swipe touch size.
      */
     public void setMinSize(double minSize) {
         this.minSize = minSize;
     }
 
     /**
-     * Getter for the
+     * Getter for the Maximum Swipe touch size.
      * 
-     * @return
+     * @return The Maximum Swipe touch size.
      */
     public double getMaxSize() {
         return maxSize;
     }
 
     /**
-     * 
-     * @param maxSize
+     * Setter for the Maximum Swipe touch size.
+     *
+     * @param maxSize The Maximum Swipe touch size.
      */
     public void setMaxSize(double maxSize) {
         this.maxSize = maxSize;
     }
 
     /**
+     * Getter for the Average Swipe touch size.
      * 
-     * @return
+     * @return The Average Swipe touch size.
      */
     public double getAvgSize() {
         return avgSize;
     }
 
     /**
-     * 
-     * @param avgSize
+     * Setter for the Average Swipe touch size.
+     *
+     * @param avgSize The Average Swipe touch size.
      */
     public void setAvgSize(double avgSize) {
         this.avgSize = avgSize;
     }
 
     /**
+     * Getter for the Initial Swipe touch size.
      * 
-     * @return
+     * @return The Initial Swipe touch size.
      */
     public double getDownSize() {
         return downSize;
     }
 
     /**
-     * 
-     * @param downSize
+     * Setter for the Initial Swipe touch size.
+     *
+     * @param downSize The Initial Swipe touch size.
      */
     public void setDownSize(double downSize) {
         this.downSize = downSize;
     }
 
     /**
+     * Getter for the Final Swipe touch size.
      * 
-     * @return
+     * @return The Final Swipe touch size.
      */
     public double getUpSize() {
         return upSize;
     }
 
     /**
-     * 
-     * @param upSize
+     * Setter for the Final Swipe touch size.
+     *
+     * @param upSize The Final Swipe touch size.
      */
     public void setUpSize(double upSize) {
         this.upSize = upSize;
     }
 
     /**
+     * Getter for the Swipe start X coordinate.
      * 
-     * @return
+     * @return The Swipe start X coordinate.
      */
     public double getStartX() {
         return startX;
     }
 
     /**
-     * 
-     * @param startX
+     * Setter for the Swipe start X coordinate.
+     *
+     * @param startX The Swipe start X coordinate.
      */
     public void setStartX(double startX) {
         this.startX = startX;
     }
 
     /**
+     * Getter for the Swipe start Y coordinate.
      * 
-     * @return
+     * @return The Swipe start Y coordinate.
      */
     public double getStartY() {
         return startY;
     }
 
     /**
-     * 
-     * @param startY
+     * Setter for the Swipe start Y coordinate.
+     *
+     * @param startY The Swipe start Y coordinate.
      */
     public void setStartY(double startY) {
         this.startY = startY;
     }
 
     /**
+     * Getter for the Swipe end X coordinate.
      * 
-     * @return
+     * @return The Swipe end X coordinate.
      */
     public double getEndX() {
         return endX;
     }
 
     /**
-     * 
-     * @param endX
+     * Setter for the Swipe end X coordinate.
+     *
+     * @param endX The Swipe end X coordinate.
      */
     public void setEndX(double endX) {
         this.endX = endX;
     }
 
     /**
+     * Getter for the Swipe end Y coordinate.
      * 
-     * @return
+     * @return The Swipe end Y coordinate.
      */
     public double getEndY() {
         return endY;
     }
 
     /**
-     * 
-     * @param endY
+     * Setter for the Swipe end Y coordinate.
+     *
+     * @param endY The Swipe end Y coordinate.
      */
     public void setEndY(double endY) {
         this.endY = endY;
     }
 
     /**
+     * Getter for the Minimum Swipe X velocity.
      * 
-     * @return
+     * @return The Minimum Swipe X velocity.
      */
     public double getMinXVelocity() {
         return minXVelocity;
     }
 
     /**
-     * 
-     * @param minXVelocity
+     * Setter for the Minimum Swipe X velocity.
+     *
+     * @param minXVelocity The Minimum Swipe X velocity.
      */
     public void setMinXVelocity(double minXVelocity) {
         this.minXVelocity = minXVelocity;
     }
 
     /**
+     * Getter for the Maximum Swipe X velocity.
      * 
-     * @return
+     * @return The Maximum Swipe X velocity.
      */
     public double getMaxXVelocity() {
         return maxXVelocity;
     }
 
     /**
-     * 
-     * @param maxXVelocity
+     * Setter for the Maximum Swipe X velocity.
+     *
+     * @param maxXVelocity The Maximum Swipe X velocity.
      */
     public void setMaxXVelocity(double maxXVelocity) {
         this.maxXVelocity = maxXVelocity;
     }
 
     /**
+     * Getter for the Average Swipe X velocity.
      * 
-     * @return
+     * @return The Average Swipe X velocity.
      */
     public double getAvgXVelocity() {
         return avgXVelocity;
     }
 
     /**
-     * 
-     * @param avgXVelocity
+     * Setter for the Average Swipe X velocity.
+     *
+     * @param avgXVelocity The Average Swipe X velocity.
      */
     public void setAvgXVelocity(double avgXVelocity) {
         this.avgXVelocity = avgXVelocity;
     }
 
     /**
+     * Getter for the Standard deviation Swipe X velocity.
      * 
-     * @return
+     * @return The Standard deviation Swipe X velocity.
      */
     public double getStdXVelocity() {
         return stdXVelocity;
     }
 
     /**
-     * 
-     * @param stdXVelocity
+     * Setter for the Standard deviation Swipe X velocity.
+     *
+     * @param stdXVelocity The Standard deviation Swipe X velocity.
      */
     public void setStdXVelocity(double stdXVelocity) {
         this.stdXVelocity = stdXVelocity;
     }
 
     /**
+     * Getter for the Variance Swipe X velocity.
      * 
-     * @return
+     * @return The Variance Swipe X velocity.
      */
     public double getVarXVelocity() {
         return varXVelocity;
     }
 
     /**
-     * 
-     * @param varXVelocity
+     * Setter for the Variance Swipe X velocity.
+     *
+     * @param varXVelocity The Variance Swipe X velocity.
      */
     public void setVarXVelocity(double varXVelocity) {
         this.varXVelocity = varXVelocity;
     }
 
     /**
+     * Getter for the Minimum Swipe Y velocity.
      * 
-     * @return
+     * @return The Minimum Swipe Y velocity.
      */
     public double getMinYVelocity() {
         return minYVelocity;
     }
 
     /**
-     * 
-     * @param minYVelocity
+     * Setter for the Minimum Swipe Y velocity.
+     *
+     * @param minYVelocity The Minimum Swipe Y velocity.
      */
     public void setMinYVelocity(double minYVelocity) {
         this.minYVelocity = minYVelocity;
     }
 
     /**
+     * Getter for the Maximum Swipe Y velocity.
      * 
-     * @return
+     * @return The Maximum Swipe Y velocity.
      */
     public double getMaxYVelocity() {
         return maxYVelocity;
     }
 
     /**
-     * 
-     * @param maxYVelocity
+     * Setter for the Maximum Swipe Y velocity.
+     *
+     * @param maxYVelocity The Maximum Swipe Y velocity.
      */
     public void setMaxYVelocity(double maxYVelocity) {
         this.maxYVelocity = maxYVelocity;
     }
 
     /**
+     * Getter for the Average Swipe Y velocity.
      * 
-     * @return
+     * @return The Average Swipe Y velocity.
      */
     public double getAvgYVelocity() {
         return avgYVelocity;
     }
 
     /**
-     * 
-     * @param avgYVelocity
+     * Setter for the Average Swipe Y velocity.
+     *
+     * @param avgYVelocity The Average Swipe Y velocity.
      */
     public void setAvgYVelocity(double avgYVelocity) {
         this.avgYVelocity = avgYVelocity;
     }
 
     /**
+     * Getter for the Standard deviation Swipe Y velocity.
      * 
-     * @return
+     * @return The Standard deviation Swipe Y velocity.
      */
     public double getStdYVelocity() {
         return stdYVelocity;
     }
 
     /**
-     * 
-     * @param stdYVelocity
+     * Setter for the Standard deviation Swipe Y velocity.
+     *
+     * @param stdYVelocity The Standard deviation Swipe Y velocity.
      */
     public void setStdYVelocity(double stdYVelocity) {
         this.stdYVelocity = stdYVelocity;
     }
 
     /**
+     * Getter for the Variance Swipe Y velocity.
      * 
-     * @return
+     * @return The Variance Swipe Y velocity.
      */
     public double getVarYVelocity() {
         return varYVelocity;
     }
 
     /**
-     * 
-     * @param varYVelocity
+     * Setter for the Variance Swipe Y velocity.
+     *
+     * @param varYVelocity The Variance Swipe Y velocity.
      */
     public void setVarYVelocity(double varYVelocity) {
         this.varYVelocity = varYVelocity;
     }
 
     /**
+     * Getter for the Minimum X acceleration.
      * 
-     * @return
+     * @return The Minimum X acceleration.
      */
     public double getMinXAccelerometer() {
         return minXAccelerometer;
     }
 
     /**
-     * 
-     * @param minXAccelerometer
+     * Setter for the Minimum X acceleration.
+     *
+     * @param minXAccelerometer The Minimum X acceleration.
      */
     public void setMinXAccelerometer(double minXAccelerometer) {
         this.minXAccelerometer = minXAccelerometer;
     }
 
     /**
+     * Getter for the Maximum X acceleration.
      * 
-     * @return
+     * @return The Maximum X acceleration.
      */
     public double getMaxXAccelerometer() {
         return maxXAccelerometer;
     }
 
     /**
-     * 
-     * @param maxXAccelerometer
+     * Setter for the Maximum X acceleration.
+     *
+     * @param maxXAccelerometer The Maximum X acceleration.
      */
     public void setMaxXAccelerometer(double maxXAccelerometer) {
         this.maxXAccelerometer = maxXAccelerometer;
     }
 
     /**
+     * Getter for the Average X acceleration.
      * 
-     * @return
+     * @return The Average X acceleration.
      */
     public double getAvgXAccelerometer() {
         return avgXAccelerometer;
     }
 
     /**
-     * 
-     * @param avgXAccelerometer
+     * Setter for the Average X acceleration.
+     *
+     * @param avgXAccelerometer The Average X acceleration.
      */
     public void setAvgXAccelerometer(double avgXAccelerometer) {
         this.avgXAccelerometer = avgXAccelerometer;
     }
 
     /**
+     * Getter for the Standard deviation X acceleration.
      * 
-     * @return
+     * @return The Standard deviation X acceleration.
      */
     public double getStdXAccelerometer() {
         return stdXAccelerometer;
     }
 
     /**
-     * 
-     * @param stdXAccelerometer
+     * Setter for the Standard deviation X acceleration.
+     *
+     * @param stdXAccelerometer The Standard deviation X acceleration.
      */
     public void setStdXAccelerometer(double stdXAccelerometer) {
         this.stdXAccelerometer = stdXAccelerometer;
     }
 
     /**
+     * Getter for the Variance X acceleration.
      * 
-     * @return
+     * @return The Variance X acceleration.
      */
     public double getVarXAccelerometer() {
         return varXAccelerometer;
     }
 
     /**
-     * 
-     * @param varXAccelerometer
+     * Setter for the Variance X acceleration.
+     *
+     * @param varXAccelerometer The Variance X acceleration.
      */
     public void setVarXAccelerometer(double varXAccelerometer) {
         this.varXAccelerometer = varXAccelerometer;
     }
 
     /**
+     * Getter for the Minimum Y acceleration.
      * 
-     * @return
+     * @return The Minimum Y acceleration.
      */
     public double getMinYAccelerometer() {
         return minYAccelerometer;
     }
 
     /**
-     * 
-     * @param minYAccelerometer
+     * Setter for the Minimum Y acceleration.
+     *
+     * @param minYAccelerometer The Minimum Y acceleration.
      */
     public void setMinYAccelerometer(double minYAccelerometer) {
         this.minYAccelerometer = minYAccelerometer;
     }
 
     /**
+     * Getter for the Maximum Y acceleration.
      * 
-     * @return
+     * @return The Maximum Y acceleration.
      */
     public double getMaxYAccelerometer() {
         return maxYAccelerometer;
     }
 
     /**
-     * 
-     * @param maxYAccelerometer
+     * Setter for the Maximum Y acceleration.
+     *
+     * @param maxYAccelerometer The Maximum Y acceleration.
      */
     public void setMaxYAccelerometer(double maxYAccelerometer) {
         this.maxYAccelerometer = maxYAccelerometer;
     }
 
     /**
+     * Getter for the Average Y acceleration.
      * 
-     * @return
+     * @return The Average Y acceleration.
      */
     public double getAvgYAccelerometer() {
         return avgYAccelerometer;
     }
 
     /**
-     * 
-     * @param avgYAccelerometer
+     * Setter for the Average Y acceleration.
+     *
+     * @param avgYAccelerometer The Average Y acceleration.
      */
     public void setAvgYAccelerometer(double avgYAccelerometer) {
         this.avgYAccelerometer = avgYAccelerometer;
     }
 
     /**
+     * Getter for the Standard deviation Y acceleration.
      * 
-     * @return
+     * @return The Standard deviation Y acceleration.
      */
     public double getStdYAccelerometer() {
         return stdYAccelerometer;
     }
 
     /**
-     * 
-     * @param stdYAccelerometer
+     * Setter for the Standard deviation Y acceleration.
+     *
+     * @param stdYAccelerometer The Standard deviation Y acceleration.
      */
     public void setStdYAccelerometer(double stdYAccelerometer) {
         this.stdYAccelerometer = stdYAccelerometer;
     }
 
     /**
+     * Getter for the Variance Y acceleration.
      * 
-     * @return
+     * @return The Variance Y acceleration.
      */
     public double getVarYAccelerometer() {
         return varYAccelerometer;
     }
 
     /**
-     * 
-     * @param varYAccelerometer
+     * Setter for the Variance Y acceleration.
+     *
+     * @param varYAccelerometer The Variance Y acceleration.
      */
     public void setVarYAccelerometer(double varYAccelerometer) {
         this.varYAccelerometer = varYAccelerometer;
     }
 
     /**
+     * Getter for the Minimum Z acceleration.
      * 
-     * @return
+     * @return The Minimum Z acceleration.
      */
     public double getMinZAccelerometer() {
         return minZAccelerometer;
     }
 
     /**
-     * 
-     * @param minZAccelerometer
+     * Setter for the Minimum Z acceleration.
+     *
+     * @param minZAccelerometer The Minimum Z acceleration.
      */
     public void setMinZAccelerometer(double minZAccelerometer) {
         this.minZAccelerometer = minZAccelerometer;
     }
 
     /**
+     * Getter for the Maximum Z acceleration.
      * 
-     * @return
+     * @return The Maximum Z acceleration.
      */
     public double getMaxZAccelerometer() {
         return maxZAccelerometer;
     }
 
     /**
-     * 
-     * @param maxZAccelerometer
+     * Setter for the Maximum Z acceleration.
+     *
+     * @param maxZAccelerometer The Maximum Z acceleration.
      */
     public void setMaxZAccelerometer(double maxZAccelerometer) {
         this.maxZAccelerometer = maxZAccelerometer;
     }
 
     /**
+     * Getter for the Average Z acceleration.
      * 
-     * @return
+     * @return The Average Z acceleration.
      */
     public double getAvgZAccelerometer() {
         return avgZAccelerometer;
     }
 
     /**
-     * 
-     * @param avgZAccelerometer
+     * Setter for the Average Z acceleration.
+     *
+     * @param avgZAccelerometer The Average Z acceleration.
      */
     public void setAvgZAccelerometer(double avgZAccelerometer) {
         this.avgZAccelerometer = avgZAccelerometer;
     }
 
     /**
+     * Getter for the Standard deviation Z acceleration.
      * 
-     * @return
+     * @return The Standard deviation Z acceleration.
      */
     public double getStdZAccelerometer() {
         return stdZAccelerometer;
     }
 
     /**
-     * 
-     * @param stdZAccelerometer
+     * Setter for the Standard deviation Z acceleration.
+     *
+     * @param stdZAccelerometer The Standard deviation Z acceleration.
      */
     public void setStdZAccelerometer(double stdZAccelerometer) {
         this.stdZAccelerometer = stdZAccelerometer;
     }
 
     /**
+     * Getter for the Variance Z acceleration.
      * 
-     * @return
+     * @return The Variance Z acceleration.
      */
     public double getVarZAccelerometer() {
         return varZAccelerometer;
     }
 
     /**
-     * 
-     * @param varZAccelerometer
+     * Setter for the Variance Z acceleration.
+     *
+     * @param varZAccelerometer The Variance Z acceleration.
      */
     public void setVarZAccelerometer(double varZAccelerometer) {
         this.varZAccelerometer = varZAccelerometer;
     }
 
     /**
+     * Getter for Minimum X angular velocity.
      * 
-     * @return
+     * @return The Minimum X angular velocity.
      */
     public double getMinXGyroscope() {
         return minXGyroscope;
     }
 
     /**
-     * 
-     * @param minXGyroscope
+     * Setter for the Minimum X angular velocity.
+     *
+     * @param minXGyroscope The Minimum X angular velocity.
      */
     public void setMinXGyroscope(double minXGyroscope) {
         this.minXGyroscope = minXGyroscope;
     }
 
     /**
+     * Getter for the Maximum X angular velocity.
      * 
-     * @return
+     * @return The Maximum X angular velocity.
      */
     public double getMaxXGyroscope() {
         return maxXGyroscope;
     }
 
     /**
-     * 
-     * @param maxXGyroscope
+     * Setter for the Maximum X angular velocity.
+     *
+     * @param maxXGyroscope The Maximum X angular velocity.
      */
     public void setMaxXGyroscope(double maxXGyroscope) {
         this.maxXGyroscope = maxXGyroscope;
     }
 
     /**
+     * Getter for the Average X angular velocity.
      * 
-     * @return
+     * @return The Average X angular velocity.
      */
     public double getAvgXGyroscope() {
         return avgXGyroscope;
     }
 
     /**
-     * 
-     * @param avgXGyroscope
+     * Setter for the Average X angular velocity.
+     *
+     * @param avgXGyroscope The Average X angular velocity.
      */
     public void setAvgXGyroscope(double avgXGyroscope) {
         this.avgXGyroscope = avgXGyroscope;
     }
 
     /**
+     * Getter for the Standard deviation X angular velocity.
      * 
-     * @return
+     * @return The Standard deviation X angular velocity.
      */
     public double getStdXGyroscope() {
         return stdXGyroscope;
     }
 
     /**
-     * 
-     * @param stdXGyroscope
+     * Setter for the Standard deviation X angular velocity.
+     *
+     * @param stdXGyroscope The Standard deviation X angular velocity.
      */
     public void setStdXGyroscope(double stdXGyroscope) {
         this.stdXGyroscope = stdXGyroscope;
     }
 
     /**
+     * Getter for the Variance X angular velocity.
      * 
-     * @return
+     * @return The Variance X angular velocity.
      */
     public double getVarXGyroscope() {
         return varXGyroscope;
     }
 
     /**
-     * 
-     * @param varXGyroscope
+     * Setter for the Variance X angular velocity.
+     *
+     * @param varXGyroscope The Variance X angular velocity.
      */
     public void setVarXGyroscope(double varXGyroscope) {
         this.varXGyroscope = varXGyroscope;
     }
 
     /**
+     * Getter for the Minimum Y angular velocity.
      * 
-     * @return
+     * @return The Minimum Y angular velocity.
      */
     public double getMinYGyroscope() {
         return minYGyroscope;
     }
 
     /**
-     * 
-     * @param minYGyroscope
+     * Setter for the Minimum Y angular velocity.
+     *
+     * @param minYGyroscope The Minimum Y angular velocity.
      */
     public void setMinYGyroscope(double minYGyroscope) {
         this.minYGyroscope = minYGyroscope;
     }
 
     /**
+     * Getter for the Maximum Y angular velocity.
      * 
-     * @return
+     * @return The Maximum Y angular velocity.
      */
     public double getMaxYGyroscope() {
         return maxYGyroscope;
     }
 
     /**
-     * 
-     * @param maxYGyroscope
+     * Setter for the Maximum Y angular velocity.
+     *
+     * @param maxYGyroscope The Maximum Y angular velocity.
      */
     public void setMaxYGyroscope(double maxYGyroscope) {
         this.maxYGyroscope = maxYGyroscope;
     }
 
     /**
+     * Getter for the Average Y angular velocity.
      * 
-     * @return
+     * @return The Average Y angular velocity.
      */
     public double getAvgYGyroscope() {
         return avgYGyroscope;
     }
 
     /**
-     * 
-     * @param avgYGyroscope
+     * Setter for the Average Y angular velocity.
+     *
+     * @param avgYGyroscope The Average Y angular velocity.
      */
     public void setAvgYGyroscope(double avgYGyroscope) {
         this.avgYGyroscope = avgYGyroscope;
     }
 
     /**
+     * Getter for the Standard deviation Y angular velocity.
      * 
-     * @return
+     * @return The Standard deviation Y angular velocity.
      */
     public  double getStdYGyroscope() {
         return stdYGyroscope;
     }
 
     /**
-     * 
-     * @param stdYGyroscope
+     * Setter for the Standard deviation Y angular velocity.
+     *
+     * @param stdYGyroscope The Standard deviation Y angular velocity.
      */
     public  void setStdYGyroscope(double stdYGyroscope) {
         this.stdYGyroscope = stdYGyroscope;
     }
 
     /**
+     * Getter for the Variance Y angular velocity.
      * 
-     * @return
+     * @return The Variance Y angular velocity.
      */
     public  double getVarYGyroscope() {
         return varYGyroscope;
     }
 
     /**
-     * 
-     * @param varYGyroscope
+     * Setter for the Variance Y angular velocity.
+     *
+     * @param varYGyroscope The Variance Y angular velocity.
      */
     public  void setVarYGyroscope(double varYGyroscope) {
         this.varYGyroscope = varYGyroscope;
     }
 
     /**
+     * Getter for the Minimum Z angular velocity.
      * 
-     * @return
+     * @return The Minimum Z angular velocity.
      */
     public  double getMinZGyroscope() {
         return minZGyroscope;
     }
 
     /**
-     * 
-     * @param minZGyroscope
+     * Setter for the Minimum Z angular velocity.
+     *
+     * @param minZGyroscope The Minimum Z angular velocity.
      */
     public  void setMinZGyroscope(double minZGyroscope) {
         this.minZGyroscope = minZGyroscope;
     }
 
     /**
+     * Getter for the Maximum Z angular velocity.
      * 
-     * @return
+     * @return The Maximum Z angular velocity.
      */
     public  double getMaxZGyroscope() {
         return maxZGyroscope;
     }
 
     /**
-     * 
-     * @param maxZGyroscope
+     * Setter for the Maximum Z angular velocity.
+     *
+     * @param maxZGyroscope The Maximum Z angular velocity.
      */
     public  void setMaxZGyroscope(double maxZGyroscope) {
         this.maxZGyroscope = maxZGyroscope;
     }
 
     /**
+     * Getter for the Average Z angular velocity.
      * 
-     * @return
+     * @return The Average Z angular velocity.
      */
     public  double getAvgZGyroscope() {
         return avgZGyroscope;
     }
 
     /**
-     * 
-     * @param avgZGyroscope
+     * Setter for the Average Z angular velocity.
+     *
+     * @param avgZGyroscope The Average Z angular velocity.
      */
     public  void setAvgZGyroscope(double avgZGyroscope) {
         this.avgZGyroscope = avgZGyroscope;
     }
 
     /**
+     * Getter for the Standard deviation Z angular velocity.
      * 
-     * @return
+     * @return The Standard deviation  Z angular velocity.
      */
     public  double getStdZGyroscope() {
         return stdZGyroscope;
     }
 
     /**
-     * 
-     * @param stdZGyroscope
+     * Setter for the Standard deviation  Z angular velocity.
+     *
+     * @param stdZGyroscope Standard deviation  Z angular velocity.
      */
     public  void setStdZGyroscope(double stdZGyroscope) {
         this.stdZGyroscope = stdZGyroscope;
     }
 
     /**
+     * Getter for the Variance Z angular velocity.
      * 
-     * @return
+     * @return The Variance Z angular velocity.
      */
     public  double getVarZGyroscope() {
         return varZGyroscope;
     }
 
     /**
-     * 
-     * @param varZGyroscope
+     * Setter for the Variance Z angular velocity.
+     *
+     * @param varZGyroscope The Variance Z angular velocity.
      */
      public  void setVarZGyroscope(double varZGyroscope) {
      this.varZGyroscope = varZGyroscope;
      }
 
-     /**
+    /**
+     * Getter for the Minimum X orientation value.
      *
-     * @return
+     * @return The Minimum X orientation value.
      */
      public  double getMinXOrientation() {
      return minXOrientation;
      }
 
-     /**
+    /**
+     * Setter for the Minimum X orientation value.
      *
-     * @param minXOrientation
+     * @param minXOrientation The Minimum X orientation value.
      */
      public  void setMinXOrientation(double minXOrientation) {
      this.minXOrientation = minXOrientation;
      }
 
-     /**
+    /**
+     * Getter for the Maximum X orientation value.
      *
-     * @return
+     * @return The Maximum X orientation value.
      */
      public  double getMaxXOrientation() {
      return maxXOrientation;
      }
 
-     /**
+    /**
+     * Setter Maximum X orientation value.
      *
-     * @param maxXOrientation
+     * @param maxXOrientation The Maximum X orientation value.
      */
      public  void setMaxXOrientation(double maxXOrientation) {
      this.maxXOrientation = maxXOrientation;
      }
 
-     /**
+    /**
+     * Getter for the Average X orientation value.
      *
-     * @return
+     * @return The Average X orientation value.
      */
      public  double getAvgXOrientation() {
      return avgXOrientation;
      }
 
-     /**
+    /**
+     * Setter for the Average X orientation value.
      *
-     * @param avgXOrientation
+     * @param avgXOrientation The Average X orientation value.
      */
     public  void setAvgXOrientation(double avgXOrientation) {
         this.avgXOrientation = avgXOrientation;
     }
 
     /**
+     * Getter for the Standard deviation X orientation value.
      * 
-     * @return
+     * @return The Standard deviation X orientation value.
      */
     public  double getStdXOrientation() {
         return stdXOrientation;
     }
 
     /**
-     * 
-     * @param stdXOrientation
+     * Setter for the Standard deviation X orientation value.
+     *
+     * @param stdXOrientation The Standard deviation X orientation value.
      */
     public  void setStdXOrientation(double stdXOrientation) {
         this.stdXOrientation = stdXOrientation;
     }
 
     /**
+     * Getter for the Variance X orientation value.
      * 
-     * @return
+     * @return The Variance X orientation value.
      */
     public  double getVarXOrientation() {
         return varXOrientation;
     }
 
     /**
-     * 
-     * @param varXOrientation
+     * Setter for the Variance X orientation value.
+     *
+     * @param varXOrientation The Variance X orientation value.
      */
     public  void setVarXOrientation(double varXOrientation) {
         this.varXOrientation = varXOrientation;
     }
 
     /**
+     * Getter for the Minimum Y orientation value.
      * 
-     * @return
+     * @return The Minimum Y orientation value.
      */
     public  double getMinYOrientation() {
         return minYOrientation;
     }
 
     /**
-     * 
-     * @param minYOrientation
+     * Setter for the Minimum Y orientation value.
+     *
+     * @param minYOrientation The Minimum Y orientation value.
      */
     public  void setMinYOrientation(double minYOrientation) {
         this.minYOrientation = minYOrientation;
     }
 
     /**
+     * Getter for the Maximum Y orientation value.
      * 
-     * @return
+     * @return The Maximum Y orientation value.
      */
     public  double getMaxYOrientation() {
         return maxYOrientation;
     }
 
     /**
-     * 
-     * @param maxYOrientation
+     * Setter for the Maximum Y orientation value.
+     *
+     * @param maxYOrientation The Maximum Y orientation value.
      */
     public  void setMaxYOrientation(double maxYOrientation) {
         this.maxYOrientation = maxYOrientation;
     }
 
     /**
+     * Getter for the Average Y orientation value.
      * 
-     * @return
+     * @return The Average Y orientation value.
      */
     public  double getAvgYOrientation() {
         return avgYOrientation;
     }
 
     /**
-     * 
-     * @param avgYOrientation
+     * Setter for the Average Y orientation value.
+     *
+     * @param avgYOrientation The Average Y orientation value.
      */
     public  void setAvgYOrientation(double avgYOrientation) {
         this.avgYOrientation = avgYOrientation;
     }
 
     /**
+     * Getter for the Standard deviation Y orientation value.
      * 
-     * @return
+     * @return The Standard deviation Y orientation value.
      */
     public  double getStdYOrientation() {
         return stdYOrientation;
     }
 
     /**
-     * 
-     * @param stdYOrientation
+     * Setter for the Standard deviation Y orientation value.
+     *
+     * @param stdYOrientation The Standard deviation Y orientation value.
      */
     public  void setStdYOrientation(double stdYOrientation) {
         this.stdYOrientation = stdYOrientation;
     }
 
     /**
+     * Getter for the Variance Y orientation value.
      * 
-     * @return
+     * @return The Variance Y orientation value.
      */
     public  double getVarYOrientation() {
         return varYOrientation;
     }
 
     /**
-     * 
-     * @param varYOrientation
+     * Setter for the Variance Y orientation value.
+     *
+     * @param varYOrientation The Variance Y orientation value.
      */
     public  void setVarYOrientation(double varYOrientation) {
         this.varYOrientation = varYOrientation;
     }
 
     /**
+     * Getter for the Minimum Z orientation value.
      * 
-     * @return
+     * @return The Minimum Z orientation value.
      */
     public  double getMinZOrientation() {
         return minZOrientation;
     }
 
     /**
-     * 
-     * @param minZOrientation
+     * Setter for the Minimum Z orientation value.
+     *
+     * @param minZOrientation The Minimum Z orientation value.
      */
     public  void setMinZOrientation(double minZOrientation) {
         this.minZOrientation = minZOrientation;
     }
 
     /**
+     * Getter for the Maximum Z orientation value.
      * 
-     * @return
+     * @return The Maximum Z orientation value.
      */
      public  double getMaxZOrientation() {
      return maxZOrientation;
      }
 
-     /**
+    /**
+     * Setter for the Maximum Z orientation value.
      *
-     * @param maxZOrientation
+     * @param maxZOrientation The Maximum Z orientation value.
      */
      public  void setMaxZOrientation(double maxZOrientation) {
      this.maxZOrientation = maxZOrientation;
      }
 
-     /**
+    /**
+     * Getter for the Average Z orientation value.
      *
-     * @return
+     * @return The Average Z orientation value.
      */
-     public  double getAvgZOrientation() {
+    public  double getAvgZOrientation() {
      return avgZOrientation;
      }
 
-     /**
+    /**
+     * Setter for the Average Z orientation value.
      *
-     * @param avgZOrientation
+     * @param avgZOrientation The Average Z orientation value.
      */
      public  void setAvgZOrientation(double avgZOrientation) {
      this.avgZOrientation = avgZOrientation;
      }
 
-     /**
+    /**
+     * Getter for the Standard deviation Z orientation value.
      *
-     * @return
+     * @return The Standard deviation Z orientation value.
      */
      public  double getStdZOrientation() {
      return stdZOrientation;
      }
 
-     /**
+    /**
+     * Setter for the Standard deviation Z orientation value.
      *
-     * @param stdZOrientation
+     * @param stdZOrientation The Standard deviation Z orientation value.
      */
      public  void setStdZOrientation(double stdZOrientation) {
      this.stdZOrientation = stdZOrientation;
      }
 
-     /**
+    /**
+     * Getter for the Variance Z orientation value.
      *
-     * @return
+     * @return The Variance Z orientation value.
      */
     public  double getVarZOrientation() {
         return varZOrientation;
     }
 
     /**
-     * 
-     * @param varZOrientation
+     * Setter for the Variance Z orientation value.
+     *
+     * @param varZOrientation The Variance Z orientation value.
      */
     public  void setVarZOrientation(double varZOrientation) {
         this.varZOrientation = varZOrientation;
     }
 
     /**
+     * Getter for the Keystroke individual press durations.
      * 
-     * @return
+     * @return The Keystroke individual press durations.
      */
     public  double[] getKeystrokeDurations() {
         return this.keystrokeDurations;
     }
 
     /**
-     * 
-     * @param duration
-     * @param curKeystroke
-     * @param pinLength
+     * Setter for the Keystroke individual press durations.
+     *
+     * @param keystrokeDurations The Keystroke individual press durations.
+     */
+    public  void setKeystrokeDurations(double[] keystrokeDurations) {
+        this.keystrokeDurations = keystrokeDurations;
+    }
+
+    /**
+     * Setter for an individual Keystroke press durations.
+     *
+     * @param duration The duration of the keystroke.
+     * @param curKeystroke The current keystroke identifier.
+     * @param pinLength The total length of the sequence.
      */
     public  void addKeystrokeDuration(double duration, int curKeystroke, int pinLength) {
         if(this.keystrokeDurations == null) {
@@ -1605,26 +1749,29 @@ public class Swipe {
     }
 
     /**
+     * Getter for the Keystroke individual press intervals.
      * 
-     * @param keystrokeDurations
-     */
-    public  void setKeystrokeDurations(double[] keystrokeDurations) {
-        this.keystrokeDurations = keystrokeDurations;
-    }
-
-    /**
-     * 
-     * @return
+     * @return The Keystroke individual press intervals.
      */
     public  double[] getKeystrokeIntervals() {
         return this.keystrokeIntervals;
     }
 
     /**
-     * 
-     * @param interval
-     * @param curKeystroke
-     * @param pinLength
+     * Setter for the Keystroke individual press intervals.
+     *
+     * @param keystrokeIntervals The Keystroke individual press intervals.
+     */
+    public  void setKeystrokeIntervals(double[] keystrokeIntervals) {
+        this.keystrokeIntervals = keystrokeIntervals;
+    }
+
+    /**
+     * Setter for an individual Keystroke press durations.
+     *
+     * @param interval The duration of the interval.
+     * @param curKeystroke The current keystroke identifier.
+     * @param pinLength The total length of the sequence.
      */
     public  void addKeystrokeInterval(double interval, int curKeystroke, int pinLength) {
         if(this.keystrokeIntervals == null) {
@@ -1635,26 +1782,30 @@ public class Swipe {
     }
 
     /**
+     * Getter for the Keystroke start intervals.
      * 
-     * @param keystrokeIntervals
-     */
-    public  void setKeystrokeIntervals(double[] keystrokeIntervals) {
-        this.keystrokeIntervals = keystrokeIntervals;
-    }
-
-    /**
-     * 
-     * @return
+     * @return The Keystroke start intervals.
      */
     public  double[] getKeystrokeStartIntervals() {
         return this.keystrokeStartIntervals;
     }
 
     /**
-     * 
-     * @param startInterval
-     * @param curKeystroke
-     * @param pinLength
+     * Setter for the Keystroke start intervals.
+     *
+     * @param keystrokeStartIntervals The Keystroke start intervals.
+     */
+    public  void setKeystrokeStartIntervals(double[] keystrokeStartIntervals) {
+        this.keystrokeStartIntervals = keystrokeStartIntervals;
+    }
+
+
+    /**
+     * Setter for an individual Keystroke start interval.
+     *
+     * @param startInterval The duration of the start interval.
+     * @param curKeystroke The current keystroke identifier.
+     * @param pinLength The total length of the sequence.
      */
     public  void addKeystrokeStartInterval(double startInterval, int curKeystroke, int pinLength) {
         if(this.keystrokeStartIntervals == null) {
@@ -1665,26 +1816,29 @@ public class Swipe {
     }
 
     /**
+     * Getter for the Keystroke end intervals.
      * 
-     * @param keystrokeStartIntervals
-     */
-    public  void setKeystrokeStartIntervals(double[] keystrokeStartIntervals) {
-        this.keystrokeStartIntervals = keystrokeStartIntervals;
-    }
-
-    /**
-     * 
-     * @return
+     * @return The Keystroke end intervals.
      */
     public  double[] getKeystrokeEndIntervals() {
         return this.keystrokeEndIntervals;
     }
 
     /**
-     * 
-     * @param endInterval
-     * @param curKeystroke
-     * @param pinLength
+     * Setter for the Keystroke end intervals.
+     *
+     * @param keystrokeEndIntervals The Keystroke end intervals.
+     */
+    public  void setKeystrokeEndIntervals(double[] keystrokeEndIntervals) {
+        this.keystrokeEndIntervals = keystrokeEndIntervals;
+    }
+
+    /**
+     * Setter for an individual Keystroke end interval.
+     *
+     * @param endInterval The duration of the end interval.
+     * @param curKeystroke The current keystroke identifier.
+     * @param pinLength The total length of the sequence.
      */
     public  void addKeystrokeEndInterval(double endInterval, int curKeystroke, int pinLength) {
         if(this.keystrokeEndIntervals == null) {
@@ -1695,361 +1849,386 @@ public class Swipe {
     }
 
     /**
+     * Getter for the Full Keystroke duration.
      * 
-     * @param keystrokeEndIntervals
-     */
-    public  void setKeystrokeEndIntervals(double[] keystrokeEndIntervals) {
-        this.keystrokeEndIntervals = keystrokeEndIntervals;
-    }
-
-    /**
-     * 
-     * @return
+     * @return The Full Keystroke duration.
      */
     public  double getKeystrokeFullDuration() {
         return this.keystrokeFullDuration;
     }
 
     /**
-     * 
+     * Setter for the Full Keystroke duration.
      */
-    public  void setKeystrokeFullDuration() {
+    public void setKeystrokeFullDuration() {
         this.keystrokeFullDuration = Arrays.stream(this.getKeystrokeDurations()).sum() + Arrays.stream(this.getKeystrokeIntervals()).sum();
     }
 
     /**
+     * Getter for the Signature initial X coordinate value.
      * 
-     * @param keystrokeFullDuration
-     */
-    public  void setKeystrokeFullDurationNormalized(double keystrokeFullDuration) {
-        this.keystrokeFullDuration = keystrokeFullDuration;
-    }
-
-    /**
-     * 
-     * @return
+     * @return The Signature initial X coordinate value.
      */
     public  double getSignatureStartX() {
         return signatureStartX;
     }
 
     /**
-     * 
-     * @param signatureStartX
+     * Setter for the Signature initial X coordinate value.
+     *
+     * @param signatureStartX The Signature initial X coordinate value.
      */
     public  void setSignatureStartX(double signatureStartX) {
         this.signatureStartX = signatureStartX;
     }
 
     /**
+     * Getter for the Signature initial Y coordinate value.
      * 
-     * @return
+     * @return The Signature initial Y coordinate value.
      */
     public  double getSignatureStartY() {
         return signatureStartY;
     }
 
     /**
-     * 
-     * @param signatureStartY
+     * Setter for the Signature initial Y coordinate value.
+     *
+     * @param signatureStartY Teh Signature initial Y coordinate value.
      */
     public  void setSignatureStartY(double signatureStartY) {
         this.signatureStartY = signatureStartY;
     }
 
     /**
+     * Getter for the Signature final X coordinate value.
      * 
-     * @return
+     * @return The Signature final X coordinate value.
      */
     public  double getSignatureEndX() {
         return signatureEndX;
     }
 
     /**
-     * 
-     * @param signatureEndX
+     * Setter for the Signature final X coordinate value.
+     *
+     * @param signatureEndX The Signature final X coordinate value.
      */
     public  void setSignatureEndX(double signatureEndX) {
         this.signatureEndX = signatureEndX;
     }
 
     /**
+     * Getter for the Signature final Y coordinate value.
      * 
-     * @return
+     * @return The Signature final Y coordinate value.
      */
     public  double getSignatureEndY() {
         return signatureEndY;
     }
 
     /**
-     * 
-     * @param signatureEndY
+     * Setter for the Signature final Y coordinate value.
+     *
+     * @param signatureEndY The Signature final Y coordinate value.
      */
     public  void setSignatureEndY(double signatureEndY) {
         this.signatureEndY = signatureEndY;
     }
 
     /**
+     * Getter for the Signature Standard deviation X coordinate value.
      * 
-     * @return
+     * @return The Signature Standard deviation X coordinate value.
      */
     public  double getSignatureStdX() {
         return signatureStdX;
     }
 
     /**
-     * 
-     * @param signatureStdX
+     * Setter for the Signature Standard deviation X coordinate value.
+     *
+     * @param signatureStdX The Signature Standard deviation X coordinate value.
      */
     public  void setSignatureStdX(double signatureStdX) {
         this.signatureStdX = signatureStdX;
     }
 
     /**
+     * Getter for the Signature Standard deviation Y coordinate value.
      * 
-     * @return
+     * @return The Signature Standard deviation Y coordinate value.
      */
     public  double getSignatureStdY() {
         return signatureStdY;
     }
 
     /**
-     * 
-     * @param signatureStdY
+     * Setter for the Signature Standard deviation Y coordinate value.
+     *
+     * @param signatureStdY The Signature Standard deviation Y coordinate value.
      */
     public  void setSignatureStdY(double signatureStdY) {
         this.signatureStdY = signatureStdY;
     }
 
     /**
+     * Getter for the Signature X coordinate min / max difference.
      * 
-     * @return
+     * @return The Signature X coordinate min / max difference.
      */
     public  double getSignatureDiffX() {
         return signatureDiffX;
     }
 
     /**
-     * 
-     * @param signatureDiffX
+     * Setter for the Signature X coordinate min / max difference.
+     *
+     * @param signatureDiffX The Signature X coordinate min / max difference.
      */
     public  void setSignatureDiffX(double signatureDiffX) {
         this.signatureDiffX = signatureDiffX;
     }
 
     /**
+     * Getter for the Signature Y coordinate min / max difference.
      * 
-     * @return
+     * @return The Signature Y coordinate min / max difference.
      */
     public  double getSignatureDiffY() {
         return signatureDiffY;
     }
 
     /**
-     * 
-     * @param signatureDiffY
+     * Setter for the Signature Y coordinate min / max difference.
+     *
+     * @param signatureDiffY The Signature Y coordinate min / max difference.
      */
     public  void setSignatureDiffY(double signatureDiffY) {
         this.signatureDiffY = signatureDiffY;
     }
 
     /**
+     * Getter for the Signature start end position euclidean distance.
      * 
-     * @return
+     * @return The Signature start end position euclidean distance.
      */
     public  double getSignatureEuclideanDistance() {
         return signatureEuclideanDistance;
     }
 
     /**
-     * 
-     * @param signatureEuclideanDistance
+     * Setter for the Signature start end position euclidean distance.
+     *
+     * @param signatureEuclideanDistance The Signature start end position euclidean distance.
      */
     public  void setSignatureEuclideanDistance(double signatureEuclideanDistance) {
         this.signatureEuclideanDistance = signatureEuclideanDistance;
     }
 
     /**
+     * Getter for the Signature average horizontal velocity.
      * 
-     * @return
+     * @return The Signature average horizontal velocity.
      */
     public  double getSignatureAvgXVelocity() {
         return signatureAvgXVelocity;
     }
 
     /**
-     * 
-     * @param signatureAvgXVelocity
+     * Setter for the Signature average horizontal velocity.
+     *
+     * @param signatureAvgXVelocity The Signature average horizontal velocity.
      */
     public  void setSignatureAvgXVelocity(double signatureAvgXVelocity) {
         this.signatureAvgXVelocity = signatureAvgXVelocity;
     }
 
     /**
+     * Getter for the Signature average vertical velocity.
      * 
-     * @return
+     * @return The Signature average vertical velocity.
      */
     public  double getSignatureAvgYVelocity() {
         return signatureAvgYVelocity;
     }
 
     /**
-     * 
-     * @param signatureAvgYVelocity
+     * Setter for the Signature average vertical velocity.
+     *
+     * @param signatureAvgYVelocity The Signature average vertical velocity.
      */
     public  void setSignatureAvgYVelocity(double signatureAvgYVelocity) {
         this.signatureAvgYVelocity = signatureAvgYVelocity;
     }
 
     /**
+     * Getter for the Signature maximum horizontal velocity.
      * 
-     * @return
+     * @return The Signature maximum horizontal velocity.
      */
     public  double getSignatureMaxXVelocity() {
         return signatureMaxXVelocity;
     }
 
     /**
-     * 
-     * @param signatureMaxXVelocity
+     * Setter for the Signature maximum horizontal velocity.
+     *
+     * @param signatureMaxXVelocity The Signature maximum horizontal velocity.
      */
     public  void setSignatureMaxXVelocity(double signatureMaxXVelocity) {
         this.signatureMaxXVelocity = signatureMaxXVelocity;
     }
 
     /**
+     * Getter for the Signature maximum vertical velocity.
      * 
-     * @return
+     * @return The Signature maximum vertical velocity.
      */
     public  double getSignatureMaxYVelocity() {
         return signatureMaxYVelocity;
     }
 
     /**
-     * 
-     * @param signatureMaxYVelocity
+     * Setter for the Signature maximum vertical velocity.
+     *
+     * @param signatureMaxYVelocity The Signature maximum vertical velocity.
      */
     public  void setSignatureMaxYVelocity(double signatureMaxYVelocity) {
         this.signatureMaxYVelocity = signatureMaxYVelocity;
     }
 
     /**
+     * Getter for the Signature X segment values.
      * 
-     * @return
+     * @return The Signature X segment values.
      */
     public  double[] getSignatureSegmentsX() {
         return signatureSegmentsX;
     }
 
     /**
-     * 
-     * @param signatureSegmentsX
+     * Setter for the Signature X segment values.
+     *
+     * @param signatureSegmentsX The Signature X segment values.
      */
     public  void setSignatureSegmentsX(double[] signatureSegmentsX) {
         this.signatureSegmentsX = signatureSegmentsX;
     }
 
     /**
+     * Getter for the Signature Y segment values.
      * 
-     * @return
+     * @return The Signature Y segment values.
      */
     public  double[] getSignatureSegmentsY() {
         return signatureSegmentsY;
     }
 
     /**
-     * 
-     * @param signatureSegmentsY
+     * Setter for the Signature Y segment values.
+     *
+     * @param signatureSegmentsY The Signature Y segment values.
      */
     public  void setSignatureSegmentsY(double[] signatureSegmentsY) {
         this.signatureSegmentsY = signatureSegmentsY;
     }
 
     /**
+     * Getter for the Holding position identifier.
      * 
-     * @return
+     * @return The Holding position identifier (1 = Sitting, 2 = Standing, 3 = Walking).
      */
     public  double getHoldingPosition() {
         return holdingPosition;
     }
 
     /**
-     * 
-     * @param holdingPosition
+     * Setter for the Holding position identifier.
+     *
+     * @param holdingPosition The Holding position identifier (1 = Sitting, 2 = Standing, 3 = Walking).
      */
     public  void setHoldingPosition(double holdingPosition) {
         this.holdingPosition = holdingPosition;
     }
 
     /**
+     * Getter for the User type identifier.
      * 
-     * @return
+     * @return The User type identifier (User/Attacker).
      */
     public  String getUserId() {
         return userId;
     }
 
     /**
-     * 
-     * @param userId
+     * Setter for the User type identifier.
+     *
+     * @param userId The User type identifier (User/Attacker).
      */
     public  void setUserId(String userId) {
         this.userId = userId;
     }
 
     /**
+     * Getter for the Test interaction authentication results.
      * 
-     * @return
+     * @return The Test interaction authentication results.
      */
     public  double[] getAuthentication() {
         return this.authentication;
     }
 
     /**
-     * 
-     * @param authentication
+     * Setter for the Test interaction authentication results.
+     *
+     * @param authentication The Test interaction authentication results.
      */
     public  void setAuthentication(double[] authentication) {
         this.authentication = authentication;
     }
 
     /**
+     * Getter for the Test interaction authentication times.
      * 
-     * @return
+     * @return The Test interaction authentication times.
      */
     public  double[] getAuthenticationTime() {
         return this.authenticationTime;
     }
 
     /**
-     * 
-     * @param authenticationTime
+     * Setter for the Test interaction authentication times.
+     *
+     * @param authenticationTime The Test interaction authentication times.
      */
     public  void setAuthenticationTime(double[] authenticationTime) {
         this.authenticationTime = authenticationTime;
     }
 
     /**
+     * Getter for the Nr. of training samples.
      * 
-     * @return
+     * @return The Nr. of training samples.
      */
     public  int getClassifierSamples() {
         return classifierSamples;
     }
 
     /**
-     * 
-     * @param classifierSamples
+     * Setter for the Nr. of training samples.
+     *
+     * @param classifierSamples The Nr. of training samples.
      */
     public  void setClassifierSamples(int classifierSamples) {
         this.classifierSamples = classifierSamples;
     }
 
     /**
-     * Gets from the gathered training examples (and for each active feature) the minimum and maximum values that are used for min/max scaling.
+     * Gets from the passed examples (and for each active feature) the minimum and maximum values.
      *
-     * @param allSwipes The set of training interactions.
-     * @return
+     * @param allSwipes The set of (training) interactions.
+     * @return The set of minimum and maximum values for each feature in the form of an Hashmap with keys having the format: MIN_FEATURE_NAME, MAX_FEATURE_NAME.
      */
     public  static Map<String, Double> getMinMaxValues(ArrayList<Swipe> allSwipes) {
         Map<String, Double> map = new HashMap<String, Double>();
@@ -2168,9 +2347,12 @@ public class Swipe {
     }
 
     /**
-     * 
-     * @param allSwipes
-     * @return
+     * Generates the set of normalized values for the current interaction (Swipe object).
+     * Normalized values are computed starting from the non-normalized ones using min/max scaling via the following formula: (x - min(x)) / (max(x) - min(x)).
+     * Where x is the value of a given feature for the current object and min(x) and max(x) are the minimum and maximum values for that feature across all passed interactions.
+     *
+     * @param allSwipes The set of (training) interactions.
+     * @return An array containing the normalized feature values for the current Swipe object.
      */
     public  double[] getNormalizedValues(ArrayList<Swipe> allSwipes) {
         Map<String, Double> map = getMinMaxValues(allSwipes);
@@ -2283,12 +2465,15 @@ public class Swipe {
     }
 
     /**
-     * 
-     * @param values
-     * @param holdingPosition
-     * @param userId
-     * @param allSwipes
-     * @return
+     * Generates a non-normalized interaction starting from the passed (normalized) feature values.
+     * Non-normalized values are computed starting from the normalized ones via the following formula: (x * (max(x) - min(x))) + min(x)
+     * Where x is the value of a given feature and min(x) and max(x) are the minimum and maximum values for that feature across all passed interactions.
+     *
+     * @param values The array containing the feature values of the normalized interaction.
+     * @param holdingPosition The interaction holding position (1 = Sitting, 2 = Standing, 3 = Walking).
+     * @param userId Interaction user type identifier (User/Attacker).
+     * @param allSwipes The set of (training) interactions.
+     * @return The non-normalized interaction in the form of a newly created Swipe object.
      */
     public  static Swipe fromNormalizedValues(double[] values, double holdingPosition, String userId, ArrayList<Swipe> allSwipes) {
         Map<String, Double> map = getMinMaxValues(allSwipes);
@@ -2415,8 +2600,9 @@ public class Swipe {
     }
 
     /**
-     * 
-     * @return
+     * Returns a string representation of the object.
+     *
+     * @return A string representation of the object.
      */
     @Override
     public  String toString() {
@@ -2515,14 +2701,15 @@ public class Swipe {
     }
 
     /**
-     * 
-     * @param dataSet
-     * @param isTrainInstance
-     * @param dbHelper
-     * @param trainingModel
-     * @return
+     * Generates the weka.core.Instance of the Swipe object.
+     *
+     * @param dataSet The weka.core.Instances object acting as the Instance dataset.
+     * @param isTrainInstance Indicates whether the current objects represents a training interaction.
+     * @param dbHelper The instance of the DatabaseHelper.
+     * @param modelType The identifier of the model that will interact with the generated Instance object.
+     * @return The weka.core.Instance object generated from the current object.
      */
-    public  Instance getAsWekaInstance(Instances dataSet, boolean isTrainInstance, DatabaseHelper dbHelper, List<DatabaseHelper.ModelType> trainingModel) {
+    public  Instance getAsWekaInstance(Instances dataSet, boolean isTrainInstance, DatabaseHelper dbHelper, List<DatabaseHelper.ModelType> modelType) {
         Map<String, Integer> featureData = dbHelper.getFeatureData();
         boolean useAcceleration = featureData.get(DatabaseHelper.COL_ACCELERATION) == 1;
         boolean useAngularVelocity = featureData.get(DatabaseHelper.COL_ANGULAR_VELOCITY) == 1;
@@ -2545,7 +2732,7 @@ public class Swipe {
 
         ArrayList<Double> featureSet = new ArrayList<>();
 
-        if(trainingModel.contains(DatabaseHelper.ModelType.SWIPE) || trainingModel.contains(DatabaseHelper.ModelType.FULL)) {
+        if(modelType.contains(DatabaseHelper.ModelType.SWIPE) || modelType.contains(DatabaseHelper.ModelType.FULL)) {
             if (useSwipeDuration) {
                 featureSet.add(this.getDuration());
             }
@@ -2580,7 +2767,7 @@ public class Swipe {
                 featureSet.add(this.getVarYVelocity());
             }
         }
-        if(trainingModel.contains(DatabaseHelper.ModelType.HOLD) || trainingModel.contains(DatabaseHelper.ModelType.FULL)) {
+        if(modelType.contains(DatabaseHelper.ModelType.HOLD) || modelType.contains(DatabaseHelper.ModelType.FULL)) {
             if (useAcceleration) {
                 featureSet.add(this.getMinXAccelerometer());
                 featureSet.add(this.getMaxXAccelerometer());
@@ -2633,7 +2820,7 @@ public class Swipe {
                 featureSet.add(this.getVarZOrientation());
             }
         }
-        if(trainingModel.contains(DatabaseHelper.ModelType.KEYSTROKE) || trainingModel.contains(DatabaseHelper.ModelType.FULL)) {
+        if(modelType.contains(DatabaseHelper.ModelType.KEYSTROKE) || modelType.contains(DatabaseHelper.ModelType.FULL)) {
             if(useKeystroke) {
                 if(useKeystrokeDurations) {
                     for(Double keystrokeDuration : this.getKeystrokeDurations()) { featureSet.add(keystrokeDuration); }
@@ -2646,7 +2833,7 @@ public class Swipe {
                 }
             }
         }
-        if(trainingModel.contains(DatabaseHelper.ModelType.SIGNATURE) || trainingModel.contains(DatabaseHelper.ModelType.FULL)) {
+        if(modelType.contains(DatabaseHelper.ModelType.SIGNATURE) || modelType.contains(DatabaseHelper.ModelType.FULL)) {
             if (useSignature) {
                 if(useSignatureStartEndPos) {
                     featureSet.add(this.getSignatureStartX());
