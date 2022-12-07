@@ -647,6 +647,15 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         }
     }
 
+    /**
+     * Applies a low pass filter to the accelerometer and magnetic field sensors raw output data.
+     * Intended to smooth out the (jittery) data generated from the sensors prior to the calculation of the orientation value.
+     * Implementation from: https://stackoverflow.com/questions/27846604/how-to-get-smooth-orientation-data-in-android
+     *
+     * @param input The raw data generated from the sensor.
+     * @param output The output variable to store the resulting values to.
+     * @return The values resulting from the application of the low pass filter on the sensor's data.
+     */
     private float[] applyLowPassFilter(float[] input, float[] output) {
         if ( output == null ) return input;
 
