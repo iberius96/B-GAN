@@ -60,6 +60,19 @@ import weka.core.Attribute;
 import weka.core.Instance;
 import weka.core.Instances;
 
+/**
+ * The main activity.
+ * Handles most of the core logic of the application.
+ *
+ * This includes:
+ *  Setting up the main activity basic UI elements (and their related listeners).
+ *  Monitoring and collecting data from the device sensors.
+ *  Handling (and collecting data from) touch screen motion events.
+ *  Calling (and collecting data upon closure of) external activities (namely the User and Model profile).
+ *  Handling the execution and correctly interacting with all the necessary components of the application (the DB, the GAN, the raw data collector, the resource monitor).
+ *  Handling the creation and processing of the various train / test interactions.
+ *  Handling the model training and testing procedures.
+ */
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
     /**
      * Swipe gesture star time.
