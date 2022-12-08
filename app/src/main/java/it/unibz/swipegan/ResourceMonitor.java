@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
+ * The resource monitor object.
  * Controls the execution of the device resource monitor.
  * When training a model, the resource monitor gathers from the device information related to:
  *  Min / Max / Avg CPU frequency for each CPU core.

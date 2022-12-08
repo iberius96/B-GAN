@@ -3,6 +3,7 @@ package it.unibz.swipegan;
 import java.util.Arrays;
 
 /**
+ * The raw data collector object.
  * Controls the execution of the raw data collector.
  * Throughout a given interaction, the collector repeatedly gathers from the device information related to:
  *  Size of the screen area currently touched.

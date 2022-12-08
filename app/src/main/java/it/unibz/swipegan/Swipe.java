@@ -16,6 +16,19 @@ import weka.core.DenseInstance;
 import weka.core.Instance;
 import weka.core.Instances;
 
+/**
+ * The interaction object.
+ * Handles all data (together with the related getters and setters) and additional logic associated with a given interaction.
+ * The data includes all actives features values for a given interaction.
+ *
+ * Additionally, the object methods allow to:
+ *  Compute the normalized values starting from the (non-normalized) interaction.
+ *  Generate the Weka instance of the Swipe object.
+ *
+ * Finally, the class also includes static methods to:
+ *  Extract the min/max values for each feature in a set of interactions.
+ *  Generate an interaction (Swipe) object from a set of normalized values.
+ */
 public class Swipe {
     
     /**

@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
+ * The model profile activity.
  * Handles the logic responsible for correctly populating and updating the model profile view and its related fields.
  *
  * The model profile view allows to:

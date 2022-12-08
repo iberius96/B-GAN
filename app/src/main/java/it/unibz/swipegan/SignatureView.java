@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.DoubleSummaryStatistics;
 
 /**
+ * The signature view.
  * Handles the logic related to drawing (and deleting) the signature and collecting the data related to the gesture.
  *
  * Overall structure based on: https://stackoverflow.com/questions/21846584/android-canvas-draw-by-finger

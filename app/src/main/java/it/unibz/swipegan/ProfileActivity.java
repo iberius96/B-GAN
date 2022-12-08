@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Map;
 
 /**
+ * The user profile activity.
  * Handles the logic responsible for correctly populating and updating the user profile view and its related fields.
  *
  * The user profile view allows to set the user's:
