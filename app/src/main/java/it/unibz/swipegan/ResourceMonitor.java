@@ -89,8 +89,8 @@ public class ResourceMonitor implements Runnable {
      *  Computes the sum of all the gathered battery consumption values.
      * Finally, it adds the current resource entry to the DB.
      *
-     * @param dbHelpber
-     * @param modelType
+     * @param dbHelpber The database helper object.
+     * @param modelType The identifier for the trained model.
      */
     public void stop(DatabaseHelper dbHelpber, String modelType) {
         ArrayList<Integer[]> curFreqValues = (ArrayList<Integer[]>) freqValues.clone();

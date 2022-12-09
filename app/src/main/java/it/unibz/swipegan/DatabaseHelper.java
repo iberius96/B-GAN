@@ -1653,6 +1653,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
      * @param instances Number of test interactions used to generate the performance metrics.
      * @param TAR True Acceptance Rate.
      * @param FRR False Rejection Rate.
+     * @param ER Error Rate.
      * @param avgSampleTime Average duration of the test interactions.
      * @param trainingTime Time required to build the model.
      * @param ganTime Time required to build the GAN and generate the synthetic samples.
