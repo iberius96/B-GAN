@@ -92,12 +92,17 @@ public class GAN {
      * Each layer is a org.deeplearning4j.nn.conf.layers.DenseLayer object which represents a standard fully connected feed forward layer.
      *
      * For each org.deeplearning4j.nn.conf.layers.DenseLayer.Builder we specify:
-     *  The number of inputs (.nIn())
-     *  The Number of outputs (.nOut())
-     *  The Activation function (.activation())
-     *  Source of the embedding layer weights (.weightInit())
+     *  The number of inputs (.nIn()).
+     *  The Number of outputs (.nOut()).
+     *  The Activation function (.activation()).
+     *  Weight initialization scheme Distribution (.weightInit()).
      *
-     * @return The set of generator's (hidden) layers.
+     * The generator is composed by the following three dense layers:
+     *  1. Nr. of inputs = 12 (LATENT_DIM, which naturally corresponds with the dimensionality of the input latent space vectors), Nr of outputs = 8 (NUM_LAYER_UNITS), activation function = ReLU (Activation.RELU), weight initialization = ReLU uniform (He et al. (2015), "Delving Deep into Rectifiers". Uniform distribution U(-s,s) with s = sqrt(6/fanIn)).
+     *  2. Nr. of inputs = 8 (NUM_LAYER_UNITS), Nr of outputs = 8 (NUM_LAYER_UNITS), activation function = ReLU (Activation.RELU), weight initialization = Xavier uniform (As per Glorot and Bengio 2010: Uniform distribution U(-s,s) with s = sqrt(6/(fanIn + fanOut))).
+     *  3. Nr. of inputs = 8 (NUM_LAYER_UNITS), Nr of outputs = NUM_TRAIN_FEATURES (corresponding to the active features), activation function = Sigmoid (Activation.SIGMOID), weight initialization = Xavier uniform.
+     *
+     * @return The set of (hidden) layers of the generator.
      */
     private Layer[] getGeneratorLayers() {
         return new Layer[]{
@@ -146,14 +151,22 @@ public class GAN {
      * Each layer is a org.deeplearning4j.nn.conf.layers.DenseLayer object which represents a standard fully connected feed forward layer.
      *
      * For each org.deeplearning4j.nn.conf.layers.DenseLayer.Builder we specify:
-     *  The number of inputs (.nIn())
-     *  The Number of outputs (.nOut())
-     *  The Activation function (.activation())
-     *  Source of the embedding layer weights (.weightInit())
+     *  The number of inputs (.nIn()).
+     *  The Number of outputs (.nOut()).
+     *  The Activation function (.activation()).
+     *  Weight initialization scheme Distribution (.weightInit()).
      *
-     * Additionally,
+     * Additionally, the discriminator has a final org.deeplearning4j.nn.conf.layers.LossLayer representing an output layer without parameters (having only a loss function and an activation function).
      *
-     * @return The set of generator's (hidden) layers.
+     * The discriminator is composed by the following three dense layers:
+     * 1. Nr. of inputs = NUM_TRAIN_FEATURES (corresponding to the active features), Nr of outputs = 8 (NUM_LAYER_UNITS), activation function = ReLU (Activation.RELU), weight initialization = ReLU uniform (He et al. (2015), "Delving Deep into Rectifiers". Uniform distribution U(-s,s) with s = sqrt(6/fanIn)).
+     * 2. Nr. of inputs = 8 (NUM_LAYER_UNITS), Nr of outputs = 8 (NUM_LAYER_UNITS), activation function = ReLU (Activation.RELU), weight initialization = Xavier uniform (As per Glorot and Bengio 2010: Uniform distribution U(-s,s) with s = sqrt(6/(fanIn + fanOut))).
+     * 3. Nr. of inputs = 8 (NUM_LAYER_UNITS), Nr of outputs = 1, activation function = Sigmoid (Activation.SIGMOID), weight initialization = Xavier uniform.
+     *
+     * And the following loss layer:
+     * 1. Loss function = Cross entropy (LossFunctions.LossFunction.XENT), activation function = Linear (Activation.IDENTITY), weight initialization = Xavier uniform.
+     *
+     * @return The set of (hidden) layers of the discriminator.
      */
     private Layer[] getDiscriminatorLayers() {
         return new Layer[]{
