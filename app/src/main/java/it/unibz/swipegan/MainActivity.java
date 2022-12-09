@@ -212,7 +212,14 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
      */
     private ArrayList<Float> zOrientations = null;
 
+    /**
+     * Accelerometer output data with low pass filter applied.
+     */
     private float[] mGravity;
+
+    /**
+     * Magnetic field sensor output data with low pass filter applied.
+     */
     private float[] mGeomagnetic;
 
     /**

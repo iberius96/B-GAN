@@ -493,7 +493,7 @@ public class Swipe {
     private double[] authenticationTime;
 
     /**
-     * Nr. of training samples.
+     * Nr of training samples.
      */
     private int classifierSamples = 0;
 
