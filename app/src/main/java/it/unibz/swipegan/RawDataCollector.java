@@ -1,7 +1,5 @@
 package it.unibz.swipegan;
 
-import java.util.Arrays;
-
 /**
  * The raw data collector object.
  * Controls the execution of the raw data collector.

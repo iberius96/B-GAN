@@ -21,7 +21,6 @@ import android.os.BatteryManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Debug;
-import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.StrictMode;
@@ -41,7 +40,6 @@ import androidx.core.app.ActivityCompat;
 
 import com.google.android.material.snackbar.Snackbar;
 
-import java.io.File;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -327,15 +325,54 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
      */
     private RadioGroup holdingPositionRadioGroup;
 
+    /**
+     * Numpad button 0.
+     */
     private Button keystrokeButton0;
+
+    /**
+     * Numpad button 1.
+     */
     private Button keystrokeButton1;
+
+    /**
+     * Numpad button 2.
+     */
     private Button keystrokeButton2;
+
+    /**
+     * Numpad button 3.
+     */
     private Button keystrokeButton3;
+
+    /**
+     * Numpad button 4.
+     */
     private Button keystrokeButton4;
+
+    /**
+     * Numpad button 5.
+     */
     private Button keystrokeButton5;
+
+    /**
+     * Numpad button 6.
+     */
     private Button keystrokeButton6;
+
+    /**
+     * Numpad button 7.
+     */
     private Button keystrokeButton7;
+
+    /**
+     * Numpad button 8.
+     */
     private Button keystrokeButton8;
+
+    /**
+     * Numpad button 9.
+     */
     private Button keystrokeButton9;
 
     /**
@@ -398,10 +435,29 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
      */
     private RadioGroup SUSQuestionRadioGroup;
 
+    /**
+     * SUS question radio button 1.
+     */
     private RadioButton SUSQuestionRadioButton1;
+
+    /**
+     * SUS question radio button 2.
+     */
     private RadioButton SUSQuestionRadioButton2;
+
+    /**
+     * SUS question radio button 3.
+     */
     private RadioButton SUSQuestionRadioButton3;
+
+    /**
+     * SUS question radio button 4.
+     */
     private RadioButton SUSQuestionRadioButton4;
+
+    /**
+     * SUS question radio button 5.
+     */
     private RadioButton SUSQuestionRadioButton5;
 
     /**
