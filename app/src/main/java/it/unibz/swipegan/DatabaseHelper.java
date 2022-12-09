@@ -727,6 +727,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     /**
      * Defines the number of base features collected in a single interaction.
+     * This includes the Hold and Swipe features (excluding the Swipe segments).
      */
     public static final Integer BASE_FEATURES = 66;
 
