@@ -17,7 +17,7 @@ import java.util.DoubleSummaryStatistics;
 /**
  * The signature view.
  * Handles the logic related to drawing (and deleting) the signature and collecting the data related to the gesture.
- *
+ * <p>
  * Overall structure based on: https://stackoverflow.com/questions/21846584/android-canvas-draw-by-finger
  */
 public class SignatureView extends View {
@@ -67,7 +67,7 @@ public class SignatureView extends View {
     private MainActivity mainActivity;
 
     /**
-     * Class constructor.
+     * Class constructor.<p>
      * Sets up the style and colour information of the Paint object.
      *
      * @param context The context the view is running in, through which it can access the current theme, resources, etc.
@@ -83,7 +83,7 @@ public class SignatureView extends View {
     }
 
     /**
-     * Called when the visibility of the view or an ancestor of the view has changed.
+     * Called when the visibility of the view or an ancestor of the view has changed.<p>
      * Initializes the lists holding the signature information when the view is first called.
      *
      * @param changedView The view whose visibility changed. May be this or an ancestor view.
@@ -118,9 +118,9 @@ public class SignatureView extends View {
     }
 
     /**
-     * Handles touch screen motion events.
-     * Updates the path object by initially setting the beginning of the next contour to the point (MotionEvent.ACTION_DOWN) and adding a line from the last point to the current one on each subsequent method call (MotionEvent.ACTION_MOVE).
-     * Enables (MotionEvent.ACTION_DOWN) and disables (MotionEvent.ACTION_UP) sensor tracking by calling the relevant method from the main activity object.
+     * Handles touch screen motion events.<p>
+     * Updates the path object by initially setting the beginning of the next contour to the point (MotionEvent.ACTION_DOWN) and adding a line from the last point to the current one on each subsequent method call (MotionEvent.ACTION_MOVE).<br>
+     * Enables (MotionEvent.ACTION_DOWN) and disables (MotionEvent.ACTION_UP) sensor tracking by calling the relevant method from the main activity object.<br>
      * Updates the signature information (X / Y coordinates, X / Y velocities and touch sizes) on each method call.
      *
      * @param event The motion event.

@@ -27,10 +27,12 @@ import java.util.List;
 /**
  * The adversarial network.
  * Handles all logic and data related to the GAN.
- *
+ * <p>
  * This includes:
- *  Setting up the architecture of the generator, discriminator and adversarial network (taking into account the currently active features).
- *  Training the network (and its individual components) and generating the synthetic samples.
+ * <ul>
+ *     <li>Setting up the architecture of the generator, discriminator and adversarial network (taking into account the currently active features).
+ *     <li>Training the network (and its individual components) and generating the synthetic samples.
+ * </ul>
  */
 public class GAN {
 
@@ -45,12 +47,12 @@ public class GAN {
     public static final int NUM_EPOCHS = 4_000;
 
     /**
-     * Nr. of input and/or output units in a hidden layer.
+     * Nr of input and/or output units in a hidden layer.
      */
     public static final int NUM_LAYER_UNITS = 8;
 
     /**
-     * Defines the number of base features of an interaction.
+     * Defines the number of base features of an interaction.<p>
      * This includes the Hold and Swipe features (excluding the Swipe segments).
      */
     private int NUM_TRAIN_FEATURES = DatabaseHelper.BASE_FEATURES;
@@ -71,7 +73,7 @@ public class GAN {
     private MultiLayerNetwork gan;
 
     /**
-     * Class constructor.
+     * Class constructor.<p>
      * Updates the number of features (NUM_TRAIN_FEATURES) depending on the active models and triggers the initialization of the Generator, Discriminator and GAN objects.
      *
      * @param segments The nr. of Swipe segments.
@@ -88,19 +90,21 @@ public class GAN {
     }
 
     /**
-     * Builds the set of generator's (hidden) layers.
-     * Each layer is a org.deeplearning4j.nn.conf.layers.DenseLayer object which represents a standard fully connected feed forward layer.
-     *
+     * Builds the set of generator's (hidden) layers.<p>
+     * Each layer is a org.deeplearning4j.nn.conf.layers.DenseLayer object which represents a standard fully connected feed forward layer.<br>
      * For each org.deeplearning4j.nn.conf.layers.DenseLayer.Builder we specify:
-     *  The number of inputs (.nIn()).
-     *  The Number of outputs (.nOut()).
-     *  The Activation function (.activation()).
-     *  Weight initialization scheme Distribution (.weightInit()).
-     *
+     * <ul>
+     *     <li>The number of inputs (.nIn()).
+     *     <li>The Number of outputs (.nOut()).
+     *     <li>The Activation function (.activation()).
+     *     <li>Weight initialization scheme Distribution (.weightInit()).
+     * </ul>
      * The generator is composed by the following three dense layers:
-     *  1. Nr. of inputs = 12 (LATENT_DIM, which naturally corresponds with the dimensionality of the input latent space vectors), Nr of outputs = 8 (NUM_LAYER_UNITS), activation function = ReLU (Activation.RELU), weight initialization = ReLU uniform (He et al. (2015), "Delving Deep into Rectifiers". Uniform distribution U(-s,s) with s = sqrt(6/fanIn)).
-     *  2. Nr. of inputs = 8 (NUM_LAYER_UNITS), Nr of outputs = 8 (NUM_LAYER_UNITS), activation function = ReLU (Activation.RELU), weight initialization = Xavier uniform (As per Glorot and Bengio 2010: Uniform distribution U(-s,s) with s = sqrt(6/(fanIn + fanOut))).
-     *  3. Nr. of inputs = 8 (NUM_LAYER_UNITS), Nr of outputs = NUM_TRAIN_FEATURES (corresponding to the active features), activation function = Sigmoid (Activation.SIGMOID), weight initialization = Xavier uniform.
+     * <ol>
+     *     <li>Nr. of inputs = 12 (LATENT_DIM, which naturally corresponds with the dimensionality of the input latent space vectors), Nr of outputs = 8 (NUM_LAYER_UNITS), activation function = ReLU (Activation.RELU), weight initialization = ReLU uniform (He et al. (2015), "Delving Deep into Rectifiers". Uniform distribution U(-s,s) with s = sqrt(6/fanIn)).
+     *     <li>Nr. of inputs = 8 (NUM_LAYER_UNITS), Nr of outputs = 8 (NUM_LAYER_UNITS), activation function = ReLU (Activation.RELU), weight initialization = Xavier uniform (As per Glorot and Bengio 2010: Uniform distribution U(-s,s) with s = sqrt(6/(fanIn + fanOut))).
+     *     <li>Nr. of inputs = 8 (NUM_LAYER_UNITS), Nr of outputs = NUM_TRAIN_FEATURES (corresponding to the active features), activation function = Sigmoid (Activation.SIGMOID), weight initialization = Xavier uniform.
+     * </ol>
      *
      * @return The set of (hidden) layers of the generator.
      */
@@ -128,10 +132,9 @@ public class GAN {
     }
 
     /**
-     * Initializes the org.deeplearning4j.nn.multilayer.MultiLayerNetwork object that represents the neural network making up the generator.
-     *
-     * The configuration of the generator's network is expressed by a org.deeplearning4j.nn.conf.MultiLayerConfiguration object obtained by building a org.deeplearning4j.nn.conf.NeuralNetConfiguration.ListBuilder object.
-     * The ListBuilder is obtained by calling the .list() method of a org.deeplearning4j.nn.conf.NeuralNetConfiguration.Builder object and passing as parameter the set of dense layers returned from the .getGeneratorLayers() method.
+     * Initializes the org.deeplearning4j.nn.multilayer.MultiLayerNetwork object that represents the neural network making up the generator.<p>
+     * The configuration of the generator's network is expressed by a org.deeplearning4j.nn.conf.MultiLayerConfiguration object obtained by building a org.deeplearning4j.nn.conf.NeuralNetConfiguration.ListBuilder object.<br>
+     * The ListBuilder is obtained by calling the .list() method of a org.deeplearning4j.nn.conf.NeuralNetConfiguration.Builder object and passing as parameter the set of dense layers returned from the .getGeneratorLayers() method.<br>
      * The Builder object is initialised with a org.nd4j.linalg.learning.config.Adam gradient updater (http://arxiv.org/abs/1412.6980) with epsilon value = 0.0000001.
      */
     private void makeGenerator() {
@@ -147,24 +150,26 @@ public class GAN {
     }
 
     /**
-     * Builds the set of discriminator's (hidden) layers.
-     * Each layer is a org.deeplearning4j.nn.conf.layers.DenseLayer object which represents a standard fully connected feed forward layer.
-     *
+     * Builds the set of discriminator's (hidden) layers.<p>
+     * Each layer is a org.deeplearning4j.nn.conf.layers.DenseLayer object which represents a standard fully connected feed forward layer.<br>
      * For each org.deeplearning4j.nn.conf.layers.DenseLayer.Builder we specify:
-     *  The number of inputs (.nIn()).
-     *  The Number of outputs (.nOut()).
-     *  The Activation function (.activation()).
-     *  Weight initialization scheme Distribution (.weightInit()).
-     *
-     * Additionally, the discriminator has a final org.deeplearning4j.nn.conf.layers.LossLayer representing an output layer without parameters (having only a loss function and an activation function).
-     *
+     * <ul>
+     *     <li>The number of inputs (.nIn()).
+     *     <li>The Number of outputs (.nOut()).
+     *     <li>The Activation function (.activation()).
+     *     <li>Weight initialization scheme Distribution (.weightInit()).
+     * </ul>
+     * Additionally, the discriminator has a final org.deeplearning4j.nn.conf.layers.LossLayer representing an output layer without parameters (having only a loss function and an activation function).<br>
      * The discriminator is composed by the following three dense layers:
-     * 1. Nr. of inputs = NUM_TRAIN_FEATURES (corresponding to the active features), Nr of outputs = 8 (NUM_LAYER_UNITS), activation function = ReLU (Activation.RELU), weight initialization = ReLU uniform (He et al. (2015), "Delving Deep into Rectifiers". Uniform distribution U(-s,s) with s = sqrt(6/fanIn)).
-     * 2. Nr. of inputs = 8 (NUM_LAYER_UNITS), Nr of outputs = 8 (NUM_LAYER_UNITS), activation function = ReLU (Activation.RELU), weight initialization = Xavier uniform (As per Glorot and Bengio 2010: Uniform distribution U(-s,s) with s = sqrt(6/(fanIn + fanOut))).
-     * 3. Nr. of inputs = 8 (NUM_LAYER_UNITS), Nr of outputs = 1, activation function = Sigmoid (Activation.SIGMOID), weight initialization = Xavier uniform.
-     *
+     * <ol>
+     *     <li>Nr. of inputs = NUM_TRAIN_FEATURES (corresponding to the active features), Nr of outputs = 8 (NUM_LAYER_UNITS), activation function = ReLU (Activation.RELU), weight initialization = ReLU uniform (He et al. (2015), "Delving Deep into Rectifiers". Uniform distribution U(-s,s) with s = sqrt(6/fanIn)).
+     *     <li>Nr. of inputs = 8 (NUM_LAYER_UNITS), Nr of outputs = 8 (NUM_LAYER_UNITS), activation function = ReLU (Activation.RELU), weight initialization = Xavier uniform (As per Glorot and Bengio 2010: Uniform distribution U(-s,s) with s = sqrt(6/(fanIn + fanOut))).
+     *     <li>Nr. of inputs = 8 (NUM_LAYER_UNITS), Nr of outputs = 1, activation function = Sigmoid (Activation.SIGMOID), weight initialization = Xavier uniform.
+     * </ol>
      * And the following loss layer:
-     * 1. Loss function = Cross entropy (LossFunctions.LossFunction.XENT), activation function = Linear (Activation.IDENTITY), weight initialization = Xavier uniform.
+     * <ol>
+     *     <li>Loss function = Cross entropy (LossFunctions.LossFunction.XENT), activation function = Linear (Activation.IDENTITY), weight initialization = Xavier uniform.
+     * </ol>
      *
      * @return The set of (hidden) layers of the discriminator.
      */
@@ -196,10 +201,9 @@ public class GAN {
     }
 
     /**
-     * Initializes the org.deeplearning4j.nn.multilayer.MultiLayerNetwork object that represents the neural network making up the discriminator.
-     *
-     * The configuration of the generator's network is expressed by a org.deeplearning4j.nn.conf.MultiLayerConfiguration object obtained by building a org.deeplearning4j.nn.conf.NeuralNetConfiguration.ListBuilder object.
-     * The ListBuilder is obtained by calling the .list() method of a org.deeplearning4j.nn.conf.NeuralNetConfiguration.Builder object and passing as parameter the set of dense layers returned from the .getDiscriminatorLayers() method.
+     * Initializes the org.deeplearning4j.nn.multilayer.MultiLayerNetwork object that represents the neural network making up the discriminator.<p>
+     * The configuration of the generator's network is expressed by a org.deeplearning4j.nn.conf.MultiLayerConfiguration object obtained by building a org.deeplearning4j.nn.conf.NeuralNetConfiguration.ListBuilder object.<br>
+     * The ListBuilder is obtained by calling the .list() method of a org.deeplearning4j.nn.conf.NeuralNetConfiguration.Builder object and passing as parameter the set of dense layers returned from the .getDiscriminatorLayers() method.<br>
      * The Builder object is initialised with a org.nd4j.linalg.learning.config.Adam gradient updater (http://arxiv.org/abs/1412.6980) with epsilon value = 0.0000001.
      */
     private void makeDiscriminator() {
@@ -215,12 +219,10 @@ public class GAN {
     }
 
     /**
-     * Initializes the org.deeplearning4j.nn.multilayer.MultiLayerNetwork object that represents the neural network making up the full GAN.
-     *
-     * The configuration of the GAN is expressed by a org.deeplearning4j.nn.conf.MultiLayerConfiguration object obtained by building a org.deeplearning4j.nn.conf.NeuralNetConfiguration.ListBuilder object.
-     * The ListBuilder is obtained by calling the .list() method of a org.deeplearning4j.nn.conf.NeuralNetConfiguration.Builder object and passing as parameter the set of dense layers returned from both the .getGeneratorLayers() and the .getDiscriminatorLayers() methods.
-     * The Builder object is initialised with a org.nd4j.linalg.learning.config.Adam gradient updater (http://arxiv.org/abs/1412.6980) with epsilon value = 0.0000001.
-     *
+     * Initializes the org.deeplearning4j.nn.multilayer.MultiLayerNetwork object that represents the neural network making up the full GAN.<p>
+     * The configuration of the GAN is expressed by a org.deeplearning4j.nn.conf.MultiLayerConfiguration object obtained by building a org.deeplearning4j.nn.conf.NeuralNetConfiguration.ListBuilder object.<br>
+     * The ListBuilder is obtained by calling the .list() method of a org.deeplearning4j.nn.conf.NeuralNetConfiguration.Builder object and passing as parameter the set of dense layers returned from both the .getGeneratorLayers() and the .getDiscriminatorLayers() methods.<br>
+     * The Builder object is initialised with a org.nd4j.linalg.learning.config.Adam gradient updater (http://arxiv.org/abs/1412.6980) with epsilon value = 0.0000001.<p>
      * The parameters of the discriminator's layers are frozen (initialized as org.deeplearning4j.nn.layers.FrozenLayerWithBackprop) since we don't update them when fitting the GAN (instead, we use the .updateGan() method to update them from the discriminator object).
      */
     private void makeGAN() {
@@ -262,22 +264,21 @@ public class GAN {
     }
 
     /**
-     * Generates the synthetic samples starting from a set of genuine ones.
-     *
-     * As a first step, the method performs min/max scaling on all (genuine) input interactions and uses the normalized samples to initialise a org.deeplearning4j.datasets.iterator.DoublesDataSetIterator (representing the GAN training set).
-     *
+     * Generates the synthetic samples starting from a set of genuine ones.<p>
+     * As a first step, the method performs min/max scaling on all (genuine) input interactions and uses the normalized samples to initialise a org.deeplearning4j.datasets.iterator.DoublesDataSetIterator (representing the GAN training set).<br>
      * Then, a set of random vectors is sampled from the latent space.
-     *  The nr. of generated vectors is equal to the nr. of genuine samples.
-     *  The dimensionality of each vector is determined by LATENT_DIM.
-     * The random vectors are fed as input to the GAN's generator layers which create a set of synthetic examples.
-     * Real and fake datasets (marked as 1 and 0 respectively) are created and merged.
-     * The method then fits the discriminator on a combined batch of real and fake samples and updates the GAN's discriminator layers by calling the .updateGAN() method.
-     * A set of adversarial examples is then generated and labeled as genuine (with the purpose of misleading the discriminator) and then used to fit the GAN.
-     * By labeling this generated samples as genuine, we reward the generator for successfully fooling the discriminator.
-     *
-     * The process is repeated for the number of specified epochs (NUM_EPOCHS).
-     * Once the last training epoch has been concluded, the generator is updated using the generator's layers of the GAN (.updateGen() method).
-     * Finally, the generator is used to output the specified number of synthetic examples.
+     * <ul>
+     *     <li>The nr. of generated vectors is equal to the nr. of genuine samples.
+     *     <li>The dimensionality of each vector is determined by LATENT_DIM.
+     * </ul>
+     * The random vectors are fed as input to the GAN's generator layers which create a set of synthetic examples.<br>
+     * Real and fake datasets (marked as 1 and 0 respectively) are created and merged.<br>
+     * The method then fits the discriminator on a combined batch of real and fake samples and updates the GAN's discriminator layers by calling the .updateGAN() method.<br>
+     * A set of adversarial examples is then generated and labeled as genuine (with the purpose of misleading the discriminator) and then used to fit the GAN.<br>
+     * By labeling this generated samples as genuine, we reward the generator for successfully fooling the discriminator.<p>
+     * The process is repeated for the number of specified epochs (NUM_EPOCHS).<br>
+     * Once the last training epoch has been concluded, the generator is updated using the generator's layers of the GAN (.updateGen() method).<br>
+     * Finally, the generator is used to output the specified number of synthetic examples.<br>
      * Each synthetic example is de-normalized using the Swipe.fromNormalizedValues() method.
      *
      * @param realSwipes The genuine interactions.
@@ -347,8 +348,8 @@ public class GAN {
     }
 
     /**
-     * Increments the number of features (NUM_TRAIN_FEATURES) based on the active Swipe segments.
-     * In this context, each segment (value) is considered as a separate feature.
+     * Increments the number of features (NUM_TRAIN_FEATURES) based on the active Swipe segments.<p>
+     * In this context, each segment (value) is considered as a separate feature.<br>
      * Additionally, for each segment an an X and Y value is stored for each interaction.
      *
      * @param segmentFeatures The nr of Swipe segments.

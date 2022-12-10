@@ -23,21 +23,26 @@ import java.util.stream.Collectors;
 /**
  * The model profile activity.
  * Handles the logic responsible for correctly populating and updating the model profile view and its related fields.
- *
+ * <p>
  * The model profile view allows to:
- *  Select the set of models to build during the training procedure (Full model only, Individual models + Full, Individual models + Full + All combinations of individual models).
- *  Enable / Disable the gathering of raw data and specify the frequency at which the data is collected.
- *  Enable / Disable the Swipe-related features (Duration, Shape + Nr of segments, Touch size, Velocity).
- *  Enable / Disable the Hold-related features (Acceleration, Angular velocity, Orientation).
- *  Enable / Disable the Keystroke gesture, set the PIN length and enable / disable the related features (Press durations, Keystroke intervals).
- *  Enable / Disable the Signature gesture and its related features (Start / End position, Velocity, Shape + Nr of segments).
+ * <ul>
+ *     <li>Select the set of models to build during the training procedure (Full model only, Individual models + Full, Individual models + Full + All combinations of individual models).
+ *     <li>Enable / Disable the gathering of raw data and specify the frequency at which the data is collected.
+ *     <li>Enable / Disable the Swipe-related features (Duration, Shape + Nr of segments, Touch size, Velocity).
+ *     <li>Enable / Disable the Hold-related features (Acceleration, Angular velocity, Orientation).
+ *     <li>Enable / Disable the Keystroke gesture, set the PIN length and enable / disable the related features (Press durations, Keystroke intervals).
+ *     <li>Enable / Disable the Signature gesture and its related features (Start / End position, Velocity, Shape + Nr of segments).
+ * </ul>
+ *
  */
 public class ModelActivity extends AppCompatActivity {
     /**
-     * Called upon the creation of the Activity, it populates the model profile fields based on the data currently stored in the DB.
+     * Called upon the creation of the Activity, it populates the model profile fields based on the data currently stored in the DB.<p>
      * Additionally, it sets up the Save button event listener which allows the system to:
-     *  1. Save any changes made to the model profile to the DB.
-     *  2. Send the updated model profile settings to the main activity.
+     * <ol>
+     *     <li>Save any changes made to the model profile to the DB.
+     *     <li>Send the updated model profile settings to the main activity.
+     * </ol>
      *
      * @param savedInstanceState Reference to the bundle object.
      */

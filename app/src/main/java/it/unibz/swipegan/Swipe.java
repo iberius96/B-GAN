@@ -17,17 +17,20 @@ import weka.core.Instance;
 import weka.core.Instances;
 
 /**
- * The interaction object.
+ * The interaction.
  * Handles all data (together with the related getters and setters) and additional logic associated with a given interaction.
- * The data includes all actives features values for a given interaction.
- *
+ * <p>
+ * The data includes all actives features values for a given interaction.<br>
  * Additionally, the object methods allow to:
- *  Compute the normalized values starting from the (non-normalized) interaction.
- *  Generate the Weka instance of the Swipe object.
- *
+ * <ul>
+ *     <li>Compute the normalized values starting from the (non-normalized) interaction.
+ *     <li>Generate the Weka instance of the Swipe object.
+ * </ul>
  * Finally, the class also includes static methods to:
- *  Extract the min/max values for each feature in a set of interactions.
- *  Generate an interaction (Swipe) object from a set of normalized values.
+ * <ul>
+ *     <li>Extract the min/max values for each feature in a set of interactions.
+ *     <li>Generate an interaction (Swipe) object from a set of normalized values.
+ * </ul>
  */
 public class Swipe {
     
@@ -2360,8 +2363,8 @@ public class Swipe {
     }
 
     /**
-     * Generates the set of normalized values for the current interaction (Swipe object).
-     * Normalized values are computed starting from the non-normalized ones using min/max scaling via the following formula: (x - min(x)) / (max(x) - min(x)).
+     * Generates the set of normalized values for the current interaction (Swipe object).<p>
+     * Normalized values are computed starting from the non-normalized ones using min/max scaling via the following formula: (x - min(x)) / (max(x) - min(x)).<br>
      * Where x is the value of a given feature for the current object and min(x) and max(x) are the minimum and maximum values for that feature across all passed interactions.
      *
      * @param allSwipes The set of (training) interactions.
@@ -2478,8 +2481,8 @@ public class Swipe {
     }
 
     /**
-     * Generates a non-normalized interaction starting from the passed (normalized) feature values.
-     * Non-normalized values are computed starting from the normalized ones via the following formula: (x * (max(x) - min(x))) + min(x)
+     * Generates a non-normalized interaction starting from the passed (normalized) feature values.<p>
+     * Non-normalized values are computed starting from the normalized ones via the following formula: (x * (max(x) - min(x))) + min(x)<br>
      * Where x is the value of a given feature and min(x) and max(x) are the minimum and maximum values for that feature across all passed interactions.
      *
      * @param values The array containing the feature values of the normalized interaction.

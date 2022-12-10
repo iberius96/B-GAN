@@ -61,15 +61,17 @@ import weka.core.Instances;
 /**
  * The main activity.
  * Handles most of the core logic of the application.
- *
+ * <p>
  * This includes:
- *  Setting up the main activity basic UI elements (and their related listeners).
- *  Monitoring and collecting data from the device sensors.
- *  Handling (and collecting data from) touch screen motion events.
- *  Calling (and collecting data upon closure of) external activities (namely the User and Model profile).
- *  Handling the execution and correctly interacting with all the necessary components of the application (the DB, the GAN, the raw data collector, the resource monitor).
- *  Handling the creation and processing of the various train / test interactions.
- *  Handling the model training and testing procedures.
+ * <ul>
+ *     <li>Setting up the main activity basic UI elements (and their related listeners).
+ *     <li>Monitoring and collecting data from the device sensors.
+ *     <li>Handling (and collecting data from) touch screen motion events.
+ *     <li>Calling (and collecting data upon closure of) external activities (namely the User and Model profile).
+ *     <li>Handling the execution and correctly interacting with all the necessary components of the application (the DB, the GAN, the raw data collector, the resource monitor).
+ *     <li>Handling the creation and processing of the various train / test interactions.
+ *     <li>Handling the model training and testing procedures.
+ * </ul>
  */
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
     /**
@@ -538,10 +540,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     Map<DatabaseHelper.ModelType, Double> weightData = null;
 
     /**
-     * Called upon the creation of the Activity, it sets up the basic UI elements (together, if necessary, with their event listeners).
-     * Additionally, it initialises the DB Helper, raw data collector and GAN objects.
-     * Finally, it initializes the lists that will hold the collected data (X / Y location and velocity and X / Y / Z acceleration, angular velocity and orientations) together with the sensors
-     * objects (and corresponding listeners) that will allow for their collection
+     * Called upon the creation of the Activity, it sets up the basic UI elements (together, if necessary, with their event listeners).<p>
+     * Additionally, it initialises the DB Helper, raw data collector and GAN objects.<br>
+     * Finally, it initializes the lists that will hold the collected data (X / Y location and velocity and X / Y / Z acceleration, angular velocity and orientations) together with the sensors objects (and corresponding listeners) that will allow for their collection
      *
      * @param savedInstanceState Reference to the bundle object.
      */
@@ -664,7 +665,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     /**
-     * Called when the accuracy of the registered sensor has changed.
+     * Called when the accuracy of the registered sensor has changed.<p>
      * Mandatory implementation of empty method required due to main activity class implementing the SensorEventListener.
      *
      * @param sensor The sensor.
@@ -676,8 +677,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     /**
-     * Called when there is a new sensor event.
-     * Adds the current values for acceleration (Sensor.TYPE_ACCELEROMETER), angular velocity (Sensor.TYPE_GYROSCOPE) and orientation (Sensor.TYPE_ACCELEROMETER + Sensor.TYPE_MAGNETIC_FIELD).
+     * Called when there is a new sensor event.<p>
+     * Adds the current values for acceleration (Sensor.TYPE_ACCELEROMETER), angular velocity (Sensor.TYPE_GYROSCOPE) and orientation (Sensor.TYPE_ACCELEROMETER + Sensor.TYPE_MAGNETIC_FIELD).<br>
      * If enabled in the model profile, starts the raw data collector if one is not already running and the training phase is currently undergoing.
      *
      * @param event The sensor event.
@@ -724,8 +725,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     /**
-     * Applies a low pass filter to the accelerometer and magnetic field sensors raw output data.
-     * Intended to smooth out the (jittery) data generated from the sensors prior to the calculation of the orientation value.
+     * Applies a low pass filter to the accelerometer and magnetic field sensors raw output data.<p>
+     * Intended to smooth out the (jittery) data generated from the sensors prior to the calculation of the orientation value.<br>
      * Implementation from: https://stackoverflow.com/questions/27846604/how-to-get-smooth-orientation-data-in-android
      *
      * @param input The raw data generated from the sensor.
@@ -764,8 +765,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     /**
-     * Handles touch screen motion events.
-     * When necessary, triggers the logic handling the processing of a given swipe gesture.
+     * Handles touch screen motion events.<p>
+     * When necessary, triggers the logic handling the processing of a given swipe gesture.<br>
      * Immediately returns (with a call to the superclass) if the training procedure is currently undergoing.
      *
      * @param event The motion event.
@@ -785,12 +786,14 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     /**
-     * Handles the data collection process (swipe length, duration, touch sizes, locations, velocities) of all swipe gestures.
-     * With the start of the swipe gesture (MotionEvent.ACTION_DOWN), it resets the length and start time variables and enables sensors tracking.
-     * On each subsequent call of onSensorChanged() during the swipe (MotionEvent.ACTION_MOVE), it computes and updates the X / Y velocity and length values.
+     * Handles the data collection process (swipe length, duration, touch sizes, locations, velocities) of all swipe gestures.<p>
+     * With the start of the swipe gesture (MotionEvent.ACTION_DOWN), it resets the length and start time variables and enables sensors tracking.<br>
+     * On each subsequent call of onSensorChanged() during the swipe (MotionEvent.ACTION_MOVE), it computes and updates the X / Y velocity and length values.<br>
      * Once the gesture is completed (MotionEvent.ACTION_UP), it finalizes the swipe duration and start / end position distance and executes the logic required to either:
-     *  Adding the (train or test) swipe to the DB (if no other gestures are enabled).
-     *  Triggering the logic required to switch to the subsequent gesture (Keystroke or Signature).
+     * <ul>
+     *     <li>Adding the (train or test) swipe to the DB (if no other gestures are enabled).
+     *     <li>Triggering the logic required to switch to the subsequent gesture (Keystroke or Signature).
+     * </ul>
      *
      * @param event The motion event passed by the onTouchEvent() method.
      */
@@ -907,13 +910,15 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     /**
-     * Retrieves the most recent available data related to a single raw data sample.
+     * Retrieves the most recent available data related to a single raw data sample.<p>
      * In this context, the method reads the latest data for:
-     *  X / Y / Z values of Accelerometer / Gyroscope / Orientation.
-     *  Screen touch size.
-     *  X / Y touch coordinates values.
-     *  X / Y velocity values.
-     *  An ID value for the currently active gesture (0 = Swipe, 1 = Keystroke, 2 = Signature).
+     * <ul>
+     *     <li>X / Y / Z values of Accelerometer / Gyroscope / Orientation.
+     *     <li>Screen touch size.
+     *     <li>X / Y touch coordinates values.
+     *     <li>X / Y velocity values.
+     *     <li>An ID value for the currently active gesture (0 = Swipe, 1 = Keystroke, 2 = Signature).
+     * </ul>
      *
      * @return The values of a single raw data entry in the form of an Hashmap with columns string names as keys.
      */
@@ -955,14 +960,14 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     /**
-     * Generates the authentication results (and processing times) associated with executing the given test interaction against all active models.
-     * Model predictions for the given interaction are generated by calling the .getPredictionFrom() method.
-     * A correct classification will receive an authentication value of 1 (as opposed to a value of 0 for a misclassification).
-     * The method also handles the logic related to obtaining a classification result from the weighted ensemble model.
-     * In this context, all individual models (Hold, Swipe, Keystroke, Signature) are queried against the given interaction.
-     * The final classification is obtained by weighting the results obtained from the individual models.
-     * (Details of the weight calculation are provided in DatabaseHelper.getModelWeights())
-     * Additionally, the method visually outputs a result message (ACCEPTED / REJECTED) which represents the classification results of the weighted ensemble (or the full model if the WE is not an active model).
+     * Generates the authentication results (and processing times) associated with executing the given test interaction against all active models.<p>
+     * Model predictions for the given interaction are generated by calling the .getPredictionFrom() method.<br>
+     * A correct classification will receive an authentication value of 1 (as opposed to a value of 0 for a misclassification).<br>
+     * The method also handles the logic related to obtaining a classification result from the weighted ensemble model.<br>
+     * In this context, all individual models (Hold, Swipe, Keystroke, Signature) are queried against the given interaction.<br>
+     * The final classification is obtained by weighting the results obtained from the individual models.<br>
+     * (Details of the weight calculation are provided in DatabaseHelper.getModelWeights())<br>
+     * Additionally, the method visually outputs a result message (ACCEPTED / REJECTED) which represents the classification results of the weighted ensemble (or the full model if the WE is not an active model).<br>
      * Finally, the method adds the test record and associated authentication results to the DB.
      *
      * @param swipe The interaction to be tested against all active models.
@@ -1055,7 +1060,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     /**
-     * Empties the DB tables containing test data and re-processes all the currently stored test interactions.
+     * Empties the DB tables containing test data and re-processes all the currently stored test interactions.<p>
      * Called when test interactions are kept from a previous testing session and need to be re-evaluate against a different set of models.
      *
      * @param testSwipes The set of test interactions.
@@ -1069,8 +1074,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     /**
-     * Gets the classification result of a given interaction against the specified model.
-     * Predictions are obtained by calling the OneClassClassifier.classifyInstance() method and passing the weka.core.Instance object generated from the given interaction.
+     * Gets the classification result of a given interaction against the specified model.<p>
+     * Predictions are obtained by calling the OneClassClassifier.classifyInstance() method and passing the weka.core.Instance object generated from the given interaction.<br>
      * Note that .classifyInstances() returns the index of the most likely class identified (NaN if neither of the available classes were identified).
      *
      * @param swipe The interaction that will be tested against the model.
@@ -1093,12 +1098,14 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     /**
-     * Stops the raw data collector, the device sensors tracking and empties the locally stored interactions values.
+     * Stops the raw data collector, the device sensors tracking and empties the locally stored interactions values.<p>
      * This includes:
-     *  X / Y / Z values of Accelerometer / Gyroscope / Orientation.
-     *  Screen touch size.
-     *  X / Y touch coordinates values.
-     *  X / Y velocity values.
+     * <ul>
+     *     <li>X / Y / Z values of Accelerometer / Gyroscope / Orientation.
+     *     <li>Screen touch size.
+     *     <li>X / Y touch coordinates values.
+     *     <li>X / Y velocity values.
+     * </ul>
      */
     private void resetSwipeValues() {
         if(rawDataCollector.isRunning()) {
@@ -1216,7 +1223,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     /**
-     * Retrieves and set the Hold related features for a new Swipe object that is currently being generated.
+     * Retrieves and set the Hold related features for a new Swipe object that is currently being generated.<p>
      * These features include Min / Max / Avg / Var / Std X / Y / Z values for Accelerometer / Gyroscope / Orientation
      *
      * @param swipe The swipe object that is currently being created.
@@ -1342,11 +1349,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     /**
      * Computes the set of segment sizes (provided in percentage values between 0-1 over the full gesture length) starting from the provided locations.
-     *
-     * Firstly, it checks whether the specified number of segments can be generated given the available set of gesture locations.
-     * (Note: If that is not the case, the maximum number of segments will be generated instead. This means that for a gesture with X locations, X-1 segments will be generated).
-     * Then, the interval size of an individual segment is computed ((nr. of locations - 1) / nr of segments).
-     * This interval size is computed in relation to the total nr of provided locations and will instruct the system on how to select the anchor points that will define the start / end of a given segment.
+     * <p>
+     * Firstly, it checks whether the specified number of segments can be generated given the available set of gesture locations.<br>
+     * (Note: If that is not the case, the maximum number of segments will be generated instead. This means that for a gesture with X locations, X-1 segments will be generated).<br>
+     * Then, the interval size of an individual segment is computed ((nr. of locations - 1) / nr of segments).<br>
+     * This interval size is computed in relation to the total nr of provided locations and will instruct the system on how to select the anchor points that will define the start / end of a given segment.<br>
      * These anchor locations are then used to compute the size of each segment with regards to the total size of the gesture (for the provided dimension).
      *
      * @param locations The full set of (X or Y) locations of points belonging to a Swipe or Signature gesture.
@@ -1434,14 +1441,16 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     /**
-     * Collects data upon closure of the User (class ProfileActivity) or Model (class ModelActivity) profile screen.
-     * The method is called when a launched activity exits, giving the requestCode with which it was started, the resultCode it returned, and any additional data from it.
-     * When the Model activity is closed with result code Activity.RESULT_OK, the system extracts from the intent data the current and initial selections for all contained settings.
+     * Collects data upon closure of the User (class ProfileActivity) or Model (class ModelActivity) profile screen.<p>
+     * The method is called when a launched activity exits, giving the requestCode with which it was started, the resultCode it returned, and any additional data from it.<br>
+     * When the Model activity is closed with result code Activity.RESULT_OK, the system extracts from the intent data the current and initial selections for all contained settings.<br>
      * Additionally, the DB is reset if:
-     *  The keystroke gesture or signature gesture are enabled / disabled.
-     *  The value for the collection frequency of the raw data, the number of swipe segments, the pin length or the number of signature segments is changed.
-     * This is done because changes to this settings might create a mismatch with data already present in the DB.
-     * Here is important to note that disabling only certain features from a given model (apart from the ones mentioned above) won't cause a DB reset.
+     * <ul>
+     *     <li>The keystroke gesture or signature gesture are enabled / disabled.
+     *     <li>The value for the collection frequency of the raw data, the number of swipe segments, the pin length or the number of signature segments is changed.
+     * </ul>
+     * This is done because changes to this settings might create a mismatch with data already present in the DB.<br>
+     * Here is important to note that disabling only certain features from a given model (apart from the ones mentioned above) won't cause a DB reset.<br>
      * This is due to the fact that the data related to a disabled feature is still collected from the interaction but not used during training.
      *
      * When the User profile activity is closed with result code Activity.RESULT_OK, a DB reset is triggered.
@@ -1588,18 +1597,22 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         }
 
         /**
-         * Called when a touch event is dispatched to a view. This allows listeners to get a chance to respond before the target view.
+         * Called when a touch event is dispatched to a view. This allows listeners to get a chance to respond before the target view.<p>
          * When a Numpad button is pressed (MotionEvent.ACTION_DOWN):
-         *  Enables the device sensor tracking if the current digit is the first one of the keystroke gesture.
-         *  Records the keystroke digit start time.
-         *  Saves the intervals from the current start time to the previous start and end times if the current digit is not the first one of the keystroke gesture.
-         *  Saves the touch X / Y position and touch size.
+         * <ul>
+         *     <li>Enables the device sensor tracking if the current digit is the first one of the keystroke gesture.
+         *     <li>Records the keystroke digit start time.
+         *     <li>Saves the intervals from the current start time to the previous start and end times if the current digit is not the first one of the keystroke gesture.
+         *     <li>Saves the touch X / Y position and touch size.
+         * </ul>
          * When a Numpad button is released (MotionEvent.ACTION_UP):
-         *  Records the keystroke digit end time.
-         *  Saves the intervals from the current end time to the previous end time if the current digit is not the first one of the keystroke gesture.
-         *  Computes and saves the total duration of the current keystroke digit.
-         *  Increases the keystroke digit count.
-         * Additionally, when a Numpad button is released and the last keystroke digit has been reached, the full duration of the keystroke gesture is computed and saved.
+         * <ul>
+         *     <li>Records the keystroke digit end time.
+         *     <li>Saves the intervals from the current end time to the previous end time if the current digit is not the first one of the keystroke gesture.
+         *     <li>Computes and saves the total duration of the current keystroke digit.
+         *     <li>Increases the keystroke digit count.
+         * </ul>
+         * Additionally, when a Numpad button is released and the last keystroke digit has been reached, the full duration of the keystroke gesture is computed and saved.<br>
          * At this point, the logic for switching to the Signature gesture or to save / process the train / test record is triggered (if the Signature gesture is currently disabled).
          *
          * @param v The view the touch event has been dispatched to.
@@ -1700,8 +1713,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     /**
-     * It ends the signature gesture or triggers the next SUS question.
-     * If the signature gesture is currently being recorder, the method finalizes the recorded signature data, clears the drawn signature and disables the signature view.
+     * It ends the signature gesture or triggers the next SUS question.<p>
+     * If the signature gesture is currently being recorder, the method finalizes the recorded signature data, clears the drawn signature and disables the signature view.<br>
      * On the other end, if the SUS question are currently being answered, the method saves the current answer and moves to the next question.
      * @param view The view that was clicked.
      */
@@ -1811,10 +1824,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     /**
      * Toggles visibility of some 'accessory' UI elements, namely:
-     *  The profile, reset, train and GAN buttons.
-     *  The interactions input text.
-     *  The swipe image.
-     *  The sitting / standing / walking radio buttons.
+     * <ul>
+     *     <li>The profile, reset, train and GAN buttons.
+     *     <li>The interactions input text.
+     *     <li>The swipe image.
+     *     <li>The sitting / standing / walking radio buttons.
+     * </ul>
      *
      * @param visibility The visibility of the accessory UI elements, one of VISIBLE, INVISIBLE or GONE.
      */
@@ -1832,10 +1847,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     /**
-     * If called during training, it triggers a reset of all DB data.
+     * If called during training, it triggers a reset of all DB data.<p>
      * If called during testing:
-     *  It saves the SUS data and switches back to training mode if the SUS have been taken.
-     *  It shows the alert dialog asking to take the SUS questions if they are yet to be taken.
+     * <ul>
+     *     <li>It saves the SUS data and switches back to training mode if the SUS have been taken.
+     *     <li>It shows the alert dialog asking to take the SUS questions if they are yet to be taken.
+     * </ul>
      *
      * @param view The view that was clicked.
      */
@@ -1903,8 +1920,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     /**
-     * Transitions the application (UI elements) back to the training view once the testing phase (or SUS data collection phase) has been concluded.
-     * Upon transitioning, the method also prepares a summary alert dialog related to the testing phase results.
+     * Transitions the application (UI elements) back to the training view once the testing phase (or SUS data collection phase) has been concluded.<p>
+     * Upon transitioning, the method also prepares a summary alert dialog related to the testing phase results.<br>
      * Additionally, if test interaction from a previous testing phase were kept, the method re-processes the old interactions against the new models before computing the results.
      *
      * @param testSwipes The set of all test interactions.
@@ -2026,7 +2043,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     /**
-     * Triggers the logic related to the non-GAN training procedure.
+     * Triggers the logic related to the non-GAN training procedure.<p>
      * Additionally, it disables the interactivity of the UI elements.
      *
      * @param view The view that was clicked.
@@ -2042,7 +2059,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     /**
-     * Triggers the logic related to the GAN training procedure.
+     * Triggers the logic related to the GAN training procedure.<p>
      * Additionally, it disables the interactivity of the UI elements.
      *
      * @param view The view that was clicked.
@@ -2056,9 +2073,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     /**
-     * Triggers the training procedure for the individual active models.
-     * Additionally, it handles the execution of the resource monitor for each training procedure and computes the individual training times.
-     * If some test interactions already exist in the DB, the method also builds and prompts an alert message asking if they need to be kept.
+     * Triggers the training procedure for the individual active models.<p>
+     * Additionally, it handles the execution of the resource monitor for each training procedure and computes the individual training times.<br>
+     * If some test interactions already exist in the DB, the method also builds and prompts an alert message asking if they need to be kept.<br>
      * Finally, it prepares the UI elements related to the model training view.
      *
      * @param isGanMode Signals whether a GAN training has been called. If True, the method also triggers the generation of the synthetic samples.
@@ -2185,11 +2202,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     /**
-     * Handles the actual training steps of an individual model.
-     * Firstly, it triggers the generation of the weka.core.Instances object and fills it with the instances of the given training interactions.
-     * Then, it initializes the weka.classifiers.meta.OneClassClassifier object with the defined hyperparameters and builds the classifier using the training instances.
-     * At the same time, the method handles the execution of the raw data collector and the calculation of the training time value.
-     * Once the one class classifier has been built, the training results (Error Rate, TAR, FRR) values are also collected.
+     * Handles the actual training steps of an individual model.<p>
+     * Firstly, it triggers the generation of the weka.core.Instances object and fills it with the instances of the given training interactions.<br>
+     * Then, it initializes the weka.classifiers.meta.OneClassClassifier object with the defined hyperparameters and builds the classifier using the training instances.<br>
+     * At the same time, the method handles the execution of the raw data collector and the calculation of the training time value.<br>
+     * Once the one class classifier has been built, the training results (Error Rate, TAR, FRR) values are also collected.<br>
      * The training results are computed by calling the weka.classifiers.Evaluation.crossValidateModel() method that: "Performs a (stratified if class is nominal) cross-validation for a classifier on a set of instances".
      *
      * @param trainSwipes The set of train interactions.
@@ -2333,7 +2350,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     /**
-     * Generates the weka.core.Instances object that will hold the training samples for the model.
+     * Generates the weka.core.Instances object that will hold the training samples for the model.<p>
      * The attributes of the Instances object are added dynamically depending on the model at hand and on the active settings in the model profile.
      *
      * @param trainingModel The identifier of the model that will be trained using the generated Instances object.

@@ -10,13 +10,16 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 /**
- * The resource monitor object.
+ * The resource monitor.
  * Controls the execution of the device resource monitor.
+ * <p>
  * When training a model, the resource monitor gathers from the device information related to:
- *  Min / Max / Avg CPU frequency for each CPU core.
- *  Min / Max / Avg memory usage (in percentage).
- *  Total battery power draw (in microamperes).
- *  The total training time.
+ * <ul>
+ *     <li>Min / Max / Avg CPU frequency for each CPU core.
+ *     <li>Min / Max / Avg memory usage (in percentage).
+ *     <li>Total battery power draw (in microamperes).
+ *     <li>The total training time.
+ * </ul>
  * A resource entry is generated and added to the DB (at the end of the training phase for each model) when the execution of resource monitor is interrupted.
  */
 public class ResourceMonitor implements Runnable {
@@ -36,7 +39,7 @@ public class ResourceMonitor implements Runnable {
     private BatteryManager batteryManager;
 
     /**
-     * The set of frequency values gathered from the CPU.
+     * The set of frequency values gathered from the CPU.<br>
      * Each entry is a list of integer containing one frequency value per CPU core.
      */
     private ArrayList<Integer[]> freqValues;
@@ -82,11 +85,13 @@ public class ResourceMonitor implements Runnable {
     }
 
     /**
-     * Stops the resource monitoring process by interrupting the currently active thread.
+     * Stops the resource monitoring process by interrupting the currently active thread.<p>
      * Upon stopping the active thread, the method retrieves the collected resource values and:
-     *  Computes the min / max / avg CPU frequencies for each CPU core.
-     *  Computes the min / max / avg memory usage.
-     *  Computes the sum of all the gathered battery consumption values.
+     * <ul>
+     *     <li>Computes the min / max / avg CPU frequencies for each CPU core.
+     *     <li>Computes the min / max / avg memory usage.
+     *     <li>Computes the sum of all the gathered battery consumption values.
+     * </ul>
      * Finally, it adds the current resource entry to the DB.
      *
      * @param dbHelpber The database helper object.
@@ -129,7 +134,7 @@ public class ResourceMonitor implements Runnable {
     }
 
     /**
-     * Method called upon execution of the resource monitor thread.
+     * Method called upon execution of the resource monitor thread.<p>
      * As long as the thread is running, this method repeatedly extends the sets of CPU, memory and battery values.
      */
     public void run() {
@@ -143,7 +148,7 @@ public class ResourceMonitor implements Runnable {
     }
 
     /**
-     * Retrieves the current CPU frequency values for all cores.
+     * Retrieves the current CPU frequency values for all cores.<p>
      * The values are fetched from `sys/devices/system/cpu/cpui/cpufreq/scaling_cur_freq` where `i` in `cpui` corresponds to the currently analyzed core.
      *
      * @return The current set of CPU frequencies for all cores.

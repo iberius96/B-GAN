@@ -16,17 +16,19 @@ import java.util.Map;
 /**
  * The user profile activity.
  * Handles the logic responsible for correctly populating and updating the user profile view and its related fields.
- *
+ * <p>
  * The user profile view allows to set the user's:
- *  Nickname.
- *  Gender (DWTD, Male, Female).
- *  Age range (DWTD, 0-20, 21-40, 41-60, 60+).
- *  Nationality.
- *  Hand used for holding the device (DWTD, Right, Left, Both).
+ * <ul>
+ *     <li>Nickname.
+ *     <li>Gender (DWTD, Male, Female).
+ *     <li>Age range (DWTD, 0-20, 21-40, 41-60, 60+).
+ *     <li>Nationality.
+ *     <li>Hand used for holding the device (DWTD, Right, Left, Both).
+ * </ul>
  */
 public class ProfileActivity extends AppCompatActivity {
     /**
-     * Called upon the creation of the Activity, it populates the user profile fields based on the data currently stored in the DB.
+     * Called upon the creation of the Activity, it populates the user profile fields based on the data currently stored in the DB.<p>
      * Additionally, it sets up the Save button event listener which allows the system to save any changes made to the user profile to the DB.
      *
      * @param savedInstanceState Reference to the bundle object.
