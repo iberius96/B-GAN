@@ -30,6 +30,8 @@ import java.util.stream.Collectors;
 import static com.google.common.base.CaseFormat.LOWER_CAMEL;
 import static com.google.common.base.CaseFormat.LOWER_UNDERSCORE;
 
+import com.example.combinatoricslib3.Generator;
+
 import au.com.bytecode.opencsv.CSVWriter;
 
 /**

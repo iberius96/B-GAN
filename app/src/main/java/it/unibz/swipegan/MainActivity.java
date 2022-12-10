@@ -54,6 +54,7 @@ import java.util.stream.Collectors;
 import java.util.stream.DoubleStream;
 
 import weka.classifiers.evaluation.Evaluation;
+import weka.classifiers.meta.OneClassClassifier;
 import weka.core.Attribute;
 import weka.core.Instance;
 import weka.core.Instances;
@@ -252,7 +253,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     /**
      * Set of generated classifiers.
      */
-    private CustomOneClassClassifier oneClassClassifiers[];
+    private OneClassClassifier oneClassClassifiers[];
 
     /**
      * Set of identifiers for the active models.
@@ -2125,7 +2126,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             ArrayList<Swipe> swipes = dbHelper.getAllSwipes(DatabaseHelper.REAL_SWIPES);
             try {
                 this.trainingModels = dbHelper.getActiveModels();
-                this.oneClassClassifiers = new CustomOneClassClassifier[this.trainingModels.size()];
+                this.oneClassClassifiers = new OneClassClassifier[this.trainingModels.size()];
 
                 if (isGanMode) {
                     ResourceMonitor resourceMonitor = new ResourceMonitor();
@@ -2230,7 +2231,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         System.out.println("ARFF representation of Dataset");
         System.out.println(dataSet.toString());
 
-        CustomOneClassClassifier oneClassClassifier = new CustomOneClassClassifier();
+        OneClassClassifier oneClassClassifier = new OneClassClassifier();
         try {
             String[] options = {
                     "-num", m_DefaultNumericGenerator,

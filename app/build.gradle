@@ -46,7 +46,7 @@ dependencies {
     implementation 'androidx.constraintlayout:constraintlayout:2.0.1'
     implementation files('libs/weka-android-release.aar')
     implementation files('libs/oneClassClassifier.jar')
-    implementation fileTree(dir: '/Users/samueleceol/Library/Android/sdk/platforms/android-30', include: ['*.aar', '*.jar'], exclude: [])
+    implementation files('libs/combinatoricslib3.aar')
     testImplementation 'junit:junit:4.+'
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
