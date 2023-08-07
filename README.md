@@ -1,6 +1,7 @@
 # B-GAN - A multimodal smartphone-based authentication system
 
-Access full code documentation [here](https://iberius96.github.io/B-GAN)
+Access to the full code documentation can be found [here](https://iberius96.github.io/B-GAN).
+Demo paper published from this work: ["Demo: A Multimodal Behavioral Biometric Scheme for Smartphone User Authentication (MBBS)"](https://doi.org/10.1145/3589608.3595083).
 
 ---
 
