@@ -1,9 +1,14 @@
 # B-GAN - A multimodal smartphone-based authentication system
 
 Access to the full code documentation can be found [here](https://iberius96.github.io/B-GAN).
+
 Demo paper published from this work: ["Demo: A Multimodal Behavioral Biometric Scheme for Smartphone User Authentication (MBBS)"](https://doi.org/10.1145/3589608.3595083).
 
+Report file describing the project is located [here](files/CP_Report.pdf).
+
 ---
+
+## Abstract
 
 Behavioural biometrics is the research field concerned with measuring and analysing human behaviour with the purpose of identifying specific patterns that can be used to build unique user profiles.
 These patterns, which derive from the way in which a user interacts with a given system, can be used as means for authentication.
@@ -18,3 +23,9 @@ Such results not only include the performance relating to the generated models, 
 Additionally, the application allows researchers to exonerate specific features and even entire models from the training procedure with the purpose of easily observing how disabling certain sources of information can affect the overall accuracy of the system. 
 In the context of the presented application, a generative adversarial network can also be trained and utilised to generate synthetic samples which can contribute to the training procedure.
 B-GAN is a stand-alone application that performs all training steps locally using solely the hardware resources provided by the mobile device at hand.
+
+## Some screenshots
+
+![Swipe gesture](files/App%20screenshots/Screenshot_20221104-182019_SwipeGAN%20Medium.jpeg)
+![Keystroke gesture](files/App%20screenshots/Screenshot_20221104-182027_SwipeGAN%20Medium.jpeg)
+![Signature gesture](files/App%20screenshots/Screenshot_20221104-182040_SwipeGAN%20Medium.jpeg)
