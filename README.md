@@ -27,5 +27,7 @@ B-GAN is a stand-alone application that performs all training steps locally usin
 ## Some screenshots
 
 ![Swipe gesture](files/App%20screenshots/Screenshot_20221104-182019_SwipeGAN%20Medium.jpeg)
+
 ![Keystroke gesture](files/App%20screenshots/Screenshot_20221104-182027_SwipeGAN%20Medium.jpeg)
+
 ![Signature gesture](files/App%20screenshots/Screenshot_20221104-182040_SwipeGAN%20Medium.jpeg)
